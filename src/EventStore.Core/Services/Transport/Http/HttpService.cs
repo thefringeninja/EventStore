@@ -9,6 +9,7 @@ using EventStore.Core.Services.TimerService;
 using EventStore.Core.Services.Transport.Http.Authentication;
 using EventStore.Core.Services.Transport.Http.Messages;
 using EventStore.Core.Settings;
+using EventStore.Transport.Http;
 using EventStore.Transport.Http.EntityManagement;
 using EventStore.Transport.Http.Server;
 
@@ -91,7 +92,7 @@ namespace EventStore.Core.Services.Transport.Http
                     string.Format("HttpServer [{0}]", string.Join(", ", _server._listenPrefixes))));
         }
 
-        private void RequestReceived(HttpAsyncServer sender, HttpListenerContext context)
+        private void RequestReceived(HttpAsyncServer sender, EventStoreHttpContext context)
         {
             var entity = new HttpEntity(context.Request, context.Response, context.User);
             _requestsMultiHandler.Handle(new IncomingHttpRequestMessage(this, entity, _requestsMultiHandler));

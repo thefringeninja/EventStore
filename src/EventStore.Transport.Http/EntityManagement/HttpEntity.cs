@@ -11,11 +11,11 @@ namespace EventStore.Transport.Http.EntityManagement
     {
         public readonly Uri RequestedUrl;
 
-        public readonly HttpListenerRequest Request;
-        internal readonly HttpListenerResponse Response;
+        public readonly EventStoreHttpRequest Request;
+        internal readonly EventStoreHttpResponse Response;
         public readonly IPrincipal User;
 
-        public HttpEntity(HttpListenerRequest request, HttpListenerResponse response, IPrincipal user)
+        public HttpEntity(EventStoreHttpRequest request, EventStoreHttpResponse response, IPrincipal user)
         {
             Ensure.NotNull(request, "request");
             Ensure.NotNull(response, "response");

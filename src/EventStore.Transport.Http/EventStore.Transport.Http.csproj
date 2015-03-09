@@ -31,6 +31,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EvHttpSharp">
+      <HintPath>..\libs\evhttpsharp\EvHttpSharp.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\Newtonsoft.Json.dll</HintPath>
@@ -47,6 +50,7 @@
     <Compile Include="Codecs\NoCodec.cs" />
     <Compile Include="Codecs\TextCodec.cs" />
     <Compile Include="Codecs\XmlCodec.cs" />
+    <Compile Include="EventStoreHttpRequest.cs" />
     <Compile Include="MediaType.cs" />
     <Compile Include="AsyncQueuedBufferWriter.cs" />
     <Compile Include="Client\ClientOperationState.cs" />
