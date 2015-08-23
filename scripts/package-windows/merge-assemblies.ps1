@@ -16,7 +16,7 @@ Function Merge-ClusterNode
         [Parameter(Mandatory=$true)][string]$OutputDirectory,
         [Parameter(Mandatory=$false)][string]$Executable = "EventStore.ClusterNode.exe",
         [Parameter(Mandatory=$false)][string[]]$ExcludeAssemblies = @("js1.dll", "js1.pdb"),
-        [Parameter(Mandatory=$false)][string]$IlMergeToolPath = (Join-Path $toolsDirectory "ilmerge\ilmerge.exe"),
+        [Parameter(Mandatory=$false)][string]$IlMergeToolPath = (Join-Path $toolsDirectory "ilrepack\ilrepack.exe"),
         [Parameter(Mandatory=$false)][string]$ExcludeFile = (Join-Path $PSScriptRoot "clusternode-merge-excludes.txt")
     )
 
@@ -58,7 +58,7 @@ Function Merge-TestClient
         [Parameter(Mandatory=$true)][string]$OutputDirectory,
         [Parameter(Mandatory=$false)][string]$Executable = "EventStore.TestClient.exe",
         [Parameter(Mandatory=$false)][string[]]$ExcludeAssemblies = @(),
-        [Parameter(Mandatory=$false)][string]$IlMergeToolPath = (Join-Path $toolsDirectory "ilmerge\ilmerge.exe")
+        [Parameter(Mandatory=$false)][string]$IlMergeToolPath = (Join-Path $toolsDirectory "ilrepack\ilrepack.exe")
     )
 
     # Find the build directory as a relative path to here (in case it's absolute)
@@ -99,7 +99,7 @@ Function Merge-PAdmin
         [Parameter(Mandatory=$true)][string]$OutputDirectory,
         [Parameter(Mandatory=$false)][string]$Executable = "PAdmin.exe",
         [Parameter(Mandatory=$false)][string[]]$ExcludeAssemblies = @(),
-        [Parameter(Mandatory=$false)][string]$IlMergeToolPath = (Join-Path $toolsDirectory "ilmerge\ilmerge.exe")
+        [Parameter(Mandatory=$false)][string]$IlMergeToolPath = (Join-Path $toolsDirectory "ilrepack\ilrepack.exe")
     )
 
     # Find the build directory as a relative path to here (in case it's absolute)
@@ -140,7 +140,7 @@ Function Merge-EsQuery
         [Parameter(Mandatory=$true)][string]$OutputDirectory,
         [Parameter(Mandatory=$false)][string]$Executable = "esquery.exe",
         [Parameter(Mandatory=$false)][string[]]$ExcludeAssemblies = @(),
-        [Parameter(Mandatory=$false)][string]$IlMergeToolPath = (Join-Path $toolsDirectory "ilmerge\ilmerge.exe")
+        [Parameter(Mandatory=$false)][string]$IlMergeToolPath = (Join-Path $toolsDirectory "ilrepack\ilrepack.exe")
     )
 
     # Find the build directory as a relative path to here (in case it's absolute)
@@ -181,7 +181,7 @@ Function Merge-ClientAPI
         [Parameter(Mandatory=$true)][string]$OutputDirectory,
         [Parameter(Mandatory=$false)][string]$Executable = "EventStore.ClientAPI.dll",
         [Parameter(Mandatory=$false)][string[]]$ExcludeAssemblies = @("EventStore.ClientAPI.dll"),
-        [Parameter(Mandatory=$false)][string]$IlMergeToolPath = (Join-Path $toolsDirectory "ilmerge\ilmerge.exe")
+        [Parameter(Mandatory=$false)][string]$IlMergeToolPath = (Join-Path $toolsDirectory "ilrepack\ilrepack.exe")
     )
 
     # Find the build directory as a relative path to here (in case it's absolute)
@@ -217,7 +217,7 @@ Function Merge-ClientAPIEmbedded
         [Parameter(Mandatory=$true)][string]$OutputDirectory,
         [Parameter(Mandatory=$false)][string]$Executable = "EventStore.ClientAPI.Embedded.dll",
         [Parameter(Mandatory=$false)][string[]]$ExcludeAssemblies = @("js1.dll", "EventStore.ClientAPI.dll", "EventStore.ClientAPI.Embedded.dll"),
-        [Parameter(Mandatory=$false)][string]$IlMergeToolPath = (Join-Path $toolsDirectory "ilmerge\ilmerge.exe")
+        [Parameter(Mandatory=$false)][string]$IlMergeToolPath = (Join-Path $toolsDirectory "ilrepack\ilrepack.exe")
     )
 
     # Find the build directory as a relative path to here (in case it's absolute)
