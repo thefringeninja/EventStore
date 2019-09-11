@@ -6,9 +6,11 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+		<PackageReference Include="HdrHistogram" Version="2.5.0" />
+		<PackageReference Include="NETStandard.Library.NETFramework" Version="2.0.0-preview1-25305-02"/>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="protobuf-net" Version="2.4.0" />
-    <PackageReference Include="HdrHistogram" Version="2.5.0" />
+		<PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Net.Http" />

@@ -116,8 +116,10 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 
 		[Test]
 		public void with_proto_forward_host_containing_comma_delimited_list_first_forwarded_host_is_used() {
-			string host = "www.my-first-host.com, www.my-second-host.com";
-			var headers = new NameValueCollection {{"X-Forwarded-Host", host}};
+			var headers = new NameValueCollection {
+				{"X-Forwarded-Host", "www.my-first-host.com"},
+				{"X-Forwarded-Host", "www.my-second-host.com"}
+			};
 			var requestedUri =
 				HttpEntity.BuildRequestedUrl(new FakeHttpRequest(inputUri, headers), null, 0);
 			Assert.AreEqual(new Uri("http://www.my-first-host.com:1234/path/?key=value#anchor"), requestedUri);
