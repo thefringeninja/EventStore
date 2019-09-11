@@ -107,7 +107,8 @@ namespace EventStore.Core.Services.Transport.Http {
 		}
 
 		private void RequestReceived(HttpAsyncServer sender, HttpListenerContext context) {
-			var entity = new HttpEntity(context.Request, context.Response, context.User, _logHttpRequests,
+			var entity = new HttpEntity(new HttpListenerRequestAdapter(context.Request),
+				new HttpListenerResponseAdapter(context.Response), context.User, _logHttpRequests,
 				_advertiseAsAddress, _advertiseAsPort);
 			_requestsMultiHandler.Handle(new IncomingHttpRequestMessage(this, entity, _requestsMultiHandler));
 		}
