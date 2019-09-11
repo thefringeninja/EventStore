@@ -295,7 +295,7 @@ namespace EventStore.Transport.Http.EntityManagement {
 				if (HttpEntity.Response.ContentLength64 > 0) {
 					response.Content.ReadAsStreamAsync()
 						.ContinueWith(task => {
-							new AsyncStreamCopier<HttpListenerResponse>(
+							new AsyncStreamCopier<IHttpResponse>(
 								task.Result,
 								HttpEntity.Response.OutputStream,
 								HttpEntity.Response,
