@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -268,7 +267,7 @@ namespace EventStore.Transport.Http.EntityManagement {
 
 					IEnumerable<string> values;
 					if (response.Content.Headers.TryGetValues("Content-Encoding", out values)) {
-						HttpEntity.Response.Headers.Add("Content-Encoding", values.FirstOrDefault());
+						HttpEntity.Response.AddHeader("Content-Encoding", values.FirstOrDefault());
 					}
 
 					HttpEntity.Response.ContentLength64 = response.Content.Headers.ContentLength.GetValueOrDefault();
@@ -287,7 +286,7 @@ namespace EventStore.Transport.Http.EntityManagement {
 
 						default:
 							headerValue = header.Value.FirstOrDefault();
-							HttpEntity.Response.Headers.Add(header.Key, headerValue);
+							HttpEntity.Response.AddHeader(header.Key, headerValue);
 							break;
 					}
 				}
@@ -369,19 +368,19 @@ namespace EventStore.Transport.Http.EntityManagement {
 			}
 		}
 
-		private string CreateHeaderLog(NameValueCollection headers) {
+		private string CreateHeaderLog() {
 			var logBuilder = new StringBuilder();
-			foreach (var header in HttpEntity.Request.Headers) {
-				logBuilder.AppendFormat("{0}: {1}\n", header.ToString(), HttpEntity.Request.Headers[header.ToString()]);
+			foreach (var header in HttpEntity.Request.GetHeaderKeys()) {
+				logBuilder.AppendFormat("{0}: {1}\n", header, HttpEntity.Request.GetHeaderValues(header));
 			}
 
 			return logBuilder.ToString();
 		}
 
-		private Dictionary<string, object> CreateHeaderLogStructured(NameValueCollection headers) {
+		private Dictionary<string, object> CreateHeaderLogStructured() {
 			var dict = new Dictionary<string, object>();
-			foreach (var header in HttpEntity.Request.Headers) {
-				dict.Add(header.ToString(), HttpEntity.Request.Headers[header.ToString()]);
+			foreach (var header in HttpEntity.Request.GetHeaderKeys()) {
+				dict.Add(header, HttpEntity.Request.GetHeaderValues(header));
 			}
 
 			return dict;
@@ -401,8 +400,8 @@ namespace EventStore.Transport.Http.EntityManagement {
 					, HttpEntity.Request.HttpMethod
 					, HttpEntity.Request.Url
 					, LogManager.StructuredLog
-						? (object)CreateHeaderLogStructured(HttpEntity.Request.Headers)
-						: (object)CreateHeaderLog(HttpEntity.Request.Headers)
+						? (object)CreateHeaderLogStructured()
+						: (object)CreateHeaderLog()
 					, bodyStr
 				);
 			}
@@ -422,8 +421,8 @@ namespace EventStore.Transport.Http.EntityManagement {
 					HttpEntity.Response.StatusCode,
 					HttpEntity.Response.StatusDescription,
 					LogManager.StructuredLog
-						? (object)CreateHeaderLogStructured(HttpEntity.Request.Headers)
-						: (object)CreateHeaderLog(HttpEntity.Response.Headers),
+						? (object)CreateHeaderLogStructured()
+						: (object)CreateHeaderLog(),
 					bodyStr
 				);
 			}
@@ -475,13 +474,11 @@ namespace EventStore.Transport.Http.EntityManagement {
 
 			var httpEntityRequest = httpEntity.Request;
 			string contentEncoding = null;
-			var values = httpEntityRequest.Headers.GetValues("Accept-Encoding");
-			if (values != null) {
-				foreach (string value in values) {
-					if (SupportedCompressionAlgorithms.Contains(value)) {
-						contentEncoding = value;
-						break;
-					}
+			var values = httpEntityRequest.GetHeaderValues("Accept-Encoding");
+			foreach (string value in values) {
+				if (SupportedCompressionAlgorithms.Contains(value)) {
+					contentEncoding = value;
+					break;
 				}
 			}
 

@@ -5,6 +5,7 @@ using System.Security.Principal;
 using EventStore.Common.Utils;
 using EventStore.Transport.Http.Codecs;
 using System.Linq;
+using Microsoft.Extensions.Primitives;
 
 namespace EventStore.Transport.Http.EntityManagement {
 	public class HttpEntity {
@@ -22,16 +23,16 @@ namespace EventStore.Transport.Http.EntityManagement {
 			Ensure.NotNull(response, "response");
 
 			_logHttpRequests = logHttpRequests;
-			RequestedUrl = BuildRequestedUrl(request.Url, request.Headers, advertiseAsAddress, advertiseAsPort);
-			ResponseUrl = BuildRequestedUrl(request.Url, request.Headers, advertiseAsAddress, advertiseAsPort, true);
+			RequestedUrl = BuildRequestedUrl(request, advertiseAsAddress, advertiseAsPort);
+			ResponseUrl = BuildRequestedUrl(request, advertiseAsAddress, advertiseAsPort, true);
 			Request = request;
 			Response = response;
 			User = user;
 		}
 
-		public static Uri BuildRequestedUrl(Uri requestUrl, NameValueCollection requestHeaders,
+		public static Uri BuildRequestedUrl(IHttpRequest request,
 			IPAddress advertiseAsAddress, int advertiseAsPort, bool overridePath = false) {
-			var uriBuilder = new UriBuilder(requestUrl);
+			var uriBuilder = new UriBuilder(request.Url);
 			if (overridePath) {
 				uriBuilder.Path = string.Empty;
 			}
@@ -44,34 +45,33 @@ namespace EventStore.Transport.Http.EntityManagement {
 				uriBuilder.Port = advertiseAsPort;
 			}
 
-			var forwardedPortHeaderValue = requestHeaders[ProxyHeaders.XForwardedPort];
-			if (!string.IsNullOrEmpty(forwardedPortHeaderValue)) {
-				int requestPort;
-				if (Int32.TryParse(forwardedPortHeaderValue, out requestPort)) {
+			var forwardedPortHeaderValue = request.GetHeaderValues(ProxyHeaders.XForwardedPort);
+			if (!StringValues.IsNullOrEmpty(forwardedPortHeaderValue)) {
+				if (int.TryParse(forwardedPortHeaderValue.First(), out var requestPort)) {
 					uriBuilder.Port = requestPort;
 				}
 			}
 
-			var forwardedProtoHeaderValue = requestHeaders[ProxyHeaders.XForwardedProto];
-			if (!string.IsNullOrEmpty(forwardedProtoHeaderValue)) {
-				uriBuilder.Scheme = forwardedProtoHeaderValue;
+			var forwardedProtoHeaderValue = request.GetHeaderValues(ProxyHeaders.XForwardedProto);
+
+			if (!StringValues.IsNullOrEmpty(forwardedProtoHeaderValue)) {
+				uriBuilder.Scheme = forwardedProtoHeaderValue.First();
 			}
 
-			var forwardedHostHeaderValue = requestHeaders[ProxyHeaders.XForwardedHost];
-			if (!string.IsNullOrEmpty(forwardedHostHeaderValue)) {
-				var host = forwardedHostHeaderValue.Split(new[] {","}, StringSplitOptions.RemoveEmptyEntries)
-					.FirstOrDefault();
+			var forwardedHostHeaderValue = request.GetHeaderValues(ProxyHeaders.XForwardedHost);
+
+			if (!StringValues.IsNullOrEmpty(forwardedHostHeaderValue)) {
+				var host = forwardedHostHeaderValue.First();
 				if (!string.IsNullOrEmpty(host)) {
 					var parts = host.Split(new[] {":"}, StringSplitOptions.RemoveEmptyEntries);
-					uriBuilder.Host = parts.First();
-					int port;
-					if (parts.Count() > 1 && int.TryParse(parts[1], out port)) {
+					uriBuilder.Host = parts[0];
+					if (parts.Length > 1 && int.TryParse(parts[1], out var port)) {
 						uriBuilder.Port = port;
 					}
 				}
 			}
 
-			var forwardedPrefixHeaderValue = requestHeaders[ProxyHeaders.XForwardedPrefix];
+			var forwardedPrefixHeaderValue = request.GetHeaderValues(ProxyHeaders.XForwardedPrefix);
 			if (!string.IsNullOrEmpty(forwardedPrefixHeaderValue)) {
 				uriBuilder.Path = forwardedPrefixHeaderValue + uriBuilder.Path;
 			}
@@ -106,7 +106,7 @@ namespace EventStore.Transport.Http.EntityManagement {
 		}
 
 		public HttpEntityManager CreateManager() {
-			return new HttpEntityManager(this, Empty.StringArray, entity => { }, Codec.NoCodec, Codec.NoCodec,
+			return new HttpEntityManager(this, Array.Empty<string>(), entity => { }, Codec.NoCodec, Codec.NoCodec,
 				_logHttpRequests);
 		}
 
