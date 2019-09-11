@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using EventStore.Transport.Http.EntityManagement;
 using NUnit.Framework;
 using System.Net;
+using Microsoft.Extensions.Primitives;
 
 namespace EventStore.Core.Tests.Services.Transport.Http {
 	[TestFixture]
@@ -12,8 +15,8 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		[Test]
 		public void with_no_advertise_as_or_headers_uri_is_unchanged() {
 			var requestedUri =
-				HttpEntity.BuildRequestedUrl(inputUri,
-					new NameValueCollection(), null, 0);
+				HttpEntity.BuildRequestedUrl(new FakeHttpRequest(inputUri,
+					new NameValueCollection()), null, 0);
 
 			Assert.AreEqual(inputUri, requestedUri);
 		}
@@ -21,8 +24,8 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		[Test]
 		public void with_advertise_http_port_set_only_port_is_changed() {
 			var requestedUri =
-				HttpEntity.BuildRequestedUrl(inputUri,
-					new NameValueCollection(), null, 2116);
+				HttpEntity.BuildRequestedUrl(new FakeHttpRequest(inputUri,
+					new NameValueCollection()), null, 2116);
 
 			Assert.AreEqual(new Uri("http://www.example.com:2116/path/?key=value#anchor"), requestedUri);
 		}
@@ -30,8 +33,8 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		[Test]
 		public void with_advertise_ip_set_only_host_is_changed() {
 			var requestedUri =
-				HttpEntity.BuildRequestedUrl(inputUri,
-					new NameValueCollection(), IPAddress.Parse("192.168.1.13"), 0);
+				HttpEntity.BuildRequestedUrl(new FakeHttpRequest(inputUri,
+					new NameValueCollection()), IPAddress.Parse("192.168.1.13"), 0);
 
 			Assert.AreEqual(new Uri("http://192.168.1.13:1234/path/?key=value#anchor"), requestedUri);
 		}
@@ -39,8 +42,8 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		[Test]
 		public void with_advertise_ip_and_http_port_set_both_host_and_port_is_changed() {
 			var requestedUri =
-				HttpEntity.BuildRequestedUrl(inputUri,
-					new NameValueCollection(), IPAddress.Parse("192.168.1.13"), 2116);
+				HttpEntity.BuildRequestedUrl(new FakeHttpRequest(inputUri,
+					new NameValueCollection()), IPAddress.Parse("192.168.1.13"), 2116);
 
 			Assert.AreEqual(new Uri("http://192.168.1.13:2116/path/?key=value#anchor"), requestedUri);
 		}
@@ -49,7 +52,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		public void with_port_forward_header_only_port_is_changed() {
 			var headers = new NameValueCollection {{"X-Forwarded-Port", "4321"}};
 			var requestedUri =
-				HttpEntity.BuildRequestedUrl(inputUri, headers, null, 0);
+				HttpEntity.BuildRequestedUrl(new FakeHttpRequest(inputUri, headers), null, 0);
 
 			Assert.AreEqual(new Uri("http://www.example.com:4321/path/?key=value#anchor"), requestedUri);
 		}
@@ -58,7 +61,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		public void non_integer_port_forward_header_is_ignored() {
 			var headers = new NameValueCollection {{"X-Forwarded-Port", "abc"}};
 			var requestedUri =
-				HttpEntity.BuildRequestedUrl(inputUri, headers, null, 0);
+				HttpEntity.BuildRequestedUrl(new FakeHttpRequest(inputUri, headers), null, 0);
 
 			Assert.AreEqual(inputUri, requestedUri);
 		}
@@ -67,7 +70,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		public void with_proto_forward_header_only_scheme_is_changed() {
 			var headers = new NameValueCollection {{"X-Forwarded-Proto", "https"}};
 			var requestedUri =
-				HttpEntity.BuildRequestedUrl(inputUri, headers, null, 0);
+				HttpEntity.BuildRequestedUrl(new FakeHttpRequest(inputUri, headers), null, 0);
 
 			Assert.AreEqual(new Uri("https://www.example.com:1234/path/?key=value#anchor"), requestedUri);
 		}
@@ -77,7 +80,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			string host = "www.my-host.com";
 			var headers = new NameValueCollection {{"X-Forwarded-Host", host}};
 			var requestedUri =
-				HttpEntity.BuildRequestedUrl(inputUri, headers, null, 0);
+				HttpEntity.BuildRequestedUrl(new FakeHttpRequest(inputUri, headers), null, 0);
 			Assert.AreEqual(new Uri("http://www.my-host.com:1234/path/?key=value#anchor"), requestedUri);
 		}
 
@@ -86,7 +89,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			string prefix = "prefix";
 			var headers = new NameValueCollection {{"X-Forwarded-Prefix", prefix}};
 			var requestedUri =
-				HttpEntity.BuildRequestedUrl(inputUri, headers, null, 0);
+				HttpEntity.BuildRequestedUrl(new FakeHttpRequest(inputUri, headers), null, 0);
 			Assert.AreEqual(new Uri("http://www.example.com:1234/prefix/path/?key=value#anchor"), requestedUri);
 		}
 
@@ -97,7 +100,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			string prefix = "prefix";
 			var headers = new NameValueCollection {{"X-Forwarded-Prefix", prefix}};
 			var requestedUri =
-				HttpEntity.BuildRequestedUrl(start, headers, null, 0);
+				HttpEntity.BuildRequestedUrl(new FakeHttpRequest(start, headers), null, 0);
 			Assert.AreEqual(new Uri("http://www.my-host.com:1234/prefix/?key=value#anchor"), requestedUri);
 		}
 
@@ -106,7 +109,8 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			string host = "www.my-host.com";
 			var headers = new NameValueCollection {{"X-Forwarded-Host", host}};
 			var requestedUri =
-				HttpEntity.BuildRequestedUrl(inputUri, headers, IPAddress.Parse("192.168.10.13"), 0);
+				HttpEntity.BuildRequestedUrl(new FakeHttpRequest(inputUri, headers), IPAddress.Parse("192.168.10.13"),
+					0);
 			Assert.AreEqual(new Uri("http://www.my-host.com:1234/path/?key=value#anchor"), requestedUri);
 		}
 
@@ -115,7 +119,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			string host = "www.my-first-host.com, www.my-second-host.com";
 			var headers = new NameValueCollection {{"X-Forwarded-Host", host}};
 			var requestedUri =
-				HttpEntity.BuildRequestedUrl(inputUri, headers, null, 0);
+				HttpEntity.BuildRequestedUrl(new FakeHttpRequest(inputUri, headers), null, 0);
 			Assert.AreEqual(new Uri("http://www.my-first-host.com:1234/path/?key=value#anchor"), requestedUri);
 		}
 
@@ -124,8 +128,37 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			string host = "192.168.10.13:2231";
 			var headers = new NameValueCollection {{"X-Forwarded-Host", host}};
 			var requestedUri =
-				HttpEntity.BuildRequestedUrl(inputUri, headers, null, 0);
+				HttpEntity.BuildRequestedUrl(new FakeHttpRequest(inputUri, headers), null, 0);
 			Assert.AreEqual(new Uri("http://192.168.10.13:2231/path/?key=value#anchor"), requestedUri);
+		}
+
+		class FakeHttpRequest : IHttpRequest {
+			private readonly NameValueCollection _headers;
+			public string[] AcceptTypes { get; }
+			public long ContentLength64 { get; }
+			public string ContentType { get; }
+			public string HttpMethod { get; }
+			public Stream InputStream { get; }
+			public string RawUrl { get; }
+			public IPEndPoint RemoteEndPoint { get; }
+			public Uri Url { get; }
+
+			public FakeHttpRequest(Uri url, NameValueCollection headers = default) {
+				_headers = headers ?? new NameValueCollection();
+				Url = url;
+			}
+
+			public IEnumerable<string> GetHeaderKeys() => _headers.AllKeys;
+
+			public StringValues GetHeaderValues(string key) => _headers.GetValues(key);
+
+			public IEnumerable<string> GetQueryStringKeys() {
+				throw new NotImplementedException();
+			}
+
+			public StringValues GetQueryStringValues(string key) {
+				throw new NotImplementedException();
+			}
 		}
 	}
 }

@@ -14,6 +14,7 @@ using EventStore.Transport.Http.EntityManagement;
 using Newtonsoft.Json;
 using System.Linq;
 using EventStore.Common.Utils;
+using Microsoft.Extensions.Primitives;
 
 namespace EventStore.Core.Services.Transport.Http.Controllers {
 	public enum EmbedLevel {
@@ -659,8 +660,8 @@ namespace EventStore.Core.Services.Transport.Http.Controllers {
 
 		// HELPERS
 		private bool GetExpectedVersion(HttpEntityManager manager, out long expectedVersion) {
-			var expVer = manager.HttpEntity.Request.Headers[SystemHeaders.ExpectedVersion];
-			if (expVer == null) {
+			var expVer = manager.HttpEntity.Request.GetHeaderValues(SystemHeaders.ExpectedVersion);
+			if (StringValues.IsNullOrEmpty(expVer)) {
 				expectedVersion = ExpectedVersion.Any;
 				return true;
 			}
@@ -669,8 +670,8 @@ namespace EventStore.Core.Services.Transport.Http.Controllers {
 		}
 
 		private bool GetIncludedId(HttpEntityManager manager, out Guid includedId) {
-			var id = manager.HttpEntity.Request.Headers[SystemHeaders.EventId];
-			if (id == null) {
+			var id = manager.HttpEntity.Request.GetHeaderValues(SystemHeaders.EventId);
+			if (StringValues.IsNullOrEmpty(id)) {
 				includedId = Guid.Empty;
 				return true;
 			}
@@ -679,8 +680,8 @@ namespace EventStore.Core.Services.Transport.Http.Controllers {
 		}
 
 		private bool GetIncludedType(HttpEntityManager manager, out string includedType) {
-			var type = manager.HttpEntity.Request.Headers[SystemHeaders.EventType];
-			if (type == null) {
+			var type = manager.HttpEntity.Request.GetHeaderValues(SystemHeaders.EventType);
+			if (StringValues.IsNullOrEmpty(type)) {
 				includedType = null;
 				return true;
 			}
@@ -692,8 +693,8 @@ namespace EventStore.Core.Services.Transport.Http.Controllers {
 
 		private bool GetRequireMaster(HttpEntityManager manager, out bool requireMaster) {
 			requireMaster = false;
-			var onlyMaster = manager.HttpEntity.Request.Headers[SystemHeaders.RequireMaster];
-			if (onlyMaster == null)
+			var onlyMaster = manager.HttpEntity.Request.GetHeaderValues(SystemHeaders.RequireMaster);
+			if (StringValues.IsNullOrEmpty(onlyMaster))
 				return true;
 			if (string.Equals(onlyMaster, "True", StringComparison.OrdinalIgnoreCase)) {
 				requireMaster = true;
@@ -707,8 +708,8 @@ namespace EventStore.Core.Services.Transport.Http.Controllers {
 
 		private bool GetLongPoll(HttpEntityManager manager, out TimeSpan? longPollTimeout) {
 			longPollTimeout = null;
-			var longPollHeader = manager.HttpEntity.Request.Headers[SystemHeaders.LongPoll];
-			if (longPollHeader == null)
+			var longPollHeader = manager.HttpEntity.Request.GetHeaderValues(SystemHeaders.LongPoll);
+			if (StringValues.IsNullOrEmpty(longPollHeader))
 				return true;
 			int longPollSec;
 			if (int.TryParse(longPollHeader, out longPollSec) && longPollSec > 0) {
@@ -721,8 +722,8 @@ namespace EventStore.Core.Services.Transport.Http.Controllers {
 
 		private bool GetResolveLinkTos(HttpEntityManager manager, out bool resolveLinkTos) {
 			resolveLinkTos = true;
-			var onlyMaster = manager.HttpEntity.Request.Headers[SystemHeaders.ResolveLinkTos];
-			if (onlyMaster == null)
+			var onlyMaster = manager.HttpEntity.Request.GetHeaderValues(SystemHeaders.ResolveLinkTos);
+			if (StringValues.IsNullOrEmpty(onlyMaster))
 				return true;
 			if (string.Equals(onlyMaster, "False", StringComparison.OrdinalIgnoreCase)) {
 				resolveLinkTos = false;
@@ -736,8 +737,8 @@ namespace EventStore.Core.Services.Transport.Http.Controllers {
 
 		private bool GetHardDelete(HttpEntityManager manager, out bool hardDelete) {
 			hardDelete = false;
-			var hardDel = manager.HttpEntity.Request.Headers[SystemHeaders.HardDelete];
-			if (hardDel == null)
+			var hardDel = manager.HttpEntity.Request.GetHeaderValues(SystemHeaders.HardDelete);
+			if (StringValues.IsNullOrEmpty(hardDel))
 				return true;
 			if (string.Equals(hardDel, "True", StringComparison.OrdinalIgnoreCase)) {
 				hardDelete = true;
@@ -820,15 +821,14 @@ namespace EventStore.Core.Services.Transport.Http.Controllers {
 		}
 
 		private long? GetETagStreamVersion(HttpEntityManager manager) {
-			var etag = manager.HttpEntity.Request.Headers["If-None-Match"];
-			if (etag.IsNotEmptyString()) {
+			var etag = manager.HttpEntity.Request.GetHeaderValues("If-None-Match");
+			if (!StringValues.IsNullOrEmpty(etag)) {
 				// etag format is version;contenttypehash
-				var splitted = etag.Trim('\"').Split(ETagSeparatorArray);
+				var splitted = etag.ToString().Trim('\"').Split(ETagSeparatorArray);
 				if (splitted.Length == 2) {
 					var typeHash = manager.ResponseCodec.ContentType.GetHashCode()
 						.ToString(CultureInfo.InvariantCulture);
-					long streamVersion;
-					var res = splitted[1] == typeHash && long.TryParse(splitted[0], out streamVersion)
+					var res = splitted[1] == typeHash && long.TryParse(splitted[0], out var streamVersion)
 						? (long?)streamVersion
 						: null;
 					return res;
@@ -839,15 +839,14 @@ namespace EventStore.Core.Services.Transport.Http.Controllers {
 		}
 
 		private static long? GetETagTFPosition(HttpEntityManager manager) {
-			var etag = manager.HttpEntity.Request.Headers["If-None-Match"];
-			if (etag.IsNotEmptyString()) {
+			var etag = manager.HttpEntity.Request.GetHeaderValues("If-None-Match");
+			if (!StringValues.IsNullOrEmpty(etag)) {
 				// etag format is version;contenttypehash
-				var splitted = etag.Trim('\"').Split(ETagSeparatorArray);
+				var splitted = etag.ToString().Trim('\"').Split(ETagSeparatorArray);
 				if (splitted.Length == 2) {
 					var typeHash = manager.ResponseCodec.ContentType.GetHashCode()
 						.ToString(CultureInfo.InvariantCulture);
-					long tfEofPosition;
-					return splitted[1] == typeHash && long.TryParse(splitted[0], out tfEofPosition)
+					return splitted[1] == typeHash && long.TryParse(splitted[0], out var tfEofPosition)
 						? (long?)tfEofPosition
 						: null;
 				}
