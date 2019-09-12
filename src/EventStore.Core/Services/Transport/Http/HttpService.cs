@@ -70,6 +70,7 @@ namespace EventStore.Core.Services.Transport.Http {
 			_disableAuthorization = disableAuthorization;
 		}
 
+		// TODO: JPB this doesn't really belong here but no idea where to move it to...
 		public static void CreateAndSubscribePipeline(IBus bus,
 			HttpAuthenticationProvider[] httpAuthenticationProviders) {
 			Ensure.NotNull(bus, "bus");
@@ -107,9 +108,14 @@ namespace EventStore.Core.Services.Transport.Http {
 		}
 
 		private void RequestReceived(HttpAsyncServer sender, HttpListenerContext context) {
-			var entity = new HttpEntity(new HttpListenerRequestAdapter(context.Request),
-				new HttpListenerResponseAdapter(context.Response), context.User, _logHttpRequests,
-				_advertiseAsAddress, _advertiseAsPort);
+			var request = new HttpListenerRequestAdapter(context.Request);
+			var response = new HttpListenerResponseAdapter(context.Response);
+			var entity = new HttpEntity(request,
+				response, context.User, _logHttpRequests,
+				_advertiseAsAddress, _advertiseAsPort, () => {
+					response.OutputStream.Close();
+					response.Close();
+				});
 			_requestsMultiHandler.Handle(new IncomingHttpRequestMessage(this, entity, _requestsMultiHandler));
 		}
 
