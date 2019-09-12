@@ -10,6 +10,7 @@ using Microsoft.Extensions.Primitives;
 namespace EventStore.Transport.Http.EntityManagement {
 	public class HttpEntity {
 		private readonly bool _logHttpRequests;
+		public readonly Action OnComplete;
 		public readonly Uri RequestedUrl;
 		public readonly Uri ResponseUrl;
 
@@ -18,11 +19,13 @@ namespace EventStore.Transport.Http.EntityManagement {
 		public readonly IPrincipal User;
 
 		public HttpEntity(IHttpRequest request, IHttpResponse response, IPrincipal user,
-			bool logHttpRequests, IPAddress advertiseAsAddress, int advertiseAsPort) {
+			bool logHttpRequests, IPAddress advertiseAsAddress, int advertiseAsPort, Action onComplete) {
 			Ensure.NotNull(request, "request");
 			Ensure.NotNull(response, "response");
+			Ensure.NotNull(onComplete, nameof(onComplete));
 
 			_logHttpRequests = logHttpRequests;
+			OnComplete = onComplete;
 			RequestedUrl = BuildRequestedUrl(request, advertiseAsAddress, advertiseAsPort);
 			ResponseUrl = BuildRequestedUrl(request, advertiseAsAddress, advertiseAsPort, true);
 			Request = request;
@@ -97,18 +100,17 @@ namespace EventStore.Transport.Http.EntityManagement {
 			Response = httpEntity.Response;
 			User = user;
 			_logHttpRequests = logHttpRequests;
+			OnComplete = httpEntity.OnComplete;
 		}
 
 		public HttpEntityManager CreateManager(
 			ICodec requestCodec, ICodec responseCodec, string[] allowedMethods, Action<HttpEntity> onRequestSatisfied) {
 			return new HttpEntityManager(this, allowedMethods, onRequestSatisfied, requestCodec, responseCodec,
-				_logHttpRequests);
+				_logHttpRequests, OnComplete);
 		}
 
-		public HttpEntityManager CreateManager() {
-			return new HttpEntityManager(this, Array.Empty<string>(), entity => { }, Codec.NoCodec, Codec.NoCodec,
-				_logHttpRequests);
-		}
+		public HttpEntityManager CreateManager()
+			=> CreateManager(Codec.NoCodec, Codec.NoCodec, Array.Empty<string>(), _ => { });
 
 		public HttpEntity SetUser(IPrincipal user) {
 			return new HttpEntity(this, user, _logHttpRequests);

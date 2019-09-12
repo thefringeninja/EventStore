@@ -41,16 +41,18 @@ namespace EventStore.Transport.Http.EntityManagement {
 			_compressionBufferManager = new BufferManager(20, 50 * 1024); //create 20 50KB buffers (1MB total)
 
 		private readonly bool _logHttpRequests;
+		private readonly Action _onComplete;
 
 		public readonly DateTime TimeStamp;
 
 
-		internal HttpEntityManager(
-			HttpEntity httpEntity, string[] allowedMethods, Action<HttpEntity> onRequestSatisfied, ICodec requestCodec,
-			ICodec responseCodec, bool logHttpRequests) {
+		internal HttpEntityManager(HttpEntity httpEntity, string[] allowedMethods,
+			Action<HttpEntity> onRequestSatisfied, ICodec requestCodec,
+			ICodec responseCodec, bool logHttpRequests, Action onComplete) {
 			Ensure.NotNull(httpEntity, "httpEntity");
 			Ensure.NotNull(allowedMethods, "allowedMethods");
 			Ensure.NotNull(onRequestSatisfied, "onRequestSatisfied");
+			Ensure.NotNull(onComplete, nameof(onComplete));
 
 			HttpEntity = httpEntity;
 			TimeStamp = DateTime.UtcNow;
@@ -63,6 +65,7 @@ namespace EventStore.Transport.Http.EntityManagement {
 			_requestedUrl = httpEntity.RequestedUrl;
 			_responseContentEncoding = GetRequestedContentEncoding(httpEntity);
 			_logHttpRequests = logHttpRequests;
+			_onComplete = onComplete;
 
 			if (HttpEntity.Request != null && HttpEntity.Request.ContentLength64 == 0) {
 				LogRequest(new byte[0]);
@@ -237,7 +240,7 @@ namespace EventStore.Transport.Http.EntityManagement {
 			if (response == null || response.Length == 0) {
 				LogResponse(new byte[0]);
 				SetResponseLength(0);
-				HttpEntity.Response.OutputStream.Close();
+				_onComplete();
 				CloseConnection(onError);
 			} else {
 				LogResponse(response);
@@ -298,11 +301,10 @@ namespace EventStore.Transport.Http.EntityManagement {
 								task.Result,
 								HttpEntity.Response.OutputStream,
 								HttpEntity.Response,
-								copier => { Helper.EatException(HttpEntity.Response.Close); }).Start();
+								copier => { Helper.EatException(_onComplete); }).Start();
 						});
 				} else {
-					Helper.EatException(HttpEntity.Response.OutputStream.Close);
-					Helper.EatException(HttpEntity.Response.Close);
+					Helper.EatException(_onComplete);
 				}
 			} catch (Exception e) {
 				Log.ErrorException(e, "Failed to set up forwarded response parameters for '{requestedUrl}'.",
@@ -362,7 +364,7 @@ namespace EventStore.Transport.Http.EntityManagement {
 		private void CloseConnection(Action<Exception> onError) {
 			try {
 				_onRequestSatisfied(HttpEntity);
-				HttpEntity.Response.Close();
+				_onComplete();
 			} catch (Exception e) {
 				onError(e);
 			}

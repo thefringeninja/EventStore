@@ -15,5 +15,4 @@
 		<ProjectReference Include="..\EventStore.BufferManagement\EventStore.BufferManagement.csproj"/>
 		<ProjectReference Include="..\EventStore.Common\EventStore.Common.csproj"/>
 	</ItemGroup>
-	<ItemGroup/>
 </Project>
