@@ -133,7 +133,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			var queue = new QueuedHandlerThreadPool(bus, "Test", true, TimeSpan.FromMilliseconds(50));
 			var multiQueuedHandler = new MultiQueuedHandler(new IQueuedHandler[] {queue}, null);
 			var providers = new HttpAuthenticationProvider[] {new AnonymousHttpAuthenticationProvider()};
-			var httpService = new HttpService(ServiceAccessibility.Public, inputBus,
+			var httpService = new KestrelHttpService(ServiceAccessibility.Public, inputBus,
 				new TrieUriRouter(), multiQueuedHandler, false, null, 0, false, "http://localhost:12345/");
 			HttpService.CreateAndSubscribePipeline(bus, providers);
 

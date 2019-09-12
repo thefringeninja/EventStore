@@ -21,7 +21,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		}
 
 		private InMemoryBus _bus;
-		private HttpService _service;
+		private IHttpService _service;
 		private MultiQueuedHandler _multiQueuedHandler;
 		private HttpAsyncClient _client;
 		private TimeSpan _timeout;
@@ -45,7 +45,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 				var httpAuthenticationProviders = new HttpAuthenticationProvider[]
 					{new AnonymousHttpAuthenticationProvider()};
 
-				_service = new HttpService(ServiceAccessibility.Private, _bus, new NaiveUriRouter(),
+				_service = new KestrelHttpService(ServiceAccessibility.Private, _bus, new NaiveUriRouter(),
 					_multiQueuedHandler, false, null, 0, false, _serverEndPoint.ToHttpUrl(EndpointExtensions.HTTP_SCHEMA));
 				HttpService.CreateAndSubscribePipeline(pipelineBus, httpAuthenticationProviders);
 				_client = new HttpAsyncClient(_timeout);
@@ -66,7 +66,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			_bus.Publish(message);
 		}
 
-		public Tuple<bool, string> StartServiceAndSendRequest(Action<HttpService> bootstrap,
+		public Tuple<bool, string> StartServiceAndSendRequest(Action<IHttpService> bootstrap,
 			string requestUrl,
 			Func<HttpResponse, bool> verifyResponse) {
 			_bus.Publish(new SystemMessage.SystemInit());

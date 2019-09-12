@@ -53,11 +53,11 @@ namespace EventStore.Core {
 			get { return _mainBus; }
 		}
 
-		public HttpService InternalHttpService {
+		public IHttpService InternalHttpService {
 			get { return _internalHttpService; }
 		}
 
-		public HttpService ExternalHttpService {
+		public IHttpService ExternalHttpService {
 			get { return _externalHttpService; }
 		}
 
@@ -83,8 +83,8 @@ namespace EventStore.Core {
 
 		private readonly ClusterVNodeController _controller;
 		private readonly TimerService _timerService;
-		private readonly HttpService _internalHttpService;
-		private readonly HttpService _externalHttpService;
+		private readonly KestrelHttpService _internalHttpService;
+		private readonly KestrelHttpService _externalHttpService;
 		private readonly ITimeProvider _timeProvider;
 		private readonly ISubsystem[] _subsystems;
 		private readonly ManualResetEvent _shutdownEvent = new ManualResetEvent(false);
@@ -384,7 +384,7 @@ namespace EventStore.Core {
 			electController.SubscribeSenders(httpPipe);
 
 			// EXTERNAL HTTP
-			_externalHttpService = new HttpService(ServiceAccessibility.Public, _mainQueue, new TrieUriRouter(),
+			_externalHttpService = new KestrelHttpService(ServiceAccessibility.Public, _mainQueue, new TrieUriRouter(),
 				_workersHandler, vNodeSettings.LogHttpRequests, vNodeSettings.GossipAdvertiseInfo.AdvertiseExternalIPAs,
 				vNodeSettings.GossipAdvertiseInfo.AdvertiseExternalHttpPortAs, vNodeSettings.DisableFirstLevelHttpAuthorization, vNodeSettings.ExtHttpPrefixes);
 			_externalHttpService.SetupController(persistentSubscriptionController);
@@ -404,7 +404,7 @@ namespace EventStore.Core {
 			_mainBus.Subscribe<HttpMessage.PurgeTimedOutRequests>(_externalHttpService);
 			// INTERNAL HTTP
 			if (!isSingleNode) {
-				_internalHttpService = new HttpService(ServiceAccessibility.Private, _mainQueue, new TrieUriRouter(),
+				_internalHttpService = new KestrelHttpService(ServiceAccessibility.Private, _mainQueue, new TrieUriRouter(),
 					_workersHandler, vNodeSettings.LogHttpRequests,
 					vNodeSettings.GossipAdvertiseInfo.AdvertiseInternalIPAs,
 					vNodeSettings.GossipAdvertiseInfo.AdvertiseInternalHttpPortAs, vNodeSettings.DisableFirstLevelHttpAuthorization, vNodeSettings.IntHttpPrefixes);
