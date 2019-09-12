@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using EventStore.Transport.Http.EntityManagement;
 
 namespace EventStore.Core.Services.Transport.Http {
@@ -15,7 +16,11 @@ namespace EventStore.Core.Services.Transport.Http {
 	}
 
 	public interface IHttpService {
+		IEnumerable<string> ListenPrefixes { get; }
 		ServiceAccessibility Accessibility { get; }
+
+		List<UriToActionMatch> GetAllUriMatches(Uri uri);
+		void SetupController(IHttpController controller);
 
 		void RegisterCustomAction(ControllerAction action,
 			Func<HttpEntityManager, UriTemplateMatch, RequestParams> handler);

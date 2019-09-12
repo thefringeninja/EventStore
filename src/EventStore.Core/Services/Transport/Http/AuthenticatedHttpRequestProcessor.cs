@@ -10,7 +10,6 @@ using EventStore.Core.Services.Transport.Http.Messages;
 using EventStore.Transport.Http;
 using EventStore.Transport.Http.Codecs;
 using EventStore.Transport.Http.EntityManagement;
-using Microsoft.Extensions.Primitives;
 using HttpStatusCode = EventStore.Transport.Http.HttpStatusCode;
 
 namespace EventStore.Core.Services.Transport.Http {
@@ -52,7 +51,7 @@ namespace EventStore.Core.Services.Transport.Http {
 			ProcessRequest(message.HttpService, message.Entity);
 		}
 
-		private void ProcessRequest(HttpService httpService, HttpEntity httpEntity) {
+		private void ProcessRequest(IHttpService httpService, HttpEntity httpEntity) {
 			var request = httpEntity.Request;
 			try {
 				var allMatches = httpService.GetAllUriMatches(request.Url);
