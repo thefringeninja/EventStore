@@ -90,6 +90,7 @@ namespace EventStore.Transport.Http.EntityManagement {
 			Response = null;
 			User = user;
 			_logHttpRequests = logHttpRequests;
+			OnComplete = () => { };
 		}
 
 		private HttpEntity(HttpEntity httpEntity, IPrincipal user, bool logHttpRequests) {
