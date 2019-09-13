@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 
 namespace EventStore.Transport.Http.EntityManagement {
@@ -13,7 +14,7 @@ namespace EventStore.Transport.Http.EntityManagement {
 			_inner = inner;
 		}
 
-		public string[] AcceptTypes => throw new NotImplementedException();
+		public string[] AcceptTypes => _inner.Headers["accept"];
 
 		public long ContentLength64 => _inner.ContentLength ?? 0;
 
@@ -23,12 +24,12 @@ namespace EventStore.Transport.Http.EntityManagement {
 
 		public Stream InputStream => _inner.Body;
 
-		public string RawUrl => throw new NotImplementedException();
+		public string RawUrl => _inner.HttpContext.Features.Get<IHttpRequestFeature>().RawTarget;
 
 		public IPEndPoint RemoteEndPoint => new IPEndPoint(
 			_inner.HttpContext.Connection.RemoteIpAddress, _inner.HttpContext.Connection.RemotePort);
 
-		public Uri Url => throw new NotImplementedException();
+		public Uri Url => new Uri(RawUrl);
 
 		public IEnumerable<string> GetQueryStringKeys() => _inner.Query.Keys;
 
