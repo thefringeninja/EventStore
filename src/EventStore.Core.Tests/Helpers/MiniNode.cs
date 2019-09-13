@@ -98,7 +98,9 @@ namespace EventStore.Core.Tests.Helpers {
 				.WithExternalTcpOn(TcpEndPoint)
 				.WithExternalSecureTcpOn(TcpSecEndPoint)
 				.WithInternalHttpOn(IntHttpEndPoint)
+				.AddInternalHttpPrefix($"http://{IntHttpEndPoint.Address}:{IntHttpEndPoint.Port}")
 				.WithExternalHttpOn(ExtHttpEndPoint)
+				.AddExternalHttpPrefix($"http://{ExtHttpEndPoint.Address}:{ExtHttpEndPoint.Port}")
 				.WithTfChunkSize(chunkSize ?? ChunkSize)
 				.WithTfChunksCacheSize(cachedChunkSize ?? CachedChunkSize)
 				.WithServerCertificate(ssl_connections.GetCertificate())
@@ -119,7 +121,8 @@ namespace EventStore.Core.Tests.Helpers {
 				.AdvertiseExternalIPAs(advertisedExtIPAddress)
 				.AdvertiseExternalHttpPortAs(advertisedExtHttpPort)
 				.WithHashCollisionReadLimitOf(hashCollisionReadLimit)
-				.WithIndexBitnessVersion(indexBitnessVersion);
+				.WithIndexBitnessVersion(indexBitnessVersion)
+				.DontAddInterfacePrefixes();
 
 			if (enableTrustedAuth)
 				builder.EnableTrustedAuth();
