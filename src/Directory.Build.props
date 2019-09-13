@@ -7,4 +7,7 @@
 		<IntermediateOutputPath>$(MSBuildThisFileDirectory)\..\obj\$(Configuration)\$(MSBuildProjectName)\</IntermediateOutputPath>
 		<LangVersion>7.2</LangVersion>
 	</PropertyGroup>
+	<ItemGroup>
+		<Reference Include="netstandard" />
+	</ItemGroup>
 </Project>
