@@ -74,7 +74,6 @@ namespace EventStore.Core.Services.Transport.Http {
 			_host = new WebHostBuilder()
 				.UseStartup(new EventStoreStartup(this))
 				.UseKestrel()
-				.UseLibuv()
 				.UseUrls(prefixes)
 				.Build();
 		}

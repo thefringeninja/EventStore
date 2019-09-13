@@ -29,7 +29,7 @@ namespace EventStore.Transport.Http.EntityManagement {
 		public IPEndPoint RemoteEndPoint => new IPEndPoint(
 			_inner.HttpContext.Connection.RemoteIpAddress, _inner.HttpContext.Connection.RemotePort);
 
-		public Uri Url => new Uri(RawUrl);
+		public Uri Url => new Uri(new Uri($"{_inner.Scheme}://{_inner.Host}"), RawUrl);
 
 		public IEnumerable<string> GetQueryStringKeys() => _inner.Query.Keys;
 

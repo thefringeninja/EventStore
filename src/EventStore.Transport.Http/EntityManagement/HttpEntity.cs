@@ -116,9 +116,5 @@ namespace EventStore.Transport.Http.EntityManagement {
 		public HttpEntity SetUser(IPrincipal user) {
 			return new HttpEntity(this, user, _logHttpRequests);
 		}
-
-		public static HttpEntity Test(IPrincipal user) {
-			return new HttpEntity(user, false);
-		}
 	}
 }
