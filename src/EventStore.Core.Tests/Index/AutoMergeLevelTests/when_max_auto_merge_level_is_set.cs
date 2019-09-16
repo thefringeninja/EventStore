@@ -11,7 +11,7 @@ using NUnit.Framework;
 
 namespace EventStore.Core.Tests.Index.AutoMergeLevelTests {
 	[TestFixture]
-	public class when_max_auto_merge_level_is_set : SpecificationWithDirectoryPerTestFixture {
+	public abstract class when_max_auto_merge_level_is_set : SpecificationWithDirectoryPerTestFixture {
 		protected readonly int _maxAutoMergeLevel;
 		protected string _filename;
 		protected IndexMap _map;
