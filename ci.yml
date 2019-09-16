@@ -5,9 +5,17 @@ jobs:
 - job: windows_x64
   strategy:
     matrix:
-      DEBUG:
+      DEBUG_KESTREL:
+        UseKestrel: true
         Configuration: debug
-      RELEASE:
+      RELEASE_KESTREL:
+        UseKestrel: true
+        Configuration: release
+      DEBUG_HTTPLISTENER:
+        UseKestrel: false
+        Configuration: debug
+      RELEASE_HTTPLISTENER:
+        UseKestrel: false
         Configuration: release
   displayName: 'Windows x64'
   timeoutInMinutes: 30
@@ -25,6 +33,8 @@ jobs:
           dotnet test -v normal -c $(Configuration) --no-build --logger trx $_ -- RunConfiguration.TargetPlatform=x64
           if (-Not $?) { throw "Exit code is $?" }
         }
+    env:
+      UseKestrel: $(UseKestrel)
     workingDirectory: $(Build.SourcesDirectory)
     displayName: Test
     errorActionPreference: Stop
@@ -46,9 +56,17 @@ jobs:
 - job: macos_x64
   strategy:
     matrix:
-      DEBUG:
+      DEBUG_KESTREL:
+        UseKestrel: true
         Configuration: debug
-      RELEASE:
+      RELEASE_KESTREL:
+        UseKestrel: true
+        Configuration: release
+      DEBUG_HTTPLISTENER:
+        UseKestrel: false
+        Configuration: debug
+      RELEASE_HTTPLISTENER:
+        UseKestrel: false
         Configuration: release
   displayName: 'macOS x64'
   timeoutInMinutes: 20
@@ -63,6 +81,7 @@ jobs:
     displayName: Compile
   - bash: find ./src -maxdepth 1 -type d -name "*.Tests" -print0| xargs -0 -n1 dotnet test -v normal -c $(Configuration) --logger trx
     env:
+      UseKestrel: $(UseKestrel)
       FrameworkPathOverride: /Library/Frameworks/Mono.framework/Versions/5.16.0/lib/mono/4.7.1-api
     displayName: Run Tests
   - task: PublishTestResults@2
@@ -83,11 +102,18 @@ jobs:
 - job: centos_x64
   strategy:
     matrix:
-      DEBUG:
+      DEBUG_KESTREL:
+        UseKestrel: true
         Configuration: debug
-      RELEASE:
+      RELEASE_KESTREL:
+        UseKestrel: true
         Configuration: release
-
+      DEBUG_HTTPLISTENER:
+        UseKestrel: false
+        Configuration: debug
+      RELEASE_HTTPLISTENER:
+        UseKestrel: false
+        Configuration: release
   displayName: Centos 7 x64
   timeoutInMinutes: 20
   pool:
@@ -118,6 +144,7 @@ jobs:
         envVars: |
           FrameworkPathOverride=/usr/lib/mono/4.7.1-api
           EventStoreBuildConfig=$(Configuration)
+          UseKestrel=$(UseKestrel)
         containerCommand: ci/ap-test-linux.sh
         workingDirectory: '/work'
     - task: PublishTestResults@2
@@ -138,9 +165,17 @@ jobs:
 - job: ubuntu_x64
   strategy:
     matrix:
-      DEBUG:
+      DEBUG_KESTREL:
+        UseKestrel: true
         Configuration: debug
-      RELEASE:
+      RELEASE_KESTREL:
+        UseKestrel: true
+        Configuration: release
+      DEBUG_HTTPLISTENER:
+        UseKestrel: false
+        Configuration: debug
+      RELEASE_HTTPLISTENER:
+        UseKestrel: false
         Configuration: release
 
   displayName: Ubuntu 14.04 x64
@@ -173,6 +208,7 @@ jobs:
         envVars: |
           FrameworkPathOverride=/usr/lib/mono/4.7.1-api
           EventStoreBuildConfig=$(Configuration)
+          UseKestrel=$(UseKestrel)
         containerCommand: ci/ap-test-linux.sh
         workingDirectory: '/work'
     - task: PublishTestResults@2

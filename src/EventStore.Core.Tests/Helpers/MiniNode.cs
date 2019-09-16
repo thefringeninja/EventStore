@@ -47,6 +47,10 @@ namespace EventStore.Core.Tests.Helpers {
 		public readonly TFChunkDb Db;
 		public readonly string DbPath;
 
+		public bool UseKestrel => bool.TryParse(
+			                          Environment.GetEnvironmentVariable("UseKestrel"), out var useKestrel) &&
+		                          useKestrel;
+
 		public MiniNode(string pathname,
 			int? tcpPort = null, int? tcpSecPort = null, int? httpPort = null,
 			ISubsystem[] subsystems = null,
@@ -98,9 +102,9 @@ namespace EventStore.Core.Tests.Helpers {
 				.WithExternalTcpOn(TcpEndPoint)
 				.WithExternalSecureTcpOn(TcpSecEndPoint)
 				.WithInternalHttpOn(IntHttpEndPoint)
-				.AddInternalHttpPrefix($"http://{IntHttpEndPoint.Address}:{IntHttpEndPoint.Port}")
+				.AddInternalHttpPrefix($"http://{IntHttpEndPoint.Address}:{IntHttpEndPoint.Port}/")
 				.WithExternalHttpOn(ExtHttpEndPoint)
-				.AddExternalHttpPrefix($"http://{ExtHttpEndPoint.Address}:{ExtHttpEndPoint.Port}")
+				.AddExternalHttpPrefix($"http://{ExtHttpEndPoint.Address}:{ExtHttpEndPoint.Port}/")
 				.WithTfChunkSize(chunkSize ?? ChunkSize)
 				.WithTfChunksCacheSize(cachedChunkSize ?? CachedChunkSize)
 				.WithServerCertificate(ssl_connections.GetCertificate())
@@ -123,6 +127,12 @@ namespace EventStore.Core.Tests.Helpers {
 				.WithHashCollisionReadLimitOf(hashCollisionReadLimit)
 				.WithIndexBitnessVersion(indexBitnessVersion)
 				.DontAddInterfacePrefixes();
+
+			if (UseKestrel) {
+				builder.UseKestrel();
+			} else {
+				builder.UseHttpListener();
+			}
 
 			if (enableTrustedAuth)
 				builder.EnableTrustedAuth();
