@@ -85,6 +85,7 @@ namespace EventStore.Core.Cluster.Settings {
 		public readonly bool FaultOutOfOrderProjections;
 		public readonly bool StructuredLog;
 		public readonly bool ReadOnlyReplica;
+		public readonly bool UseKestrel;
 
 		public ClusterVNodeSettings(Guid instanceId, int debugIndex,
 			IPEndPoint internalTcpEndPoint,
@@ -155,7 +156,8 @@ namespace EventStore.Core.Cluster.Settings {
 			bool structuredLog = false,
 			int maxAutoMergeIndexLevel = 1000,
 			bool disableFirstLevelHttpAuthorization = false,
-			bool readOnlyReplica = false) {
+			bool readOnlyReplica = false,
+			bool useKestrel = false) {
 			Ensure.NotEmptyGuid(instanceId, "instanceId");
 			Ensure.NotNull(internalTcpEndPoint, "internalTcpEndPoint");
 			Ensure.NotNull(externalTcpEndPoint, "externalTcpEndPoint");
@@ -259,6 +261,7 @@ namespace EventStore.Core.Cluster.Settings {
 			FaultOutOfOrderProjections = faultOutOfOrderProjections;
 			StructuredLog = structuredLog;
 			ReadOnlyReplica = readOnlyReplica;
+			UseKestrel = useKestrel;
 		}
 
 		public override string ToString() {

@@ -137,6 +137,7 @@ namespace EventStore.Core {
 		private bool _gossipOnSingleNode;
 
 		private bool _readOnlyReplica;
+		private bool _useKestrel;
 
 		// ReSharper restore FieldCanBeMadeReadOnly.Local
 
@@ -1224,6 +1225,24 @@ namespace EventStore.Core {
 
 			return this;
 		}
+		/// Use Kestrel
+		/// </summary>
+		/// <returns>A <see cref="VNodeBuilder"/> with the options set</returns>
+		public VNodeBuilder UseKestrel() {
+			_useKestrel = true;
+
+			return this;
+		}
+
+		/// <summary>
+		/// Use Http Listener
+		/// </summary>
+		/// <returns>A <see cref="VNodeBuilder"/> with the options set</returns>
+		public VNodeBuilder UseHttpListener() {
+			_useKestrel = false;
+
+			return this;
+		}
 
 		private void EnsureHttpPrefixes() {
 			if (_intHttpPrefixes == null || _intHttpPrefixes.IsEmpty())
@@ -1421,7 +1440,8 @@ namespace EventStore.Core {
 				_structuredLog,
 				_maxAutoMergeIndexLevel,
 				_disableFirstLevelHttpAuthorization,
-				_readOnlyReplica);
+				_readOnlyReplica,
+				_useKestrel);
 
 			var infoController = new InfoController(options, _projectionType);
 
