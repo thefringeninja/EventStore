@@ -18,7 +18,7 @@ jobs:
     displayName: 'Install .NET Core 3.x SDK'
     inputs:
       packageType: 'sdk'
-      version: '3.0.100-preview9-014004'
+      version: '3.0.100-rc1-014190'
       includePreviewVersions: true
   - powershell: |
       dotnet build -c $(Configuration) src\EventStore.sln
@@ -65,7 +65,7 @@ jobs:
     displayName: 'Install .NET Core 3.x SDK'
     inputs:
       packageType: 'sdk'
-      version: '3.0.100-preview9-014004'
+      version: '3.0.100-rc1-014190'
       includePreviewVersions: true
   - bash: dotnet build -c $(Configuration) src/EventStore.sln
     displayName: Compile
@@ -103,7 +103,7 @@ jobs:
       displayName: 'Install .NET Core 3.x SDK'
       inputs:
         packageType: 'sdk'
-        version: '3.0.100-preview9-014004'
+        version: '3.0.100-rc1-014190'
         includePreviewVersions: true
     - bash: dotnet build -c $(Configuration) src/EventStore.sln
       displayName: Compile
