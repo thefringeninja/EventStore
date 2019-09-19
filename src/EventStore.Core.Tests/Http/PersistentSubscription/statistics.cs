@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using EventStore.ClientAPI;
 using EventStore.Core.Tests.Http.BasicAuthentication.basic_authentication;
 using EventStore.Transport.Http;
@@ -75,7 +76,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 
 	[TestFixture, Category("LongRunning")]
 	class when_getting_non_existent_single_statistics : with_admin_user {
-		private HttpWebResponse _response;
+		private HttpResponseMessage _response;
 
 		protected override void Given() {
 		}
@@ -93,7 +94,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 
 	[TestFixture, Category("LongRunning")]
 	class when_getting_non_existent_stream_statistics : with_admin_user {
-		private HttpWebResponse _response;
+		private HttpResponseMessage _response;
 
 		protected override void Given() {
 		}

@@ -143,7 +143,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 					return Task.CompletedTask;
 				},
 				(sub, reason, exception) => {
-					throw new Exception(string.Format("Subscription dropped (reason:{0}, exception:{1}).", reason,
+					Console.WriteLine(string.Format("Subscription dropped (reason:{0}, exception:{1}).", reason,
 						exception));
 				},
 				userCredentials: DefaultData.AdminCredentials,
@@ -154,7 +154,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			}
 		}
 	}
-
+	
 
 	[TestFixture, Category("LongRunning")]
 	public class happy_case_catching_up_to_normal_events_manual_ack : SpecificationWithMiniNode {

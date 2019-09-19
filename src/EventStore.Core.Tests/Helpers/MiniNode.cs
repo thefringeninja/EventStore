@@ -128,12 +128,6 @@ namespace EventStore.Core.Tests.Helpers {
 				.WithIndexBitnessVersion(indexBitnessVersion)
 				.DontAddInterfacePrefixes();
 
-			if (UseKestrel) {
-				builder.UseKestrel();
-			} else {
-				builder.UseHttpListener();
-			}
-
 			if (enableTrustedAuth)
 				builder.EnableTrustedAuth();
 			if (disableFlushToDisk)

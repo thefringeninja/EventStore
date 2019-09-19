@@ -25,7 +25,7 @@ namespace EventStore.Core.Tests.Http.BasicAuthentication {
 
 			[Test]
 			public void does_not_return_www_authenticate_header() {
-				Assert.Null(_lastResponse.Headers[HttpResponseHeader.WwwAuthenticate]);
+				Assert.IsEmpty(_lastResponse.Headers.WwwAuthenticate);
 			}
 		}
 
@@ -46,7 +46,7 @@ namespace EventStore.Core.Tests.Http.BasicAuthentication {
 
 			[Test]
 			public void returns_www_authenticate_header() {
-				Assert.NotNull(_lastResponse.Headers[HttpResponseHeader.WwwAuthenticate]);
+				Assert.NotNull(_lastResponse.Headers.WwwAuthenticate);
 			}
 		}
 

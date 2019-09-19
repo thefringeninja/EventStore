@@ -384,17 +384,11 @@ namespace EventStore.Core {
 			electController.SubscribeSenders(httpPipe);
 
 			// EXTERNAL HTTP
-			_externalHttpService = vNodeSettings.UseKestrel
-				? (IHttpService)new KestrelHttpService(ServiceAccessibility.Public, _mainQueue, new TrieUriRouter(),
-					_workersHandler, vNodeSettings.LogHttpRequests,
-					vNodeSettings.GossipAdvertiseInfo.AdvertiseExternalIPAs,
-					vNodeSettings.GossipAdvertiseInfo.AdvertiseExternalHttpPortAs,
-					vNodeSettings.DisableFirstLevelHttpAuthorization, vNodeSettings.ExtHttpPrefixes)
-				: new HttpService(ServiceAccessibility.Public, _mainQueue, new TrieUriRouter(),
-					_workersHandler, vNodeSettings.LogHttpRequests,
-					vNodeSettings.GossipAdvertiseInfo.AdvertiseExternalIPAs,
-					vNodeSettings.GossipAdvertiseInfo.AdvertiseExternalHttpPortAs,
-					vNodeSettings.DisableFirstLevelHttpAuthorization, vNodeSettings.ExtHttpPrefixes);
+			_externalHttpService = new KestrelHttpService(ServiceAccessibility.Public, _mainQueue, new TrieUriRouter(),
+				_workersHandler, vNodeSettings.LogHttpRequests,
+				vNodeSettings.GossipAdvertiseInfo.AdvertiseExternalIPAs,
+				vNodeSettings.GossipAdvertiseInfo.AdvertiseExternalHttpPortAs,
+				vNodeSettings.DisableFirstLevelHttpAuthorization, vNodeSettings.ExtHttpPrefixes);
 			_externalHttpService.SetupController(persistentSubscriptionController);
 			if (vNodeSettings.AdminOnPublic)
 				_externalHttpService.SetupController(adminController);
@@ -412,19 +406,12 @@ namespace EventStore.Core {
 			_mainBus.Subscribe<HttpMessage.PurgeTimedOutRequests>(_externalHttpService);
 			// INTERNAL HTTP
 			if (!isSingleNode) {
-				_internalHttpService = vNodeSettings.UseKestrel
-					? (IHttpService)new KestrelHttpService(ServiceAccessibility.Private, _mainQueue,
-						new TrieUriRouter(),
-						_workersHandler, vNodeSettings.LogHttpRequests,
-						vNodeSettings.GossipAdvertiseInfo.AdvertiseInternalIPAs,
-						vNodeSettings.GossipAdvertiseInfo.AdvertiseInternalHttpPortAs,
-						vNodeSettings.DisableFirstLevelHttpAuthorization, vNodeSettings.IntHttpPrefixes)
-					: new HttpService(ServiceAccessibility.Private, _mainQueue,
-						new TrieUriRouter(),
-						_workersHandler, vNodeSettings.LogHttpRequests,
-						vNodeSettings.GossipAdvertiseInfo.AdvertiseInternalIPAs,
-						vNodeSettings.GossipAdvertiseInfo.AdvertiseInternalHttpPortAs,
-						vNodeSettings.DisableFirstLevelHttpAuthorization, vNodeSettings.IntHttpPrefixes);
+				_internalHttpService = new KestrelHttpService(ServiceAccessibility.Private, _mainQueue,
+					new TrieUriRouter(),
+					_workersHandler, vNodeSettings.LogHttpRequests,
+					vNodeSettings.GossipAdvertiseInfo.AdvertiseInternalIPAs,
+					vNodeSettings.GossipAdvertiseInfo.AdvertiseInternalHttpPortAs,
+					vNodeSettings.DisableFirstLevelHttpAuthorization, vNodeSettings.IntHttpPrefixes);
 				_internalHttpService.SetupController(adminController);
 				_internalHttpService.SetupController(pingController);
 				_internalHttpService.SetupController(infoController);

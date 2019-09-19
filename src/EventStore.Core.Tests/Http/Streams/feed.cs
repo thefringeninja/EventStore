@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
-using System.Xml;
 using System.Xml.Linq;
 using EventStore.ClientAPI;
 using EventStore.ClientAPI.Common;
-using EventStore.ClientAPI.SystemData;
 using EventStore.Core.Tests.ClientAPI.Helpers;
 using EventStore.Core.Tests.Helpers;
-using EventStore.Core.TransactionLog.Chunks;
 using EventStore.Transport.Http;
 using NUnit.Framework;
 using Newtonsoft.Json.Linq;
-using System.Linq;
 using HttpStatusCode = System.Net.HttpStatusCode;
 using EventStore.Core.Tests.Http.Users.users;
 
@@ -35,7 +33,7 @@ namespace EventStore.Core.Tests.Http.Streams {
 					TestStream,
 					new[] {new {EventId = Guid.NewGuid(), EventType = "event-type", Data = new {Number = i}}});
 				Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
-				return response.Headers[HttpResponseHeader.Location];
+				return response.Headers.GetLocationAsString();
 			}
 
 			protected string GetLink(JObject feed, string relation) {
@@ -209,7 +207,8 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 			[Test]
 			public void the_response_is_not_cachable() {
-				Assert.AreEqual("max-age=0, no-cache, must-revalidate", _lastResponse.Headers["Cache-Control"]);
+				Assert.AreEqual(CacheControlHeaderValue.Parse("max-age=0, no-cache, must-revalidate"),
+					_lastResponse.Headers.CacheControl);
 			}
 		}
 
@@ -622,8 +621,7 @@ namespace EventStore.Core.Tests.Http.Streams {
 			protected override void When() {
 				_feed = GetJson<JObject>(TestStream, accept: ContentType.AtomJson);
 				var etag = _feed.Value<string>("eTag");
-				var headers = new NameValueCollection();
-				headers.Add("If-None-Match", etag);
+				var headers = new NameValueCollection {{"If-None-Match", EntityTagHeaderValue.Parse($@"""{etag}""").Tag}};
 				_feed = GetJson<JObject>(TestStream, accept: ContentType.AtomJson, headers: headers);
 			}
 

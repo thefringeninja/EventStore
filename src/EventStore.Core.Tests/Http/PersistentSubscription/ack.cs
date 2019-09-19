@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using Newtonsoft.Json.Linq;
 using System.Linq;
+using System.Net.Http;
 using HttpStatusCode = System.Net.HttpStatusCode;
 using EventStore.Transport.Http;
 
@@ -15,7 +16,7 @@ using EventStore.Transport.Http;
 
 namespace EventStore.Core.Tests.Http.PersistentSubscription {
 	class when_acking_a_message : with_subscription_having_events {
-		private HttpWebResponse _response;
+		private HttpResponseMessage _response;
 		private string _ackLink;
 
 		protected override void Given() {
@@ -31,7 +32,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 
 		[TearDown]
 		public void TearDown() {
-			_response.Close();
+			_response.Dispose();
 		}
 
 		protected override void When() {
@@ -45,7 +46,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 	}
 
 	class when_acking_messages : with_subscription_having_events {
-		private HttpWebResponse _response;
+		private HttpResponseMessage _response;
 		private string _ackAllLink;
 
 		protected override void Given() {
@@ -61,7 +62,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 
 		[TearDown]
 		public void TearDown() {
-			_response.Close();
+			_response.Dispose();
 		}
 
 		protected override void When() {

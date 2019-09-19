@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using EventStore.ClientAPI;
+using EventStore.Common.Utils;
 using EventStore.Core.Services;
 using EventStore.Core.Tests.Http.Users;
 using NUnit.Framework;
@@ -10,7 +13,7 @@ namespace EventStore.Core.Tests.Http.StreamSecurity {
 	namespace stream_access {
 		[TestFixture, Category("LongRunning")]
 		class when_creating_a_secured_stream_by_posting_metadata : SpecificationWithUsers {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void When() {
 				var metadata =
@@ -52,25 +55,18 @@ namespace EventStore.Core.Tests.Http.StreamSecurity {
 			[Test]
 			public void accepts_post_event_as_authorized_user_by_trusted_auth() {
 				var uri = MakeUrl(TestStream);
-				var request2 = WebRequest.Create(uri);
-				var httpWebRequest = (HttpWebRequest)request2;
-				httpWebRequest.ConnectionGroupName = TestStream;
-				httpWebRequest.Method = "POST";
-				httpWebRequest.ContentType = "application/vnd.eventstore.events+json";
-				httpWebRequest.UseDefaultCredentials = false;
-				httpWebRequest.Headers.Add("ES-TrustedAuth", "root; admin, other");
-				httpWebRequest.GetRequestStream()
-					.WriteJson(
-						new[] {
-							new {
-								EventId = Guid.NewGuid(),
-								EventType = "event-type",
-								Data = new {Some = "Data"}
-							}
-						});
-				var request = httpWebRequest;
-				var httpWebResponse = GetRequestResponse(request);
-				var response = httpWebResponse;
+
+				var request = new HttpRequestMessage(HttpMethod.Post, uri) {
+					Headers = {{"ES-TrustedAuth", "root; admin, other"}},
+					Content = new ByteArrayContent(
+						new[] {new {EventId = Guid.NewGuid(), EventType = "event-type", Data = new {Some = "Data"}}}
+							.ToJsonBytes()) {
+						Headers = {
+							ContentType = MediaTypeHeaderValue.Parse("application/vnd.eventstore.events+json")
+						}
+					}
+				};
+				var response = GetRequestResponse(request);
 				Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
 			}
 		}

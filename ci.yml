@@ -22,6 +22,7 @@ jobs:
   pool:
     vmImage: 'vs2017-win2016'
   steps:
+  - powershell: docker pull mcr.microsoft.com/dotnet/core/sdk:3.0.100-rc1-nanoserver-1903
   - powershell: |
       dotnet build -c $(Configuration) src\EventStore.sln
       if (-Not $?) { throw "Exit code is $?" }
@@ -42,7 +43,7 @@ jobs:
     displayName: Publish Test Results
     condition: succeededOrFailed()
     inputs:
-      testRunTitle: "Windows (.NET Framework)"
+      testRunTitle: "Windows (.NET Core)"
       platform: "Windows"
       testRunner: VSTest
       testResultsFiles: '**/*.trx'
@@ -76,19 +77,16 @@ jobs:
   - bash: . '$(Build.SourcesDirectory)/ci/ap-setup-osx.sh'
     displayName: Setup
   - bash: dotnet build -c $(Configuration) src/EventStore.sln
-    env:
-      FrameworkPathOverride: /Library/Frameworks/Mono.framework/Versions/5.16.0/lib/mono/4.7.1-api
     displayName: Compile
   - bash: find ./src -maxdepth 1 -type d -name "*.Tests" -print0| xargs -0 -n1 dotnet test -v normal -c $(Configuration) --logger trx
     env:
       UseKestrel: $(UseKestrel)
-      FrameworkPathOverride: /Library/Frameworks/Mono.framework/Versions/5.16.0/lib/mono/4.7.1-api
     displayName: Run Tests
   - task: PublishTestResults@2
     displayName: Publish Test Results
     condition: succeededOrFailed()
     inputs:
-      testRunTitle: "MacOS 10.13 (Mono 5.16)"
+      testRunTitle: "MacOS 10.13"
       platform: "MacOS 10.13"
       testRunner: VSTest
       testResultsFiles: '**/*.trx'
@@ -96,7 +94,7 @@ jobs:
     condition: eq(variables['System.PullRequest.IsFork'], 'False')
     displayName: Publish Artifacts
     inputs:
-      artifactName: macos-mono516-$(Configuration) 
+      artifactName: macos-{{ variables['Configuration'] }}
       pathToPublish: '$(Build.SourcesDirectory)/bin/'
 
 - job: centos_x64
@@ -130,7 +128,6 @@ jobs:
         runInBackground: false
         volumes: '$(Build.SourcesDirectory):/work'
         envVars: |
-          FrameworkPathOverride=/usr/lib/mono/4.7.1-api
           EventStoreBuildConfig=$(Configuration)
         containerCommand: ci/ap-build-linux.sh
         workingDirectory: '/work'
@@ -142,7 +139,6 @@ jobs:
         runInBackground: false
         volumes: '$(Build.SourcesDirectory):/work'
         envVars: |
-          FrameworkPathOverride=/usr/lib/mono/4.7.1-api
           EventStoreBuildConfig=$(Configuration)
           UseKestrel=$(UseKestrel)
         containerCommand: ci/ap-test-linux.sh
@@ -151,7 +147,7 @@ jobs:
       displayName: Publish Test Results
       condition: succeededOrFailed()
       inputs:
-        testRunTitle: "Centos 7 (Mono 5.16)"
+        testRunTitle: "Centos 7"
         platform: "Centos 7"
         testRunner: VSTest
         testResultsFiles: '**/*.trx'
@@ -159,7 +155,7 @@ jobs:
       condition: eq(variables['System.PullRequest.IsFork'], 'False')
       displayName: Publish Artifacts
       inputs:
-        artifactName: centos7-mono516-${{ variables['Configuration'] }}
+        artifactName: centos7-${{ variables['Configuration'] }}
         pathToPublish: '$(Build.SourcesDirectory)/bin/'
 
 - job: ubuntu_x64
@@ -183,30 +179,28 @@ jobs:
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
-    - bash: docker pull eventstore/eventstore-ci-ubuntu-14.04:latest
+    - bash: docker pull mcr.microsoft.com/dotnet/core/sdk:3.0.100-rc1-bionic
       displayName: Pull Docker image for build
       failOnStderr: false
     - task: Docker@1
       displayName: Compile in Ubuntu 14.04 Container
       inputs:
         command: 'run'
-        imageName: 'eventstore/eventstore-ci-ubuntu-14.04:latest'
+        imageName: mcr.microsoft.com/dotnet/core/sdk:3.0.100-rc1-bionic
         runInBackground: false
         volumes: '$(Build.SourcesDirectory):/work'
         envVars: |
-          FrameworkPathOverride=/usr/lib/mono/4.7.1-api
           EventStoreBuildConfig=$(Configuration)
         containerCommand: ci/ap-build-linux.sh
         workingDirectory: '/work'
     - task: Docker@1
-      displayName: Test in Ubuntu 14.04 Container
+      displayName: Test in Ubuntu 18.04 Container
       inputs:
         command: run
-        imageName: eventstore/eventstore-ci-ubuntu-14.04:latest
+        imageName: mcr.microsoft.com/dotnet/core/sdk:3.0.100-rc1-bionic
         runInBackground: false
         volumes: '$(Build.SourcesDirectory):/work'
         envVars: |
-          FrameworkPathOverride=/usr/lib/mono/4.7.1-api
           EventStoreBuildConfig=$(Configuration)
           UseKestrel=$(UseKestrel)
         containerCommand: ci/ap-test-linux.sh
@@ -215,13 +209,13 @@ jobs:
       displayName: Publish Test Results
       condition: succeededOrFailed()
       inputs:
-        testRunTitle: "Ubuntu 14.04 (Mono 5.16)"
-        platform: "Ubuntu 14.04"
+        testRunTitle: "Ubuntu 18.04"
+        platform: "Ubuntu 18.04"
         testRunner: VSTest
         testResultsFiles: '**/*.trx'
     - task: PublishBuildArtifacts@1
       condition: eq(variables['System.PullRequest.IsFork'], 'False')
       displayName: Publish Artifacts
       inputs:
-        artifactName: ubuntu1404-mono516-${{ variables['Configuration'] }}
+        artifactName: ubuntu1404-${{ variables['Configuration'] }}
         pathToPublish: '$(Build.SourcesDirectory)/bin/'
