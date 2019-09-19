@@ -67,8 +67,6 @@ jobs:
       packageType: 'sdk'
       version: '3.0.100-preview9-014004'
       includePreviewVersions: true
-  - bash: . '$(Build.SourcesDirectory)/ci/ap-setup-osx.sh'
-    displayName: Setup
   - bash: dotnet build -c $(Configuration) src/EventStore.sln
     displayName: Compile
   - bash: find ./src -maxdepth 1 -type d -name "*.Tests" -print0| xargs -0 -n1 dotnet test -v normal -c $(Configuration) --logger trx
