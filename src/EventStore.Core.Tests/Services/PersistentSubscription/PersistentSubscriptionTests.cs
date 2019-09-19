@@ -839,14 +839,14 @@ namespace EventStore.Core.Tests.Services.PersistentSubscription {
 			//events 2 & 3 should still be in _outstandingMessages buffer
 			Assert.AreEqual(sub.OutstandingMessageCount, 2);
 			//retry queue should be empty
-			Assert.AreEqual(sub._streamBuffer.RetryBufferCount, 0);
+			Assert.AreEqual(sub.StreamBuffer.RetryBufferCount, 0);
 
 			//Disconnect the client
 			sub.RemoveClientByConnectionId(clientConnectionId);
 
 			//this should empty the _outstandingMessages buffer and move events 2 & 3 to the retry queue
 			Assert.AreEqual(sub.OutstandingMessageCount, 0);
-			Assert.AreEqual(sub._streamBuffer.RetryBufferCount, 2);
+			Assert.AreEqual(sub.StreamBuffer.RetryBufferCount, 2);
 
 			//mark the checkpoint which should still be at event 1 although the _lastKnownMessage value is 3.
 			sub.TryMarkCheckpoint(false);

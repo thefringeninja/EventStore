@@ -483,7 +483,7 @@ namespace EventStore.Core.Tests.Services.PersistentSubscription {
 
 			Assert.That(client1Envelope.Replies.Count, Is.EqualTo(1));
 			Assert.That(client2Envelope.Replies.Count, Is.EqualTo(0));
-			Assert.That(sub._streamBuffer.BufferCount, Is.EqualTo(1));
+			Assert.That(sub.StreamBuffer.BufferCount, Is.EqualTo(1));
 
 			sub.NotifyLiveSubscriptionMessage(Helper.BuildLinkEvent(Guid.NewGuid(), subsctiptionStream, 2,
 				Helper.BuildFakeEvent(Guid.NewGuid(), "type", "streamName-2", 0), false));
@@ -491,14 +491,14 @@ namespace EventStore.Core.Tests.Services.PersistentSubscription {
 			Assert.That(client1Envelope.Replies.Count, Is.EqualTo(1));
 			Assert.That(client2Envelope.Replies.Count, Is.EqualTo(1));
 
-			Assert.That(sub._streamBuffer.BufferCount, Is.EqualTo(1));
+			Assert.That(sub.StreamBuffer.BufferCount, Is.EqualTo(1));
 
 			sub.AcknowledgeMessagesProcessed(correlationId, new[] {message1});
 
 			Assert.That(client1Envelope.Replies.Count, Is.EqualTo(2));
 			Assert.That(client2Envelope.Replies.Count, Is.EqualTo(1));
 
-			Assert.That(sub._streamBuffer.BufferCount, Is.EqualTo(0));
+			Assert.That(sub.StreamBuffer.BufferCount, Is.EqualTo(0));
 		}
 	}
 }
