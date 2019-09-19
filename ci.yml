@@ -57,7 +57,7 @@ jobs:
       RELEASE:
         Configuration: release
   displayName: 'macOS x64'
-  timeoutInMinutes: 20
+  timeoutInMinutes: 30
   pool:
     vmImage: 'macOS 10.13'
   steps:
@@ -97,7 +97,7 @@ jobs:
         Configuration: release
 
   displayName: Ubuntu 16.04 x64
-  timeoutInMinutes: 20
+  timeoutInMinutes: 30
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
