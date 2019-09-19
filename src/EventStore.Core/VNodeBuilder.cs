@@ -750,7 +750,7 @@ namespace EventStore.Core {
 			_connectionPendingSendBytesThreshold = connectionPendingSendBytesThreshold;
 			return this;
 		}
-		
+
 		/// <summary>
 		/// Sets the maximum number of connection operations allowed before a connection is closed.
 		/// </summary>
@@ -1000,8 +1000,7 @@ namespace EventStore.Core {
 		/// Disables first level authorization checks on all HTTP endpoints.
 		/// </summary>
 		/// <returns>A <see cref="VNodeBuilder"/> with the options set</returns>
-		public VNodeBuilder DisableFirstLevelHttpAuthorization()
-		{
+		public VNodeBuilder DisableFirstLevelHttpAuthorization() {
 			_disableFirstLevelHttpAuthorization = true;
 			return this;
 		}
@@ -1225,6 +1224,7 @@ namespace EventStore.Core {
 
 			return this;
 		}
+
 		/// Use Kestrel
 		/// </summary>
 		/// <returns>A <see cref="VNodeBuilder"/> with the options set</returns>
@@ -1265,20 +1265,8 @@ namespace EventStore.Core {
 					_intHttpPrefixes.Add(intHttpPrefixToAdd);
 				}
 
-				intHttpPrefixToAdd = String.Format("http://localhost:{0}/", _internalHttp.Port);
-				if (_internalHttp.Address.Equals(IPAddress.Loopback) &&
-				    !_intHttpPrefixes.Contains(intHttpPrefixToAdd)) {
-					_intHttpPrefixes.Add(intHttpPrefixToAdd);
-				}
-
 				var extHttpPrefixToAdd = String.Format("http://{0}:{1}/", _externalHttp.Address, _externalHttp.Port);
 				if (!_extHttpPrefixes.Contains(extHttpPrefixToAdd)) {
-					_extHttpPrefixes.Add(extHttpPrefixToAdd);
-				}
-
-				extHttpPrefixToAdd = String.Format("http://localhost:{0}/", _externalHttp.Port);
-				if (_externalHttp.Address.Equals(IPAddress.Loopback) &&
-				    !_extHttpPrefixes.Contains(extHttpPrefixToAdd)) {
 					_extHttpPrefixes.Add(extHttpPrefixToAdd);
 				}
 			}

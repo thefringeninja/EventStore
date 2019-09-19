@@ -511,7 +511,7 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 		[Test]
 		public void should_set_internal_http_prefixes() {
 			var internalHttpPrefixes = new List<string> {
-				string.Format("http://{0}/", _internalHttp), string.Format("http://localhost:{0}/", _internalHttp.Port)
+				string.Format("http://{0}/", _internalHttp)
 			};
 			CollectionAssert.AreEqual(internalHttpPrefixes, _settings.IntHttpPrefixes);
 		}
@@ -519,7 +519,7 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 		[Test]
 		public void should_set_external_http_prefixes() {
 			var externalHttpPrefixes = new List<string> {
-				string.Format("http://{0}/", _externalHttp), string.Format("http://localhost:{0}/", _externalHttp.Port)
+				string.Format("http://{0}/", _externalHttp)
 			};
 			CollectionAssert.AreEqual(externalHttpPrefixes, _settings.ExtHttpPrefixes);
 		}
