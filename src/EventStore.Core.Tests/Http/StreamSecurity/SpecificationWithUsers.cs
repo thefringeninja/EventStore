@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using EventStore.ClientAPI;
 using EventStore.Core.Tests.Helpers;
 using NUnit.Framework;
@@ -14,7 +15,7 @@ namespace EventStore.Core.Tests.Http.StreamSecurity {
 			PostUser("guest", "Guest", "guest!");
 		}
 
-		protected readonly ICredentials _admin = DefaultData.AdminNetworkCredentials;
+		protected readonly NetworkCredential _admin = DefaultData.AdminNetworkCredentials;
 
 		protected override bool GivenSkipInitializeStandardUsersCheck() {
 			return false;
@@ -36,17 +37,17 @@ namespace EventStore.Core.Tests.Http.StreamSecurity {
 			var response = MakeArrayEventsPost(
 				TestMetadataStream, new[] {new {EventId = Guid.NewGuid(), EventType = "event-type", Data = metadata}});
 			Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
-			return response.Headers[HttpResponseHeader.Location];
+			return response.Headers.GetLocationAsString();
 		}
 
 		protected string PostEvent(int i) {
 			var response = MakeArrayEventsPost(
 				TestStream, new[] {new {EventId = Guid.NewGuid(), EventType = "event-type", Data = new {Number = i}}});
 			Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
-			return response.Headers[HttpResponseHeader.Location];
+			return response.Headers.GetLocationAsString();
 		}
 
-		protected HttpWebResponse PostEvent<T>(T data, ICredentials credentials = null) {
+		protected HttpResponseMessage PostEvent<T>(T data, NetworkCredential credentials = null) {
 			return MakeArrayEventsPost(
 				TestStream, new[] {new {EventId = Guid.NewGuid(), EventType = "event-type", Data = data}}, credentials);
 		}

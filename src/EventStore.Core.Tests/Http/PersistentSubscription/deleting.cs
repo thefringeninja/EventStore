@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
@@ -9,7 +10,7 @@ using NUnit.Framework;
 namespace EventStore.Core.Tests.Http.PersistentSubscription {
 	[TestFixture, Category("LongRunning")]
 	class when_deleting_non_existing_subscription : with_admin_user {
-		private HttpWebResponse _response;
+		private HttpResponseMessage _response;
 
 		protected override void Given() {
 		}
@@ -27,7 +28,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 
 	[TestFixture, Category("LongRunning")]
 	class when_deleting_an_existing_subscription : with_admin_user {
-		private HttpWebResponse _response;
+		private HttpResponseMessage _response;
 
 		protected override void Given() {
 			_response = MakeJsonPut(
@@ -50,7 +51,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 
 	[TestFixture, Category("LongRunning")]
 	class when_deleting_an_existing_subscription_without_permissions : with_admin_user {
-		private HttpWebResponse _response;
+		private HttpResponseMessage _response;
 
 		protected override void Given() {
 			_response = MakeJsonPut(
@@ -74,7 +75,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 
 	[TestFixture, Category("LongRunning")]
 	class when_deleting_an_existing_subscription_with_subscribers : with_admin_user {
-		private HttpWebResponse _response;
+		private HttpResponseMessage _response;
 		private const string _stream = "astreamname";
 		private readonly string _groupName = Guid.NewGuid().ToString();
 		private SubscriptionDropReason _reason;

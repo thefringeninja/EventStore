@@ -3,11 +3,12 @@ using EventStore.Core.Tests.Http.Users.users;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System;
+using System.Net.Http;
 
 namespace EventStore.Core.Tests.Http.PersistentSubscription {
 	[TestFixture, Category("LongRunning")]
 	class when_creating_a_subscription : with_admin_user {
-		private HttpWebResponse _response;
+		private HttpResponseMessage _response;
 
 		protected override void Given() {
 		}
@@ -20,9 +21,9 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				}, _admin);
 		}
 
-		[TearDown]
+		[OneTimeTearDown]
 		public void TearDown() {
-			_response.Close();
+			_response.Dispose();
 		}
 
 		[Test]
@@ -33,13 +34,13 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 		[Test]
 		public void returns_location_header() {
 			Assert.AreEqual("http://" + _node.ExtHttpEndPoint + "/subscriptions/stream/groupname334",
-				_response.Headers["location"]);
+				_response.Headers.Location.ToString());
 		}
 	}
 
 	[TestFixture, Category("LongRunning")]
 	class when_creating_a_subscription_with_query_params : with_admin_user {
-		private HttpWebResponse _response;
+		private HttpResponseMessage _response;
 
 		protected override void Given() {
 		}
@@ -52,9 +53,9 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				}, _admin, extra: "testing=test");
 		}
 
-		[TearDown]
+		[OneTimeTearDown]
 		public void TearDown() {
-			_response.Close();
+			_response.Dispose();
 		}
 
 		[Test]
@@ -65,13 +66,13 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 		[Test]
 		public void returns_location_header() {
 			Assert.AreEqual("http://" + _node.ExtHttpEndPoint + "/subscriptions/stream/groupname334",
-				_response.Headers["location"]);
+				_response.Headers.Location.ToString());
 		}
 	}
 
 	[TestFixture, Category("LongRunning")]
 	class when_creating_a_subscription_without_permissions : with_admin_user {
-		private HttpWebResponse _response;
+		private HttpResponseMessage _response;
 
 		protected override void Given() {
 		}
@@ -85,9 +86,9 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				});
 		}
 
-		[TearDown]
+		[OneTimeTearDown]
 		public void TearDown() {
-			_response.Close();
+			_response.Dispose();
 		}
 
 		[Test]
@@ -98,7 +99,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 
 	[TestFixture, Category("LongRunning")]
 	class when_creating_a_duplicate_subscription : with_admin_user {
-		private HttpWebResponse _response;
+		private HttpResponseMessage _response;
 
 		protected override void Given() {
 			_response = MakeJsonPut(
@@ -116,9 +117,9 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				}, _admin);
 		}
 
-		[TearDown]
+		[OneTimeTearDown]
 		public void TearDown() {
-			_response.Close();
+			_response.Dispose();
 		}
 
 		[Test]
@@ -132,7 +133,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 		protected List<object> Events;
 		protected string SubscriptionPath;
 		protected string GroupName;
-		protected HttpWebResponse Response;
+		protected HttpResponseMessage Response;
 
 		protected override void Given() {
 			Events = new List<object> {
@@ -161,9 +162,9 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				_admin);
 		}
 
-		[TearDown]
+		[OneTimeTearDown]
 		public void TearDown() {
-			Response.Close();
+			Response.Dispose();
 		}
 
 		[Test]

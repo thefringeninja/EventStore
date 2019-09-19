@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http;
 using EventStore.Core.Services;
 using EventStore.Core.Services.Transport.Http.Controllers;
 using EventStore.Core.Tests.Helpers;
@@ -8,7 +9,7 @@ using Newtonsoft.Json.Linq;
 namespace EventStore.Core.Tests.Http.Users {
 	namespace users {
 		public abstract class with_admin_user : HttpBehaviorSpecification {
-			protected readonly ICredentials _admin = DefaultData.AdminNetworkCredentials;
+			protected readonly NetworkCredential _admin = DefaultData.AdminNetworkCredentials;
 
 			protected override bool GivenSkipInitializeStandardUsersCheck() {
 				return false;
@@ -21,7 +22,7 @@ namespace EventStore.Core.Tests.Http.Users {
 
 		[TestFixture, Category("LongRunning")]
 		class when_creating_a_user : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 			}
@@ -40,7 +41,7 @@ namespace EventStore.Core.Tests.Http.Users {
 			[Test]
 			public void returns_created_status_code_and_location() {
 				Assert.AreEqual(HttpStatusCode.Created, _response.StatusCode);
-				Assert.AreEqual(MakeUrl("/users/test1"), _response.Headers[HttpResponseHeader.Location]);
+				Assert.AreEqual(MakeUrl("/users/test1"), _response.Headers.GetLocationAsString());
 			}
 		}
 
@@ -175,7 +176,7 @@ namespace EventStore.Core.Tests.Http.Users {
 
 		[TestFixture, Category("LongRunning")]
 		class when_creating_an_already_existing_user_account : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 				var response = MakeJsonPost(
@@ -196,7 +197,7 @@ namespace EventStore.Core.Tests.Http.Users {
 
 		[TestFixture, Category("LongRunning")]
 		class when_creating_an_already_existing_user_account_with_a_different_password : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 				var response = MakeJsonPost(
@@ -243,7 +244,7 @@ namespace EventStore.Core.Tests.Http.Users {
 
 		[TestFixture, Category("LongRunning")]
 		class when_enabling_a_disabled_user_account : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 				MakeJsonPost(
@@ -271,7 +272,7 @@ namespace EventStore.Core.Tests.Http.Users {
 
 		[TestFixture, Category("LongRunning")]
 		class when_updating_user_details : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 				MakeJsonPost(
@@ -298,7 +299,7 @@ namespace EventStore.Core.Tests.Http.Users {
 
 		[TestFixture, Category("LongRunning")]
 		class when_resetting_a_password : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 				MakeJsonPost(
@@ -327,7 +328,7 @@ namespace EventStore.Core.Tests.Http.Users {
 
 		[TestFixture, Category("LongRunning")]
 		class when_deleting_a_user_account : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 				MakeJsonPost(

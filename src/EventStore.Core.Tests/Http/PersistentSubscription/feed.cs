@@ -54,7 +54,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				TestStream, new[] {new {EventId = eventId, EventType = "event-type", Data = new {Number = i}}});
 			_eventIds.Add(eventId);
 			Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
-			return response.Headers[HttpResponseHeader.Location];
+			return response.Headers.Location.ToString();
 		}
 
 		protected override void Given() {

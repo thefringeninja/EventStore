@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Net;
 using System.Text;
 using EventStore.Core.Tests.Helpers;
-using EventStore.Core.Tests.Http.Users;
 using EventStore.Transport.Http;
 using NUnit.Framework;
 using Newtonsoft.Json.Linq;
@@ -10,7 +8,11 @@ using HttpStatusCode = System.Net.HttpStatusCode;
 using System.Linq;
 using System.Xml.Linq;
 using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using EventStore.Common.Utils;
 using EventStore.Core.Tests.Http.Users.users;
+using HttpMethod = EventStore.Transport.Http.HttpMethod;
 
 namespace EventStore.Core.Tests.Http.Streams {
 	namespace basic {
@@ -61,7 +63,7 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 		[TestFixture]
 		public class when_posting_an_event_as_raw_json_without_eventtype : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 			}
@@ -80,7 +82,7 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 		[TestFixture]
 		public class when_posting_an_event_to_idempotent_uri_as_events_array : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 			}
@@ -99,7 +101,7 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 		[TestFixture]
 		public class when_posting_an_event_as_json_to_idempotent_uri_without_event_type : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 			}
@@ -119,20 +121,20 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 		[TestFixture]
 		public class when_posting_an_event_in_json_to_idempotent_uri_without_event_id : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 			}
 
 			protected override void When() {
-				var request = CreateRequest(TestStream + "/incoming/" + Guid.NewGuid().ToString(), "", "POST",
+				var request = CreateRequest(TestStream + "/incoming/" + Guid.NewGuid(), "", "POST",
 					"application/json");
 				request.Headers.Add("ES-EventType", "SomeType");
-				request.AllowAutoRedirect = false;
 				var data = "{a : \"1\", b:\"3\", c:\"5\" }";
 				var bytes = Encoding.UTF8.GetBytes(data);
-				request.ContentLength = data.Length;
-				request.GetRequestStream().Write(bytes, 0, data.Length);
+				request.Content = new ByteArrayContent(bytes) {
+					Headers = {ContentType = new MediaTypeHeaderValue("application/json")}
+				};
 				_response = GetRequestResponse(request);
 			}
 
@@ -143,19 +145,19 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 			[Test]
 			public void returns_a_location_header() {
-				Assert.That(!string.IsNullOrEmpty(_response.Headers[HttpResponseHeader.Location]));
+				Assert.That(!string.IsNullOrEmpty(_response.Headers.GetLocationAsString()));
 			}
 
 			[Test]
 			public void returns_a_location_header_that_can_be_read_as_json() {
-				var json = GetJson<JObject>(_response.Headers[HttpResponseHeader.Location]);
+				var json = GetJson<JObject>(_response.Headers.GetLocationAsString());
 				HelperExtensions.AssertJson(new {a = "1", b = "3", c = "5"}, json);
 			}
 		}
 
 		[TestFixture]
 		public class when_posting_an_event_as_raw_json_without_eventid : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 			}
@@ -163,11 +165,11 @@ namespace EventStore.Core.Tests.Http.Streams {
 			protected override void When() {
 				var request = CreateRequest(TestStream, "", "POST", "application/json");
 				request.Headers.Add("ES-EventType", "SomeType");
-				request.AllowAutoRedirect = false;
 				var data = "{A : \"1\", B:\"3\", C:\"5\" }";
 				var bytes = Encoding.UTF8.GetBytes(data);
-				request.ContentLength = data.Length;
-				request.GetRequestStream().Write(bytes, 0, data.Length);
+				request.Content = new ByteArrayContent(bytes) {
+					Headers = {ContentType = new MediaTypeHeaderValue("application/json")}
+				};
 				_response = GetRequestResponse(request);
 			}
 
@@ -178,19 +180,19 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 			[Test]
 			public void returns_a_location_header() {
-				Assert.That(!string.IsNullOrEmpty(_response.Headers[HttpResponseHeader.Location]));
+				Assert.That(!string.IsNullOrEmpty(_response.Headers.GetLocationAsString()));
 			}
 
 			[Test]
 			public void returns_a_to_incoming() {
-				Assert.IsTrue(_response.Headers[HttpResponseHeader.Location].Contains("/incoming/"));
+				Assert.IsTrue(_response.Headers.GetLocationAsString().Contains("/incoming/"));
 				//HelperExtensions.AssertJson(new {A = "1"}, json);
 			}
 		}
 
 		[TestFixture]
 		public class when_posting_an_event_as_array_with_no_event_type : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 			}
@@ -210,7 +212,7 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 		[TestFixture]
 		public class when_posting_an_event_as_array : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 			}
@@ -228,19 +230,19 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 			[Test]
 			public void returns_a_location_header() {
-				Assert.IsNotEmpty(_response.Headers[HttpResponseHeader.Location]);
+				Assert.IsNotEmpty(_response.Headers.GetLocationAsString());
 			}
 
 			[Test]
 			public void returns_a_location_header_that_can_be_read_as_json() {
-				var json = GetJson<JObject>(_response.Headers[HttpResponseHeader.Location]);
+				var json = GetJson<JObject>(_response.Headers.GetLocationAsString());
 				HelperExtensions.AssertJson(new {A = "1"}, json);
 			}
 		}
 
 		[TestFixture, Category("LongRunning")]
 		public class when_posting_an_event_as_array_to_stream_with_slash : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 			}
@@ -248,10 +250,11 @@ namespace EventStore.Core.Tests.Http.Streams {
 			protected override void When() {
 				var request = CreateRequest(TestStream + "/", "", "POST", "application/vnd.eventstore.events+json",
 					null);
-				request.AllowAutoRedirect = false;
-				request.GetRequestStream()
-					.WriteJson(new[] {new {EventId = Guid.NewGuid(), EventType = "event-type", Data = new {A = "1"}}});
-				_response = (HttpWebResponse)request.GetResponse();
+				request.Content = new ByteArrayContent(new[]
+					{new {EventId = Guid.NewGuid(), EventType = "event-type", Data = new {A = "1"}}}.ToJsonBytes()) {
+					Headers = { ContentType = new MediaTypeHeaderValue("application/vnd.eventstore.events+json")}
+				};
+				_response = _client.SendAsync(request).Result;
 			}
 
 			[Test]
@@ -261,31 +264,31 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 			[Test]
 			public void redirect_is_cacheable() {
-				Assert.AreEqual("max-age=31536000, public", _response.Headers[HttpResponseHeader.CacheControl]);
+				Assert.AreEqual(CacheControlHeaderValue.Parse("max-age=31536000, public"),
+					_response.Headers.CacheControl);
 			}
 
 			[Test]
 			public void returns_a_location_header() {
-				Assert.IsNotEmpty(_response.Headers[HttpResponseHeader.Location]);
+				Assert.IsNotEmpty(_response.Headers.GetLocationAsString());
 			}
 
 			[Test]
 			public void returns_a_location_header_that_is_to_stream_without_slash() {
-				Assert.AreEqual(MakeUrl(TestStream), _response.Headers[HttpResponseHeader.Location]);
+				Assert.AreEqual(MakeUrl(TestStream), _response.Headers.GetLocationAsString());
 			}
 		}
 
 		[TestFixture, Category("LongRunning")]
 		public class when_deleting_to_stream_with_slash : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 			}
 
 			protected override void When() {
 				var request = CreateRequest(TestStream + "/", "", "DELETE", "application/json", null);
-				request.AllowAutoRedirect = false;
-				_response = (HttpWebResponse)request.GetResponse();
+				_response = _client.SendAsync(request).Result;
 			}
 
 			[Test]
@@ -295,26 +298,25 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 			[Test]
 			public void returns_a_location_header() {
-				Assert.IsNotEmpty(_response.Headers[HttpResponseHeader.Location]);
+				Assert.IsNotEmpty(_response.Headers.GetLocationAsString());
 			}
 
 			[Test]
 			public void returns_a_location_header_that_is_to_stream_without_slash() {
-				Assert.AreEqual(MakeUrl(TestStream), _response.Headers[HttpResponseHeader.Location]);
+				Assert.AreEqual(MakeUrl(TestStream), _response.Headers.GetLocationAsString());
 			}
 		}
 
 		[TestFixture, Category("LongRunning")]
 		public class when_getting_from_stream_with_slash : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 			}
 
 			protected override void When() {
 				var request = CreateRequest(TestStream + "/", "", "GET", "application/json", null);
-				request.AllowAutoRedirect = false;
-				_response = (HttpWebResponse)request.GetResponse();
+				_response = _client.SendAsync(request).Result;
 			}
 
 			[Test]
@@ -324,27 +326,25 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 			[Test]
 			public void returns_a_location_header() {
-				Assert.IsNotEmpty(_response.Headers[HttpResponseHeader.Location]);
+				Assert.IsNotEmpty(_response.Headers.GetLocationAsString());
 			}
 
 			[Test]
 			public void returns_a_location_header_that_is_to_stream_without_slash() {
-				Assert.AreEqual(MakeUrl(TestStream), _response.Headers[HttpResponseHeader.Location]);
+				Assert.AreEqual(MakeUrl(TestStream), _response.Headers.GetLocationAsString());
 			}
 		}
 
 		[TestFixture, Category("LongRunning")]
 		public class when_getting_from_all_stream_with_slash : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 			}
 
 			protected override void When() {
-				var request = CreateRequest("/streams/$all/", "", "GET", "application/json", null);
-				request.Credentials = DefaultData.AdminNetworkCredentials;
-				request.AllowAutoRedirect = false;
-				_response = (HttpWebResponse)request.GetResponse();
+				var request = CreateRequest("/streams/$all/", "", "GET", "application/json", DefaultData.AdminNetworkCredentials);
+				_response = _client.SendAsync(request).Result;
 			}
 
 			[Test]
@@ -354,27 +354,27 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 			[Test]
 			public void returns_a_location_header() {
-				Assert.IsNotEmpty(_response.Headers[HttpResponseHeader.Location]);
+				Assert.IsNotEmpty(_response.Headers.GetLocationAsString());
 			}
 
 			[Test]
 			public void returns_a_location_header_that_is_to_stream_without_slash() {
-				Assert.AreEqual(MakeUrl("/streams/$all"), _response.Headers[HttpResponseHeader.Location]);
+				Assert.AreEqual(MakeUrl("/streams/$all"), _response.Headers.GetLocationAsString());
 			}
 		}
 
 		[TestFixture, Category("LongRunning")]
 		public class when_getting_from_encoded_all_stream_with_slash : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 			}
 
 			protected override void When() {
 				var request = CreateRequest("/streams/$all/", "", "GET", "application/json", null);
-				request.Credentials = DefaultData.AdminNetworkCredentials;
-				request.AllowAutoRedirect = false;
-				_response = (HttpWebResponse)request.GetResponse();
+				request.Headers.Authorization = new AuthenticationHeaderValue("Basic",
+					GetAuthorizationHeader(DefaultData.AdminNetworkCredentials));
+				_response = _client.SendAsync(request).Result;
 			}
 
 			[Test]
@@ -384,28 +384,30 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 			[Test]
 			public void returns_a_location_header() {
-				Assert.IsNotEmpty(_response.Headers[HttpResponseHeader.Location]);
+				Assert.IsNotEmpty(_response.Headers.GetLocationAsString());
 			}
 
 			[Test]
 			public void returns_a_location_header_that_is_to_stream_without_slash() {
-				Assert.AreEqual(MakeUrl("/streams/$all").ToString(), _response.Headers[HttpResponseHeader.Location]);
+				Assert.AreEqual(MakeUrl("/streams/$all").ToString(), _response.Headers.GetLocationAsString());
 			}
 		}
 
 		[TestFixture, Category("LongRunning")]
 		public class when_posting_an_event_as_array_to_metadata_stream_with_slash : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 			}
 
 			protected override void When() {
 				var request = CreateRequest(TestStream + "/metadata/", "", "POST", "application/json", null);
-				request.AllowAutoRedirect = false;
-				request.GetRequestStream()
-					.WriteJson(new[] {new {EventId = Guid.NewGuid(), EventType = "event-type", Data = new {A = "1"}}});
-				_response = (HttpWebResponse)request.GetResponse();
+				request.Content = new ByteArrayContent(
+					new[] {new {EventId = Guid.NewGuid(), EventType = "event-type", Data = new {A = "1"}}}
+						.ToJsonBytes()) {
+					Headers = { ContentType = new MediaTypeHeaderValue("application/json")}
+				};
+				_response = _client.SendAsync(request).Result;
 			}
 
 			[Test]
@@ -415,28 +417,28 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 			[Test]
 			public void returns_a_location_header() {
-				Assert.IsNotEmpty(_response.Headers[HttpResponseHeader.Location]);
+				Assert.IsNotEmpty(_response.Headers.GetLocationAsString());
 			}
 
 			[Test]
 			public void returns_a_location_header_that_is_to_stream_without_slash() {
-				Assert.AreEqual(MakeUrl(TestStream + "/metadata"), _response.Headers[HttpResponseHeader.Location]);
+				Assert.AreEqual(MakeUrl(TestStream + "/metadata"), _response.Headers.GetLocationAsString());
 			}
 		}
 
 
 		[TestFixture, Category("LongRunning")]
 		public class when_getting_from_metadata_stream_with_slash : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 			}
 
 			protected override void When() {
 				var request = CreateRequest(TestStream + "/metadata/", "", "GET", "application/json", null);
-				request.Credentials = DefaultData.AdminNetworkCredentials;
-				request.AllowAutoRedirect = false;
-				_response = (HttpWebResponse)request.GetResponse();
+				request.Headers.Authorization = new AuthenticationHeaderValue("Basic",
+					GetAuthorizationHeader(DefaultData.AdminNetworkCredentials));
+				_response = _client.SendAsync(request).Result;
 			}
 
 			[Test]
@@ -446,19 +448,19 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 			[Test]
 			public void returns_a_location_header() {
-				Assert.IsNotEmpty(_response.Headers[HttpResponseHeader.Location]);
+				Assert.IsNotEmpty(_response.Headers.GetLocationAsString());
 			}
 
 			[Test]
 			public void returns_a_location_header_that_is_to_stream_without_slash() {
-				Assert.AreEqual(MakeUrl(TestStream + "/metadata"), _response.Headers[HttpResponseHeader.Location]);
+				Assert.AreEqual(MakeUrl(TestStream + "/metadata"), _response.Headers.GetLocationAsString());
 			}
 		}
 
 
 		[TestFixture, Category("LongRunning")]
 		public class when_posting_an_event_without_EventId_as_array : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 			}
@@ -477,7 +479,7 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 		[TestFixture, Category("LongRunning")]
 		public class when_posting_an_event_without_EventType_as_array : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 			}
@@ -496,7 +498,7 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 		[TestFixture, Category("LongRunning")]
 		public class when_posting_an_event_with_date_time : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 			}
@@ -520,19 +522,19 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 			[Test]
 			public void returns_a_location_header() {
-				Assert.IsNotEmpty(_response.Headers[HttpResponseHeader.Location]);
+				Assert.IsNotEmpty(_response.Headers.GetLocationAsString());
 			}
 
 			[Test]
 			public void the_json_data_is_not_mangled() {
-				var json = GetJson<JObject>(_response.Headers[HttpResponseHeader.Location]);
+				var json = GetJson<JObject>(_response.Headers.GetLocationAsString());
 				HelperExtensions.AssertJson(new {A = "1987-11-07T00:00:00.000+01:00"}, json);
 			}
 		}
 
 		[TestFixture, Category("LongRunning")]
 		public class when_posting_an_events_as_array : with_admin_user {
-			private HttpWebResponse _response;
+			private HttpResponseMessage _response;
 
 			protected override void Given() {
 			}
@@ -553,18 +555,18 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 			[Test]
 			public void returns_a_location_header() {
-				Assert.IsNotEmpty(_response.Headers[HttpResponseHeader.Location]);
+				Assert.IsNotEmpty(_response.Headers.GetLocationAsString());
 			}
 
 			[Test]
 			public void returns_a_location_header_for_the_first_posted_event() {
-				var json = GetJson<JObject>(_response.Headers[HttpResponseHeader.Location]);
+				var json = GetJson<JObject>(_response.Headers.GetLocationAsString());
 				HelperExtensions.AssertJson(new {A = "1"}, json);
 			}
 		}
 
 		public abstract class HttpBehaviorSpecificationWithSingleEvent : with_admin_user {
-			protected HttpWebResponse _response;
+			protected HttpResponseMessage _response;
 
 			protected override void Given() {
 				_response = MakeArrayEventsPost(
@@ -690,7 +692,7 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 		[TestFixture]
 		public class when_requesting_a_single_raw_event_in_the_stream_as_raw : with_admin_user {
-			protected HttpWebResponse _response;
+			protected HttpResponseMessage _response;
 			protected byte[] _data;
 
 			protected override void Given() {
@@ -701,9 +703,9 @@ namespace EventStore.Core.Tests.Http.Streams {
 					var fileData = HelperExtensions.GetFilePathFromAssembly("Resources/es-tile.png");
 					_data = File.ReadAllBytes(fileData);
 				}
-
-				request.ContentLength = _data.Length;
-				request.GetRequestStream().Write(_data, 0, _data.Length);
+				request.Content = new ByteArrayContent(_data) {
+					Headers = {ContentType = new MediaTypeHeaderValue("application/octet-stream")}
+				};
 				_response = GetRequestResponse(request);
 				Assert.AreEqual(HttpStatusCode.Created, _response.StatusCode);
 			}

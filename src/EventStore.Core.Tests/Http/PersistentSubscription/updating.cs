@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ using NUnit.Framework;
 namespace EventStore.Core.Tests.Http.PersistentSubscription {
 	[TestFixture, Category("LongRunning")]
 	class when_updating_a_subscription_without_permissions : with_admin_user {
-		private HttpWebResponse _response;
+		private HttpResponseMessage _response;
 
 		protected override void Given() {
 			_response = MakeJsonPut(
@@ -38,7 +39,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 
 	[TestFixture, Category("LongRunning")]
 	class when_updating_a_non_existent_subscription_without_permissions : with_admin_user {
-		private HttpWebResponse _response;
+		private HttpResponseMessage _response;
 
 		protected override void Given() {
 		}
@@ -59,7 +60,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 
 	[TestFixture, Category("LongRunning")]
 	class when_updating_an_existing_subscription : with_admin_user {
-		private HttpWebResponse _response;
+		private HttpResponseMessage _response;
 		private readonly string _groupName = Guid.NewGuid().ToString();
 		private SubscriptionDropReason _droppedReason;
 		private Exception _exception;
@@ -108,7 +109,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 		public void location_header_is_present() {
 			Assert.AreEqual(
 				string.Format("http://{0}/subscriptions/{1}/{2}", _node.ExtHttpEndPoint, _stream, _groupName),
-				_response.Headers["Location"]);
+				_response.Headers.Location.ToString());
 		}
 	}
 }
