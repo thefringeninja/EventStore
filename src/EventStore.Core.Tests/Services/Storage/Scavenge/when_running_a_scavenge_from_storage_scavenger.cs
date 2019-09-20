@@ -22,8 +22,8 @@ namespace EventStore.Core.Tests.Services.Storage.Scavenge {
 		private MiniNode _node;
 		private List<ResolvedEvent> _result;
 
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 
 			_node = new MiniNode(PathName, skipInitializeStandardUsersCheck: false);
 			_node.Start();

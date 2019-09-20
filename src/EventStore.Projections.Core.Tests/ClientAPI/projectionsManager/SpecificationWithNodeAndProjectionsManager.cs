@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using EventStore.ClientAPI;
 using EventStore.ClientAPI.Projections;
@@ -23,8 +24,8 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.projectionsManager {
 		protected string _tag;
 
 		[OneTimeSetUp]
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 			_credentials = new UserCredentials(SystemUsers.Admin, SystemUsers.DefaultAdminPassword);
 			var createdMiniNode = false;
 			_timeout = TimeSpan.FromSeconds(10);
@@ -41,7 +42,7 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.projectionsManager {
 				_node.Start();
 
 				_connection = TestConnection.Create(_node.TcpEndPoint);
-				_connection.ConnectAsync().Wait();
+                await _connection.ConnectAsync();
 			}
 
 			try {
@@ -70,13 +71,13 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.projectionsManager {
 		}
 
 		[OneTimeTearDown]
-		public override void TestFixtureTearDown() {
+		public override Task TestFixtureTearDown() {
 			if (SetUpFixture.Connection == null || SetUpFixture.Node == null) {
 				_connection.Close();
 				_node.Shutdown();
 			}
 
-			base.TestFixtureTearDown();
+			return base.TestFixtureTearDown();
 		}
 
 		public abstract void Given();

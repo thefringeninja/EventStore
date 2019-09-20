@@ -8,6 +8,7 @@ using EventStore.Core.Tests.Helpers;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EventStore.Core.Tests.Integration {
 	public class specification_with_cluster : SpecificationWithDirectoryPerTestFixture {
@@ -49,8 +50,8 @@ namespace EventStore.Core.Tests.Integration {
 		}
 
 		[OneTimeSetUp]
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 
 #if DEBUG
 			QueueStatsCollector.InitializeIdleDetection();
@@ -92,7 +93,7 @@ namespace EventStore.Core.Tests.Integration {
 			QueueStatsCollector.WaitIdle(waitForNonEmptyTf: true);
 
 			_conn = CreateConnection();
-			_conn.ConnectAsync().Wait();
+            await _conn.ConnectAsync();
 
 			QueueStatsCollector.WaitIdle();
 
@@ -131,7 +132,7 @@ namespace EventStore.Core.Tests.Integration {
 		}
 
 		[OneTimeTearDown]
-		public override void TestFixtureTearDown() {
+		public override Task TestFixtureTearDown() {
 			for (var i = 0; i < _portsUsed.Count; i++) {
 				PortsHelper.ReturnPort(_portsUsed[i]);
 			}
@@ -143,7 +144,7 @@ namespace EventStore.Core.Tests.Integration {
 #if DEBUG
 			QueueStatsCollector.DisableIdleDetection();
 #endif
-			base.TestFixtureTearDown();
+			return base.TestFixtureTearDown();
 		}
 
 		protected static void WaitIdle() {

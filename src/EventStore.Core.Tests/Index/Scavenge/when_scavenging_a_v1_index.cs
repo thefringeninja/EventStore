@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using EventStore.Core.Index;
 using EventStore.Core.Index.Hashes;
 using NUnit.Framework;
@@ -26,9 +27,9 @@ namespace EventStore.Core.Tests.Index.Scavenge {
 		}
 
 		[OneTimeSetUp]
-		public override void TestFixtureSetUp() {
+		public override async Task TestFixtureSetUp() {
 			hasher = new Murmur3AUnsafe();
-			base.TestFixtureSetUp();
+			await base.TestFixtureSetUp();
 
 			var table = new HashListMemTable(PTableVersions.IndexV1, maxSize: 20);
 			table.Add(0x010100000000, 0, 1);
@@ -47,11 +48,11 @@ namespace EventStore.Core.Tests.Index.Scavenge {
 		}
 
 		[OneTimeTearDown]
-		public override void TestFixtureTearDown() {
+		public override Task TestFixtureTearDown() {
 			_oldTable.Dispose();
 			_newtable.Dispose();
 
-			base.TestFixtureTearDown();
+			return base.TestFixtureTearDown();
 		}
 
 		[Test]

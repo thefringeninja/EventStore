@@ -7,14 +7,15 @@ using EventStore.Core.Bus;
 using EventStore.Core.Tests.Helpers;
 using NUnit.Framework;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace EventStore.Core.Tests.Integration {
 	public class specification_with_a_single_node : SpecificationWithDirectoryPerTestFixture {
 		protected MiniNode _node;
 
 		[OneTimeSetUp]
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 			_node = new MiniNode(PathName, dbPath: Path.Combine(PathName, "db"), inMemDb: false);
 
 			BeforeNodeStarts();
@@ -45,10 +46,10 @@ namespace EventStore.Core.Tests.Integration {
 		}
 
 		[OneTimeTearDown]
-		public override void TestFixtureTearDown() {
+		public override Task TestFixtureTearDown() {
 			_node.Shutdown();
 			_node = null;
-			base.TestFixtureTearDown();
+			return base.TestFixtureTearDown();
 		}
 	}
 }

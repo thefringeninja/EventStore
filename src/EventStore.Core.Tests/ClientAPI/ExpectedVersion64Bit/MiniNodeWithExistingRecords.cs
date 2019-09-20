@@ -17,6 +17,7 @@ using EventStore.Core.TransactionLog.FileNamingStrategy;
 using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Core.Util;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 	public abstract class MiniNodeWithExistingRecords : SpecificationWithDirectoryPerTestFixture {
@@ -44,8 +45,8 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 		}
 
 		[OneTimeSetUp]
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 			string dbPath = Path.Combine(PathName, string.Format("mini-node-db-{0}", Guid.NewGuid()));
 
 			Bus = new InMemoryBus("bus");
@@ -88,13 +89,11 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 		}
 
 		[OneTimeTearDown]
-		public override void TestFixtureTearDown() {
-			if (_store != null) {
-				_store.Dispose();
-			}
+		public override Task TestFixtureTearDown() {
+			_store?.Dispose();
 
 			Node.Shutdown();
-			base.TestFixtureTearDown();
+			return base.TestFixtureTearDown();
 		}
 
 		public abstract void WriteTestScenario();

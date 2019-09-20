@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using EventStore.ClientAPI;
@@ -44,13 +45,13 @@ namespace EventStore.Core.Tests.Http {
 		private NetworkCredential _defaultCredentials = null;
 		protected HttpClient _client;
 
-		public override void TestFixtureSetUp() {
+		public override async Task TestFixtureSetUp() {
 			Helper.EatException(() => _dumpResponse = CreateDumpResponse());
 			Helper.EatException(() => _dumpResponse2 = CreateDumpResponse2());
 			Helper.EatException(() => _dumpRequest = CreateDumpRequest());
 			Helper.EatException(() => _dumpRequest2 = CreateDumpRequest2());
 
-			base.TestFixtureSetUp();
+			await base.TestFixtureSetUp();
 
 			_createdMiniNode = false;
 			if (SetUpFixture._connection != null && SetUpFixture._node != null) {
@@ -64,7 +65,7 @@ namespace EventStore.Core.Tests.Http {
 				_node.Start();
 
 				_connection = TestConnection.Create(_node.TcpEndPoint);
-				_connection.ConnectAsync().Wait();
+				await _connection.ConnectAsync();
 			}
 
 			_lastResponse = null;
@@ -125,13 +126,13 @@ namespace EventStore.Core.Tests.Http {
 			return false;
 		}
 
-		public override void TestFixtureTearDown() {
+		public override async Task TestFixtureTearDown() {
 			if (_createdMiniNode) {
 				_connection.Close();
 				_node.Shutdown();
 			}
 
-			base.TestFixtureTearDown();
+			await base.TestFixtureTearDown();
 			foreach (var response in _allResponses) {
 				response?.Dispose();
 			}

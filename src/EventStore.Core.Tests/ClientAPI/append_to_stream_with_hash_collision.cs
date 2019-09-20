@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.Core.Tests;
 using EventStore.ClientAPI.Exceptions;
@@ -16,8 +17,8 @@ namespace EventStore.Core.Tests.Services.Storage.HashCollisions {
 		}
 
 		[OneTimeSetUp]
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 			_node = new MiniNode(PathName,
 				inMemDb: false,
 				memTableSize: 20,
@@ -27,9 +28,9 @@ namespace EventStore.Core.Tests.Services.Storage.HashCollisions {
 		}
 
 		[OneTimeTearDown]
-		public override void TestFixtureTearDown() {
+		public override Task TestFixtureTearDown() {
 			_node.Shutdown();
-			base.TestFixtureTearDown();
+			return base.TestFixtureTearDown();
 		}
 
 		[Test]

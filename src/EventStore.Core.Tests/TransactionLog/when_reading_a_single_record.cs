@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using EventStore.Core.Data;
 using EventStore.Core.TransactionLog;
 using EventStore.Core.TransactionLog.Checkpoint;
@@ -16,8 +17,8 @@ namespace EventStore.Core.Tests.TransactionLog {
 		private LogRecord[] _records;
 		private RecordWriteResult[] _results;
 
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 			_db = new TFChunkDb(TFChunkHelper.CreateDbConfig(PathName, 0, chunkSize: 4096));
 			_db.Open();
 
@@ -48,10 +49,10 @@ namespace EventStore.Core.Tests.TransactionLog {
 			_db.Config.WriterCheckpoint.Flush();
 		}
 
-		public override void TestFixtureTearDown() {
+		public override Task TestFixtureTearDown() {
 			_db.Dispose();
 
-			base.TestFixtureTearDown();
+			return base.TestFixtureTearDown();
 		}
 
 		private TFChunkReader GetTFChunkReader(long from) {
