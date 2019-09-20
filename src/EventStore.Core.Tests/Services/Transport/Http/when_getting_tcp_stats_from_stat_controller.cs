@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.Common.Utils;
 using EventStore.Core.Messages;
@@ -80,11 +81,11 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		}
 
 		[OneTimeTearDown]
-		public override void TestFixtureTearDown() {
+		public override Task TestFixtureTearDown() {
 			PortsHelper.ReturnPort(_serverPort);
 			_portableServer.TearDown();
 			_connection.Dispose();
-			base.TestFixtureTearDown();
+			return base.TestFixtureTearDown();
 		}
 	}
 }

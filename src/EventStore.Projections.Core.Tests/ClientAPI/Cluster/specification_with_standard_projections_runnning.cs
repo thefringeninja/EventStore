@@ -53,8 +53,8 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.Cluster {
 		}
 
 		[OneTimeSetUp]
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 #if (!DEBUG)
             Assert.Ignore("These tests require DEBUG conditional");
 #else
@@ -90,7 +90,7 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.Cluster {
 			WaitHandle.WaitAll(new[] {_nodes[0].StartedEvent, _nodes[1].StartedEvent, _nodes[2].StartedEvent});
 			QueueStatsCollector.WaitIdle(waitForNonEmptyTf: true);
 			_conn = EventStoreConnection.Create(_nodes[0].ExternalTcpEndPoint);
-			_conn.ConnectAsync().Wait();
+            await _conn.ConnectAsync();
 
 			_manager = new ProjectionsManager(
 				new ConsoleLogger(),
@@ -164,7 +164,7 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.Cluster {
 		}
 
 		[OneTimeTearDown]
-		public override void TestFixtureTearDown() {
+		public override Task TestFixtureTearDown() {
 			_conn.Close();
 			_nodes[0].Shutdown();
 			_nodes[1].Shutdown();
@@ -172,7 +172,7 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.Cluster {
 #if DEBUG
 			QueueStatsCollector.DisableIdleDetection();
 #endif
-			base.TestFixtureTearDown();
+			return base.TestFixtureTearDown();
 		}
 
 		protected virtual void When() {

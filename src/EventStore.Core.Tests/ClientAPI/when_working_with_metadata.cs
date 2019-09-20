@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.ClientAPI.Exceptions;
 using EventStore.Common.Utils;
@@ -17,13 +18,13 @@ namespace EventStore.Core.Tests.ClientAPI {
 		private IEventStoreConnection _connection;
 
 		[OneTimeSetUp]
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 			_node = new MiniNode(PathName);
 			_node.Start();
 
 			_connection = BuildConnection(_node);
-			_connection.ConnectAsync().Wait();
+			await _connection.ConnectAsync();
 		}
 
 		protected virtual IEventStoreConnection BuildConnection(MiniNode node) {
@@ -31,10 +32,10 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[OneTimeTearDown]
-		public override void TestFixtureTearDown() {
+		public override Task TestFixtureTearDown() {
 			_connection.Close();
 			_node.Shutdown();
-			base.TestFixtureTearDown();
+			return base.TestFixtureTearDown();
 		}
 
 		[Test]

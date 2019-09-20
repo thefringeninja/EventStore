@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.ClientAPI.Common.Log;
 using EventStore.ClientAPI.SystemData;
@@ -27,8 +28,8 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
 		protected QueryManager _queryManager;
 
 		[OneTimeSetUp]
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 #if (!DEBUG)
             Assert.Ignore("These tests require DEBUG conditional");
 #else
@@ -36,7 +37,7 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
 			CreateNode();
 			try {
 				_conn = EventStoreConnection.Create(_node.TcpEndPoint);
-				_conn.ConnectAsync().Wait();
+                await _conn.ConnectAsync();
 
 				_manager = new ProjectionsManager(
 					new ConsoleLogger(),
@@ -125,7 +126,7 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
 		}
 
 		[OneTimeTearDown]
-		public override void TestFixtureTearDown() {
+		public override Task TestFixtureTearDown() {
 			if (_conn != null)
 				_conn.Close();
 
@@ -134,7 +135,7 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
 #if DEBUG
 			QueueStatsCollector.DisableIdleDetection();
 #endif
-			base.TestFixtureTearDown();
+			return base.TestFixtureTearDown();
 		}
 
 		protected virtual void When() {

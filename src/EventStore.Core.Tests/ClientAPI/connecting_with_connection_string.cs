@@ -3,6 +3,7 @@ using NUnit.Framework;
 using EventStore.Core.Tests.Helpers;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[TestFixture, Category("ClientAPI"), Category("LongRunning")]
@@ -10,16 +11,16 @@ namespace EventStore.Core.Tests.ClientAPI {
 		private MiniNode _node;
 
 		[OneTimeSetUp]
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 			_node = new MiniNode(PathName);
 			_node.Start();
 		}
 
 		[OneTimeTearDown]
-		public override void TestFixtureTearDown() {
+		public override Task TestFixtureTearDown() {
 			_node.Shutdown();
-			base.TestFixtureTearDown();
+			return base.TestFixtureTearDown();
 		}
 
 		[Test]

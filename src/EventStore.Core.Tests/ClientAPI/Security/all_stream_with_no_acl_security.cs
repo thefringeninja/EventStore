@@ -1,4 +1,5 @@
-﻿using EventStore.ClientAPI;
+﻿using System.Threading.Tasks;
+using EventStore.ClientAPI;
 using EventStore.ClientAPI.Exceptions;
 using EventStore.ClientAPI.SystemData;
 using NUnit.Framework;
@@ -7,8 +8,8 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 	[TestFixture, Category("ClientAPI"), Category("LongRunning"), Category("Network")]
 	public class all_stream_with_no_acl_security : AuthenticationTestBase {
 		[OneTimeSetUp]
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 
 			Connection.SetStreamMetadataAsync("$all", ExpectedVersion.Any, StreamMetadata.Build(),
 				new UserCredentials("adm", "admpa$$")).Wait();

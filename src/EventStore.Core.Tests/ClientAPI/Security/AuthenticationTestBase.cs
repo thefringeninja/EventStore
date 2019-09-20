@@ -26,13 +26,13 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[OneTimeSetUp]
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 			_node = new MiniNode(PathName, enableTrustedAuth: true);
 			try {
 				_node.Start();
 
-				var userCreateEvent1 = new ManualResetEventSlim();
+				var userCreateEvent1 = new TaskCompletionSource<bool>();
 				_node.Node.MainQueue.Publish(
 					new UserManagementMessage.Create(
 						new CallbackEnvelope(
@@ -41,7 +41,7 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 								var msg = (UserManagementMessage.UpdateResult)m;
 								Assert.IsTrue(msg.Success);
 
-								userCreateEvent1.Set();
+								userCreateEvent1.SetResult(true);
 							}),
 						SystemAccount.Principal,
 						"user1",
@@ -49,7 +49,7 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 						new string[0],
 						"pa$$1"));
 
-				var userCreateEvent2 = new ManualResetEventSlim();
+				var userCreateEvent2 = new TaskCompletionSource<bool>();
 				_node.Node.MainQueue.Publish(
 					new UserManagementMessage.Create(
 						new CallbackEnvelope(
@@ -58,7 +58,7 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 								var msg = (UserManagementMessage.UpdateResult)m;
 								Assert.IsTrue(msg.Success);
 
-								userCreateEvent2.Set();
+								userCreateEvent2.SetResult(true);
 							}),
 						SystemAccount.Principal,
 						"user2",
@@ -66,7 +66,7 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 						new string[0],
 						"pa$$2"));
 
-				var adminCreateEvent2 = new ManualResetEventSlim();
+				var adminCreateEvent2 = new TaskCompletionSource<bool>();
 				_node.Node.MainQueue.Publish(
 					new UserManagementMessage.Create(
 						new CallbackEnvelope(
@@ -75,7 +75,7 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 								var msg = (UserManagementMessage.UpdateResult)m;
 								Assert.IsTrue(msg.Success);
 
-								adminCreateEvent2.Set();
+								adminCreateEvent2.SetResult(true);
 							}),
 						SystemAccount.Principal,
 						"adm",
@@ -83,39 +83,38 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 						new[] {SystemRoles.Admins},
 						"admpa$$"));
 
-				Assert.IsTrue(userCreateEvent1.Wait(10000), "User 1 creation failed");
-				Assert.IsTrue(userCreateEvent2.Wait(10000), "User 2 creation failed");
-				Assert.IsTrue(adminCreateEvent2.Wait(10000), "Administrator User creation failed");
+				Assert.IsTrue(await userCreateEvent1.Task.WithTimeout(10000), "User 1 creation failed");
+				Assert.IsTrue(await userCreateEvent2.Task.WithTimeout(10000), "User 2 creation failed");
+				Assert.IsTrue(await adminCreateEvent2.Task.WithTimeout(10000), "Administrator User creation failed");
 
 				Connection = SetupConnection(_node);
-				Connection.ConnectAsync().Wait();
+				await Connection.ConnectAsync();
 
-				Connection.SetStreamMetadataAsync("noacl-stream", ExpectedVersion.NoStream, StreamMetadata.Build())
-					.Wait();
-				Connection.SetStreamMetadataAsync(
+				await Connection.SetStreamMetadataAsync("noacl-stream", ExpectedVersion.NoStream, StreamMetadata.Build());
+				await Connection.SetStreamMetadataAsync(
 					"read-stream",
 					ExpectedVersion.NoStream,
-					StreamMetadata.Build().SetReadRole("user1")).Wait();
-				Connection.SetStreamMetadataAsync(
+					StreamMetadata.Build().SetReadRole("user1"));
+				await Connection.SetStreamMetadataAsync(
 					"write-stream",
 					ExpectedVersion.NoStream,
-					StreamMetadata.Build().SetWriteRole("user1")).Wait();
-				Connection.SetStreamMetadataAsync(
+					StreamMetadata.Build().SetWriteRole("user1"));
+				await Connection.SetStreamMetadataAsync(
 					"metaread-stream",
 					ExpectedVersion.NoStream,
-					StreamMetadata.Build().SetMetadataReadRole("user1")).Wait();
-				Connection.SetStreamMetadataAsync(
+					StreamMetadata.Build().SetMetadataReadRole("user1"));
+				await Connection.SetStreamMetadataAsync(
 					"metawrite-stream",
 					ExpectedVersion.NoStream,
-					StreamMetadata.Build().SetMetadataWriteRole("user1")).Wait();
+					StreamMetadata.Build().SetMetadataWriteRole("user1"));
 
-				Connection.SetStreamMetadataAsync(
+				await Connection.SetStreamMetadataAsync(
 					"$all",
 					ExpectedVersion.Any,
 					StreamMetadata.Build().SetReadRole("user1"),
-					new UserCredentials("adm", "admpa$$")).Wait();
+					new UserCredentials("adm", "admpa$$"));
 
-				Connection.SetStreamMetadataAsync(
+				await Connection.SetStreamMetadataAsync(
 					"$system-acl",
 					ExpectedVersion.NoStream,
 					StreamMetadata.Build()
@@ -123,8 +122,8 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 						.SetWriteRole("user1")
 						.SetMetadataReadRole("user1")
 						.SetMetadataWriteRole("user1"),
-					new UserCredentials("adm", "admpa$$")).Wait();
-				Connection.SetStreamMetadataAsync(
+					new UserCredentials("adm", "admpa$$"));
+				await Connection.SetStreamMetadataAsync(
 					"$system-adm",
 					ExpectedVersion.NoStream,
 					StreamMetadata.Build()
@@ -132,17 +131,17 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 						.SetWriteRole(SystemRoles.Admins)
 						.SetMetadataReadRole(SystemRoles.Admins)
 						.SetMetadataWriteRole(SystemRoles.Admins),
-					new UserCredentials("adm", "admpa$$")).Wait();
+					new UserCredentials("adm", "admpa$$"));
 
-				Connection.SetStreamMetadataAsync(
+				await Connection.SetStreamMetadataAsync(
 					"normal-all",
 					ExpectedVersion.NoStream,
 					StreamMetadata.Build()
 						.SetReadRole(SystemRoles.All)
 						.SetWriteRole(SystemRoles.All)
 						.SetMetadataReadRole(SystemRoles.All)
-						.SetMetadataWriteRole(SystemRoles.All)).Wait();
-				Connection.SetStreamMetadataAsync(
+						.SetMetadataWriteRole(SystemRoles.All));
+				await Connection.SetStreamMetadataAsync(
 					"$system-all",
 					ExpectedVersion.NoStream,
 					StreamMetadata.Build()
@@ -150,7 +149,7 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 						.SetWriteRole(SystemRoles.All)
 						.SetMetadataReadRole(SystemRoles.All)
 						.SetMetadataWriteRole(SystemRoles.All),
-					new UserCredentials("adm", "admpa$$")).Wait();
+					new UserCredentials("adm", "admpa$$"));
 			} catch {
 				if (_node != null)
 					try {
@@ -163,10 +162,10 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[OneTimeTearDown]
-		public override void TestFixtureTearDown() {
+		public override Task TestFixtureTearDown() {
 			_node.Shutdown();
 			Connection.Close();
-			base.TestFixtureTearDown();
+			return base.TestFixtureTearDown();
 		}
 
 		protected void ReadEvent(string streamId, string login, string password) {

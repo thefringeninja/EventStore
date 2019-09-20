@@ -1,4 +1,5 @@
-﻿using EventStore.Core.Tests.Services.Storage;
+﻿using System.Threading.Tasks;
+using EventStore.Core.Tests.Services.Storage;
 using EventStore.Core.TransactionLog.Chunks;
 using NUnit.Framework;
 
@@ -14,8 +15,8 @@ namespace EventStore.Core.Tests.TransactionLog.Scavenging.Helpers {
 		protected FakeTFScavengerLog Log;
 		protected FakeTableIndex FakeTableIndex;
 
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 
 			var dbConfig = TFChunkHelper.CreateDbConfig(PathName, 0, chunkSize: 1024 * 1024);
 			var dbCreationHelper = new TFChunkDbCreationHelper(dbConfig);
@@ -37,10 +38,10 @@ namespace EventStore.Core.Tests.TransactionLog.Scavenging.Helpers {
 			When();
 		}
 
-		public override void TestFixtureTearDown() {
+		public override Task TestFixtureTearDown() {
 			_dbResult.Db.Close();
 
-			base.TestFixtureTearDown();
+			return base.TestFixtureTearDown();
 		}
 
 		protected abstract void When();

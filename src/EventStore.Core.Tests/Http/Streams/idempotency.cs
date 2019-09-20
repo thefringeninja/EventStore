@@ -2,6 +2,7 @@
 using System.Text;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using EventStore.Core.Tests.Helpers;
 using NUnit.Framework;
 using Newtonsoft.Json.Linq;
@@ -15,17 +16,15 @@ namespace EventStore.Core.Tests.Http.Streams {
 			protected HttpResponseMessage _response;
 
 			[OneTimeSetUp]
-			public override void TestFixtureSetUp() {
-				base.TestFixtureSetUp();
+			public override Task TestFixtureSetUp() {
+				return base.TestFixtureSetUp();
 			}
 
 			[OneTimeTearDown]
-			public override void TestFixtureTearDown() {
-				if (_response != null) {
-					_response.Dispose();
-				}
+			public override Task TestFixtureTearDown() {
+				_response?.Dispose();
 
-				base.TestFixtureTearDown();
+				return base.TestFixtureTearDown();
 			}
 
 			[Test]

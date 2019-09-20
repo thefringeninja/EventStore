@@ -106,8 +106,8 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		}
 
 		[OneTimeSetUp]
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 
 			//find the master node
 			for(int i=0;i<_nodes.Length;i++){
@@ -125,11 +125,11 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		}
 
         [OneTimeTearDown]
-		public override void TestFixtureTearDown() {
+		public override Task TestFixtureTearDown() {
 			foreach(var kvp in _httpClients){
 				kvp.Value.Dispose();
 			}
-			base.TestFixtureTearDown();
+			return base.TestFixtureTearDown();
 		}
 
 		[Test, Combinatorial]

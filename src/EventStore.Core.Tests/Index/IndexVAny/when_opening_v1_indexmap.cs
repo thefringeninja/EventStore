@@ -23,11 +23,11 @@ namespace EventStore.Core.Tests.Index.IndexVAny {
 		private string _filename;
 
 		[OneTimeSetUp]
-		public override void TestFixtureSetUp() {
+		public override async Task TestFixtureSetUp() {
 			var ms = new MemoryStream(Encoding.UTF8.GetBytes(V2FileContents));
 			var md5 = MD5Hash.GetHashFor(ms);
 			V2FileContents = BitConverter.ToString(md5).Replace("-", "") + V2FileContents;
-			base.TestFixtureSetUp();
+			await base.TestFixtureSetUp();
 
 			_filename = GetFilePathFor("indexfile");
 			File.WriteAllText(_filename, V1FileContents);
@@ -48,8 +48,8 @@ namespace EventStore.Core.Tests.Index.IndexVAny {
 		private string _filename;
 
 		[OneTimeSetUp]
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 
 			_filename = GetFilePathFor("indexfile");
 			var empty = IndexMap.CreateEmpty(2, maxTableLevelsForAutomaticMerge: 4);

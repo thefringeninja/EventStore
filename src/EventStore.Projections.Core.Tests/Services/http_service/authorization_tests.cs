@@ -124,11 +124,11 @@ namespace EventStore.Projections.Core.Tests.Services.Transport.Http {
 		}
 
         [OneTimeTearDown]
-		public override void TestFixtureTearDown() {
+		public override Task TestFixtureTearDown() {
 			foreach(var kvp in _httpClients){
 				kvp.Value.Dispose();
 			}
-			base.TestFixtureTearDown();
+			return base.TestFixtureTearDown();
 		}
 
 		[Test, Combinatorial]

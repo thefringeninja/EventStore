@@ -1,4 +1,5 @@
-﻿using EventStore.ClientAPI;
+﻿using System.Threading.Tasks;
+using EventStore.ClientAPI;
 using EventStore.ClientAPI.SystemData;
 using EventStore.Core.Services;
 using NUnit.Framework;
@@ -7,8 +8,8 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 	[TestFixture, Category("ClientAPI"), Category("LongRunning"), Category("Network")]
 	public class overriden_system_stream_security_for_all : AuthenticationTestBase {
 		[OneTimeSetUp]
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 
 			var settings = new SystemSettings(
 				userStreamAcl: null,

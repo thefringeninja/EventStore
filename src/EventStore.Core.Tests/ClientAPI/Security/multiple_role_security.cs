@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.ClientAPI.Exceptions;
 using EventStore.ClientAPI.SystemData;
@@ -9,14 +10,14 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 	[TestFixture, Category("ClientAPI"), Category("LongRunning"), Category("Network")]
 	public class multiple_role_security : AuthenticationTestBase {
 		[OneTimeSetUp]
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 
 			var settings = new SystemSettings(
 				new StreamAcl(new[] {"user1", "user2"}, new[] {"$admins", "user1"}, new[] {"user1", SystemRoles.All},
 					null, null),
 				null);
-			Connection.SetSystemSettingsAsync(settings, new UserCredentials("adm", "admpa$$")).Wait();
+			await Connection.SetSystemSettingsAsync(settings, new UserCredentials("adm", "admpa$$"));
 		}
 
 		[Test]

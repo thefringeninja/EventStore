@@ -7,6 +7,7 @@ using EventStore.Core.TransactionLog;
 using EventStore.Core.Tests.Fakes;
 using System.IO;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using EventStore.Core.Exceptions;
 
 namespace EventStore.Core.Tests.Index.IndexV1 {
@@ -18,7 +19,6 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 
 		public void ConstructTableIndexWithCorruptIndexEntries(byte version, bool skipIndexVerify,
 			bool createForceVerifyFile = false) {
-			base.TestFixtureSetUp();
 			var lowHasher = new XXHashUnsafe();
 			var highHasher = new Murmur3AUnsafe();
 			var fakeReader = new TFReaderLease(new FakeIndexReader());
@@ -75,9 +75,10 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 			_tableIndex.Initialize(long.MaxValue);
 		}
 
-		public override void TestFixtureTearDown() {
+		[OneTimeTearDown]
+		public override Task TestFixtureTearDown() {
 			_tableIndex.Close();
-			base.TestFixtureTearDown();
+			return base.TestFixtureTearDown();
 		}
 
 		private ulong GetOriginalHash(ulong stream, byte version) {
