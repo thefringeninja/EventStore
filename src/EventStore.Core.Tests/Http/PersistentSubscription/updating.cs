@@ -14,17 +14,17 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 	class when_updating_a_subscription_without_permissions : with_admin_user {
 		private HttpResponseMessage _response;
 
-		protected override void Given() {
-			_response = MakeJsonPut(
+		protected override async Task Given() {
+			_response = await MakeJsonPut(
 				"/subscriptions/stream/groupname337",
 				new {
 					ResolveLinkTos = true
 				}, _admin);
 		}
 
-		protected override void When() {
+		protected override async Task When() {
 			SetDefaultCredentials(null);
-			_response = MakeJsonPost(
+			_response = await MakeJsonPost(
 				"/subscriptions/stream/groupname337",
 				new {
 					ResolveLinkTos = true
@@ -41,11 +41,10 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 	class when_updating_a_non_existent_subscription_without_permissions : with_admin_user {
 		private HttpResponseMessage _response;
 
-		protected override void Given() {
-		}
+		protected override Task Given() => Task.CompletedTask;
 
-		protected override void When() {
-			_response = MakeJsonPost(
+		protected override async Task When() {
+			_response = await MakeJsonPost(
 				"/subscriptions/stream/groupname3337",
 				new {
 					ResolveLinkTos = true
@@ -67,8 +66,8 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 		private const string _stream = "stream";
 		private AutoResetEvent _dropped = new AutoResetEvent(false);
 
-		protected override void Given() {
-			_response = MakeJsonPut(
+		protected override async Task Given() {
+			_response = await MakeJsonPut(
 				string.Format("/subscriptions/{0}/{1}", _stream, _groupName),
 				new {
 					ResolveLinkTos = true
@@ -85,8 +84,8 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				}, DefaultData.AdminCredentials);
 		}
 
-		protected override void When() {
-			_response = MakeJsonPost(
+		protected override async Task When() {
+			_response = await MakeJsonPost(
 				string.Format("/subscriptions/{0}/{1}", _stream, _groupName),
 				new {
 					ResolveLinkTos = true

@@ -4,17 +4,17 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace EventStore.Core.Tests.Http.PersistentSubscription {
 	[TestFixture, Category("LongRunning")]
 	class when_creating_a_subscription : with_admin_user {
 		private HttpResponseMessage _response;
 
-		protected override void Given() {
-		}
+		protected override Task Given() => Task.CompletedTask;
 
-		protected override void When() {
-			_response = MakeJsonPut(
+		protected override async Task When() {
+			_response = await MakeJsonPut(
 				"/subscriptions/stream/groupname334",
 				new {
 					ResolveLinkTos = true
@@ -23,7 +23,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 
 		[OneTimeTearDown]
 		public void TearDown() {
-			_response.Dispose();
+			_response?.Dispose();
 		}
 
 		[Test]
@@ -42,15 +42,14 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 	class when_creating_a_subscription_with_query_params : with_admin_user {
 		private HttpResponseMessage _response;
 
-		protected override void Given() {
-		}
+		protected override Task Given() => Task.CompletedTask;
 
-		protected override void When() {
-			_response = MakeJsonPut(
+		protected override async Task When() {
+			_response = await MakeJsonPut(
 				"/subscriptions/stream/groupname334",
 				new {
 					ResolveLinkTos = true
-				}, _admin, extra: "testing=test");
+				}, _admin, "testing=test");
 		}
 
 		[OneTimeTearDown]
@@ -74,12 +73,11 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 	class when_creating_a_subscription_without_permissions : with_admin_user {
 		private HttpResponseMessage _response;
 
-		protected override void Given() {
-		}
+		protected override Task Given() => Task.CompletedTask;
 
-		protected override void When() {
+		protected override async Task When() {
 			SetDefaultCredentials(null);
-			_response = MakeJsonPut(
+			_response = await MakeJsonPut(
 				"/subscriptions/stream/groupname337",
 				new {
 					ResolveLinkTos = true
@@ -88,7 +86,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 
 		[OneTimeTearDown]
 		public void TearDown() {
-			_response.Dispose();
+			_response?.Dispose();
 		}
 
 		[Test]
@@ -101,16 +99,16 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 	class when_creating_a_duplicate_subscription : with_admin_user {
 		private HttpResponseMessage _response;
 
-		protected override void Given() {
-			_response = MakeJsonPut(
+		protected override async Task Given() {
+			_response = await MakeJsonPut(
 				"/subscriptions/stream/groupname453",
 				new {
 					ResolveLinkTos = true
 				}, _admin);
 		}
 
-		protected override void When() {
-			_response = MakeJsonPut(
+		protected override async Task When() {
+			_response = await MakeJsonPut(
 				"/subscriptions/stream/groupname453",
 				new {
 					ResolveLinkTos = true
@@ -119,7 +117,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 
 		[OneTimeTearDown]
 		public void TearDown() {
-			_response.Dispose();
+			_response?.Dispose();
 		}
 
 		[Test]
@@ -135,7 +133,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 		protected string GroupName;
 		protected HttpResponseMessage Response;
 
-		protected override void Given() {
+		protected override async Task Given() {
 			Events = new List<object> {
 				new {EventId = Guid.NewGuid(), EventType = "event-type", Data = new {A = "1"}},
 				new {EventId = Guid.NewGuid(), EventType = "event-type", Data = new {B = "2"}},
@@ -143,17 +141,17 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				new {EventId = Guid.NewGuid(), EventType = "event-type", Data = new {D = "4"}}
 			};
 
-			Response = MakeArrayEventsPost(
+			Response = await MakeArrayEventsPost(
 				TestStream,
 				Events,
 				_admin);
 			Assert.AreEqual(HttpStatusCode.Created, Response.StatusCode);
 		}
 
-		protected override void When() {
+		protected override async Task When() {
 			GroupName = Guid.NewGuid().ToString();
 			SubscriptionPath = string.Format("/subscriptions/{0}/{1}", TestStream.Substring(9), GroupName);
-			Response = MakeJsonPut(SubscriptionPath,
+			Response = await MakeJsonPut(SubscriptionPath,
 				new {
 					ResolveLinkTos = true,
 					BufferSize = 10,
@@ -164,7 +162,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 
 		[OneTimeTearDown]
 		public void TearDown() {
-			Response.Dispose();
+			Response?.Dispose();
 		}
 
 		[Test]

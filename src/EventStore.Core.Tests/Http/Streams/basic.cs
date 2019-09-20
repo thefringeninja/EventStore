@@ -10,6 +10,7 @@ using System.Xml.Linq;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using EventStore.Common.Utils;
 using EventStore.Core.Tests.Http.Users.users;
 using HttpMethod = EventStore.Transport.Http.HttpMethod;
@@ -21,8 +22,8 @@ namespace EventStore.Core.Tests.Http.Streams {
 			when_requesting_a_single_event_in_the_stream_as_atom_json : HttpBehaviorSpecificationWithSingleEvent {
 			private JObject _json;
 
-			protected override void When() {
-				_json = GetJson<JObject>(TestStream + "/0", accept: ContentType.AtomJson);
+			protected override async Task When() {
+				_json = await GetJson<JObject>(TestStream + "/0", accept: ContentType.AtomJson);
 			}
 
 			[Test]
@@ -41,8 +42,8 @@ namespace EventStore.Core.Tests.Http.Streams {
 			when_requesting_a_single_event_in_the_stream_as_atom_xml : HttpBehaviorSpecificationWithSingleEvent {
 			private XDocument document;
 
-			protected override void When() {
-				Get(TestStream + "/0", "", accept: ContentType.Atom);
+			protected override async Task When() {
+				await Get(TestStream + "/0", "", accept: ContentType.Atom);
 				document = XDocument.Parse(_lastResponseBody);
 			}
 
@@ -65,11 +66,10 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class when_posting_an_event_as_raw_json_without_eventtype : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
-				_response = MakeJsonPost(
+			protected override async Task When() {
+				_response = await MakeJsonPost(
 					TestStream,
 					new {A = "1", B = "3", C = "5"});
 			}
@@ -84,11 +84,10 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class when_posting_an_event_to_idempotent_uri_as_events_array : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
-				_response = MakeArrayEventsPost(
+			protected override async Task When() {
+				_response = await MakeArrayEventsPost(
 					TestStream + "/incoming/" + Guid.NewGuid().ToString(),
 					new[] {new {EventId = Guid.NewGuid(), EventType = "event-type", Data = new {A = "1"}}});
 			}
@@ -103,11 +102,10 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class when_posting_an_event_as_json_to_idempotent_uri_without_event_type : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
-				_response = MakeJsonPost(
+			protected override async Task When() {
+				_response = await MakeJsonPost(
 					TestStream + "/incoming/" + Guid.NewGuid().ToString(),
 					new {A = "1", B = "3", C = "5"});
 			}
@@ -123,10 +121,9 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class when_posting_an_event_in_json_to_idempotent_uri_without_event_id : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
+			protected override async Task When() {
 				var request = CreateRequest(TestStream + "/incoming/" + Guid.NewGuid(), "", "POST",
 					"application/json");
 				request.Headers.Add("ES-EventType", "SomeType");
@@ -135,7 +132,7 @@ namespace EventStore.Core.Tests.Http.Streams {
 				request.Content = new ByteArrayContent(bytes) {
 					Headers = {ContentType = new MediaTypeHeaderValue("application/json")}
 				};
-				_response = GetRequestResponse(request);
+				_response = await GetRequestResponse(request);
 			}
 
 			[Test]
@@ -149,8 +146,8 @@ namespace EventStore.Core.Tests.Http.Streams {
 			}
 
 			[Test]
-			public void returns_a_location_header_that_can_be_read_as_json() {
-				var json = GetJson<JObject>(_response.Headers.GetLocationAsString());
+			public async Task returns_a_location_header_that_can_be_read_as_json() {
+				var json = await GetJson<JObject>(_response.Headers.GetLocationAsString());
 				HelperExtensions.AssertJson(new {a = "1", b = "3", c = "5"}, json);
 			}
 		}
@@ -159,10 +156,9 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class when_posting_an_event_as_raw_json_without_eventid : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
+			protected override async Task When() {
 				var request = CreateRequest(TestStream, "", "POST", "application/json");
 				request.Headers.Add("ES-EventType", "SomeType");
 				var data = "{A : \"1\", B:\"3\", C:\"5\" }";
@@ -170,7 +166,7 @@ namespace EventStore.Core.Tests.Http.Streams {
 				request.Content = new ByteArrayContent(bytes) {
 					Headers = {ContentType = new MediaTypeHeaderValue("application/json")}
 				};
-				_response = GetRequestResponse(request);
+				_response = await GetRequestResponse(request);
 			}
 
 			[Test]
@@ -194,11 +190,10 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class when_posting_an_event_as_array_with_no_event_type : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
-				_response = MakeArrayEventsPost(
+			protected override async Task When() {
+				_response = await MakeArrayEventsPost(
 					TestStream,
 					new[] {new {EventId = Guid.NewGuid(), Data = new {A = "1"}}});
 			}
@@ -214,11 +209,10 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class when_posting_an_event_as_array : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
-				_response = MakeArrayEventsPost(
+			protected override async Task When() {
+				_response = await MakeArrayEventsPost(
 					TestStream,
 					new[] {new {EventId = Guid.NewGuid(), EventType = "event-type", Data = new {A = "1"}}});
 			}
@@ -234,8 +228,8 @@ namespace EventStore.Core.Tests.Http.Streams {
 			}
 
 			[Test]
-			public void returns_a_location_header_that_can_be_read_as_json() {
-				var json = GetJson<JObject>(_response.Headers.GetLocationAsString());
+			public async Task returns_a_location_header_that_can_be_read_as_json() {
+				var json = await GetJson<JObject>(_response.Headers.GetLocationAsString());
 				HelperExtensions.AssertJson(new {A = "1"}, json);
 			}
 		}
@@ -244,17 +238,16 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class when_posting_an_event_as_array_to_stream_with_slash : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
+			protected override async Task When() {
 				var request = CreateRequest(TestStream + "/", "", "POST", "application/vnd.eventstore.events+json",
 					null);
 				request.Content = new ByteArrayContent(new[]
 					{new {EventId = Guid.NewGuid(), EventType = "event-type", Data = new {A = "1"}}}.ToJsonBytes()) {
 					Headers = { ContentType = new MediaTypeHeaderValue("application/vnd.eventstore.events+json")}
 				};
-				_response = _client.SendAsync(request).Result;
+				_response = await _client.SendAsync(request);
 			}
 
 			[Test]
@@ -283,12 +276,11 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class when_deleting_to_stream_with_slash : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
+			protected override async Task When() {
 				var request = CreateRequest(TestStream + "/", "", "DELETE", "application/json", null);
-				_response = _client.SendAsync(request).Result;
+				_response = await _client.SendAsync(request);
 			}
 
 			[Test]
@@ -311,12 +303,11 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class when_getting_from_stream_with_slash : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
+			protected override async Task When() {
 				var request = CreateRequest(TestStream + "/", "", "GET", "application/json", null);
-				_response = _client.SendAsync(request).Result;
+				_response = await _client.SendAsync(request);
 			}
 
 			[Test]
@@ -339,12 +330,11 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class when_getting_from_all_stream_with_slash : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
+			protected override async Task When() {
 				var request = CreateRequest("/streams/$all/", "", "GET", "application/json", DefaultData.AdminNetworkCredentials);
-				_response = _client.SendAsync(request).Result;
+				_response = await _client.SendAsync(request);
 			}
 
 			[Test]
@@ -367,14 +357,13 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class when_getting_from_encoded_all_stream_with_slash : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
+			protected override async Task When() {
 				var request = CreateRequest("/streams/$all/", "", "GET", "application/json", null);
 				request.Headers.Authorization = new AuthenticationHeaderValue("Basic",
 					GetAuthorizationHeader(DefaultData.AdminNetworkCredentials));
-				_response = _client.SendAsync(request).Result;
+				_response = await _client.SendAsync(request);
 			}
 
 			[Test]
@@ -397,17 +386,16 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class when_posting_an_event_as_array_to_metadata_stream_with_slash : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
+			protected override async Task When() {
 				var request = CreateRequest(TestStream + "/metadata/", "", "POST", "application/json", null);
 				request.Content = new ByteArrayContent(
 					new[] {new {EventId = Guid.NewGuid(), EventType = "event-type", Data = new {A = "1"}}}
 						.ToJsonBytes()) {
 					Headers = { ContentType = new MediaTypeHeaderValue("application/json")}
 				};
-				_response = _client.SendAsync(request).Result;
+				_response = await _client.SendAsync(request);
 			}
 
 			[Test]
@@ -431,14 +419,13 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class when_getting_from_metadata_stream_with_slash : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
+			protected override async Task When() {
 				var request = CreateRequest(TestStream + "/metadata/", "", "GET", "application/json", null);
 				request.Headers.Authorization = new AuthenticationHeaderValue("Basic",
 					GetAuthorizationHeader(DefaultData.AdminNetworkCredentials));
-				_response = _client.SendAsync(request).Result;
+				_response = await _client.SendAsync(request);
 			}
 
 			[Test]
@@ -462,11 +449,10 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class when_posting_an_event_without_EventId_as_array : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
-				_response = MakeJsonPost(
+			protected override async Task When() {
+				_response = await MakeJsonPost(
 					TestStream,
 					new[] {new {EventType = "event-type", Data = new {A = "1"}}});
 			}
@@ -481,11 +467,10 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class when_posting_an_event_without_EventType_as_array : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
-				_response = MakeArrayEventsPost(
+			protected override async Task When() {
+				_response = await MakeArrayEventsPost(
 					TestStream,
 					new[] {new {EventId = Guid.NewGuid(), Data = new {A = "1"}}});
 			}
@@ -500,11 +485,10 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class when_posting_an_event_with_date_time : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
-				_response = MakeArrayEventsPost(
+			protected override async Task When() {
+				_response = await MakeArrayEventsPost(
 					TestStream,
 					new[] {
 						new {
@@ -526,8 +510,8 @@ namespace EventStore.Core.Tests.Http.Streams {
 			}
 
 			[Test]
-			public void the_json_data_is_not_mangled() {
-				var json = GetJson<JObject>(_response.Headers.GetLocationAsString());
+			public async Task the_json_data_is_not_mangled() {
+				var json = await GetJson<JObject>(_response.Headers.GetLocationAsString());
 				HelperExtensions.AssertJson(new {A = "1987-11-07T00:00:00.000+01:00"}, json);
 			}
 		}
@@ -536,11 +520,10 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class when_posting_an_events_as_array : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
-				_response = MakeArrayEventsPost(
+			protected override async Task When() {
+				_response = await MakeArrayEventsPost(
 					TestStream,
 					new[] {
 						new {EventId = Guid.NewGuid(), EventType = "event-type", Data = new {A = "1"}},
@@ -559,8 +542,8 @@ namespace EventStore.Core.Tests.Http.Streams {
 			}
 
 			[Test]
-			public void returns_a_location_header_for_the_first_posted_event() {
-				var json = GetJson<JObject>(_response.Headers.GetLocationAsString());
+			public async Task returns_a_location_header_for_the_first_posted_event() {
+				var json = await GetJson<JObject>(_response.Headers.GetLocationAsString());
 				HelperExtensions.AssertJson(new {A = "1"}, json);
 			}
 		}
@@ -568,8 +551,8 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public abstract class HttpBehaviorSpecificationWithSingleEvent : with_admin_user {
 			protected HttpResponseMessage _response;
 
-			protected override void Given() {
-				_response = MakeArrayEventsPost(
+			protected override async Task Given() {
+				_response = await MakeArrayEventsPost(
 					TestStream,
 					new[] {new {EventId = Guid.NewGuid(), EventType = "event-type", Data = new {A = "1"}}});
 				Assert.AreEqual(HttpStatusCode.Created, _response.StatusCode);
@@ -580,8 +563,8 @@ namespace EventStore.Core.Tests.Http.Streams {
 		[TestFixture, Category("LongRunning")]
 		public class
 			when_requesting_a_single_event_that_is_deleted_linkto : HttpSpecificationWithLinkToToDeletedEvents {
-			protected override void When() {
-				Get("/streams/" + LinkedStreamName + "/0", "", "application/json", credentials: DefaultData.AdminNetworkCredentials);
+			protected override Task When() {
+				return Get("/streams/" + LinkedStreamName + "/0", "", "application/json", credentials: DefaultData.AdminNetworkCredentials);
 			}
 
 			[Test]
@@ -594,8 +577,8 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class
 			when_requesting_a_single_event_that_is_maxcount_deleted_linkto :
 				SpecificationWithLinkToToMaxCountDeletedEvents {
-			protected override void When() {
-				Get("/streams/" + LinkedStreamName + "/0", "", "application/json", DefaultData.AdminNetworkCredentials);
+			protected override Task When() {
+				return Get("/streams/" + LinkedStreamName + "/0", "", "application/json", DefaultData.AdminNetworkCredentials);
 			}
 
 			[Test]
@@ -611,8 +594,8 @@ namespace EventStore.Core.Tests.Http.Streams {
 				HttpBehaviorSpecificationWithSingleEvent {
 			private XDocument _xmlDocument;
 
-			protected override void When() {
-				_xmlDocument = GetXml(MakeUrl(TestStream + "/0"));
+			protected override async Task When() {
+				_xmlDocument = await GetXml(MakeUrl(TestStream + "/0"));
 			}
 
 			[Test]
@@ -631,8 +614,8 @@ namespace EventStore.Core.Tests.Http.Streams {
 			when_requesting_a_single_event_in_the_stream_as_event_json : HttpBehaviorSpecificationWithSingleEvent {
 			private JObject _json;
 
-			protected override void When() {
-				_json = GetJson<JObject>(TestStream + "/0", accept: ContentType.EventJson);
+			protected override async Task When() {
+				_json = await GetJson<JObject>(TestStream + "/0", accept: ContentType.EventJson);
 			}
 
 			[Test]
@@ -650,8 +633,8 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class when_requesting_a_single_event_in_the_stream_as_json : HttpBehaviorSpecificationWithSingleEvent {
 			private JObject _json;
 
-			protected override void When() {
-				_json = GetJson<JObject>(TestStream + "/0", accept: ContentType.Json);
+			protected override async Task When() {
+				_json = await GetJson<JObject>(TestStream + "/0", accept: ContentType.Json);
 			}
 
 			[Test]
@@ -668,8 +651,8 @@ namespace EventStore.Core.Tests.Http.Streams {
 		[TestFixture, Category("LongRunning")]
 		public class
 			when_requesting_a_single_event_in_the_stream_as_event_xml : HttpBehaviorSpecificationWithSingleEvent {
-			protected override void When() {
-				Get(TestStream + "/0", "", accept: ContentType.EventXml);
+			protected override Task When() {
+				return Get(TestStream + "/0", "", accept: ContentType.EventXml);
 			}
 
 			[Test]
@@ -680,8 +663,8 @@ namespace EventStore.Core.Tests.Http.Streams {
 
 		[TestFixture, Category("LongRunning")]
 		public class when_requesting_a_single_event_in_the_stream_as_xml : HttpBehaviorSpecificationWithSingleEvent {
-			protected override void When() {
-				Get(TestStream + "/0", "", accept: ContentType.Xml);
+			protected override Task When() {
+				return Get(TestStream + "/0", "", accept: ContentType.Xml);
 			}
 
 			[Test]
@@ -695,7 +678,7 @@ namespace EventStore.Core.Tests.Http.Streams {
 			protected HttpResponseMessage _response;
 			protected byte[] _data;
 
-			protected override void Given() {
+			protected override async Task Given() {
 				var request = CreateRequest(TestStream, String.Empty, HttpMethod.Post, "application/octet-stream");
 				request.Headers.Add("ES-EventType", "TestEventType");
 				request.Headers.Add("ES-EventID", Guid.NewGuid().ToString());
@@ -706,12 +689,12 @@ namespace EventStore.Core.Tests.Http.Streams {
 				request.Content = new ByteArrayContent(_data) {
 					Headers = {ContentType = new MediaTypeHeaderValue("application/octet-stream")}
 				};
-				_response = GetRequestResponse(request);
+				_response = await GetRequestResponse(request);
 				Assert.AreEqual(HttpStatusCode.Created, _response.StatusCode);
 			}
 
-			protected override void When() {
-				Get(TestStream + "/0", "", "application/octet-stream");
+			protected override Task When() {
+				return Get(TestStream + "/0", "", "application/octet-stream");
 			}
 
 			[Test]

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using EventStore.Core.Services;
 using EventStore.Core.Services.Transport.Http.Controllers;
 using EventStore.Core.Tests.Helpers;
@@ -24,11 +25,10 @@ namespace EventStore.Core.Tests.Http.Users {
 		class when_creating_a_user : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
-				_response = MakeJsonPost(
+			protected override async Task When() {
+				_response = await MakeJsonPost(
 					"/users/",
 					new {
 						LoginName = "test1",
@@ -49,8 +49,8 @@ namespace EventStore.Core.Tests.Http.Users {
 		class when_retrieving_a_user_details : with_admin_user {
 			private JObject _response;
 
-			protected override void Given() {
-				MakeJsonPost(
+			protected override Task Given() {
+				return MakeJsonPost(
 					"/users/",
 					new {
 						LoginName = "test1",
@@ -60,8 +60,8 @@ namespace EventStore.Core.Tests.Http.Users {
 					}, _admin);
 			}
 
-			protected override void When() {
-				_response = GetJson<JObject>("/users/test1");
+			protected override async Task When() {
+				_response = await GetJson<JObject>("/users/test1");
 			}
 
 			[Test]
@@ -115,8 +115,8 @@ namespace EventStore.Core.Tests.Http.Users {
 		class when_retrieving_a_disabled_user_details : with_admin_user {
 			private JObject _response;
 
-			protected override void Given() {
-				MakeJsonPost(
+			protected override async Task Given() {
+				await MakeJsonPost(
 					"/users/",
 					new {
 						LoginName = "test2",
@@ -125,11 +125,11 @@ namespace EventStore.Core.Tests.Http.Users {
 						Password = "Pa55w0rd!"
 					}, _admin);
 
-				MakePost("/users/test2/command/disable", _admin);
+				await MakePost("/users/test2/command/disable", _admin);
 			}
 
-			protected override void When() {
-				_response = GetJson<JObject>("/users/test2");
+			protected override async Task When() {
+				_response = await GetJson<JObject>("/users/test2");
 			}
 
 			[Test]
@@ -178,14 +178,14 @@ namespace EventStore.Core.Tests.Http.Users {
 		class when_creating_an_already_existing_user_account : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-				var response = MakeJsonPost(
+			protected override async Task Given() {
+				var response = await MakeJsonPost(
 					"/users/", new {LoginName = "test1", FullName = "User Full Name", Password = "Pa55w0rd!"}, _admin);
 				Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
 			}
 
-			protected override void When() {
-				_response = MakeJsonPost(
+			protected override async Task When() {
+				_response = await MakeJsonPost(
 					"/users/", new {LoginName = "test1", FullName = "User Full Name", Password = "Pa55w0rd!"}, _admin);
 			}
 
@@ -199,14 +199,14 @@ namespace EventStore.Core.Tests.Http.Users {
 		class when_creating_an_already_existing_user_account_with_a_different_password : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-				var response = MakeJsonPost(
+			protected override async Task Given() {
+				var response = await MakeJsonPost(
 					"/users/", new {LoginName = "test1", FullName = "User Full Name", Password = "Pa55w0rd!"}, _admin);
 				Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
 			}
 
-			protected override void When() {
-				_response = MakeJsonPost(
+			protected override async Task When() {
+				_response = await MakeJsonPost(
 					"/users/", new {LoginName = "test1", FullName = "User Full Name", Password = "AnotherPa55w0rd!"},
 					_admin);
 			}
@@ -219,13 +219,13 @@ namespace EventStore.Core.Tests.Http.Users {
 
 		[TestFixture, Category("LongRunning")]
 		class when_disabling_an_enabled_user_account : with_admin_user {
-			protected override void Given() {
-				MakeJsonPost(
+			protected override Task Given() {
+				return MakeJsonPost(
 					"/users/", new {LoginName = "test1", FullName = "User Full Name", Password = "Pa55w0rd!"}, _admin);
 			}
 
-			protected override void When() {
-				MakePost("/users/test1/command/disable", _admin);
+			protected override Task When() {
+				return MakePost("/users/test1/command/disable", _admin);
 			}
 
 			[Test]
@@ -234,8 +234,8 @@ namespace EventStore.Core.Tests.Http.Users {
 			}
 
 			[Test]
-			public void enables_it() {
-				var jsonResponse = GetJson<JObject>("/users/test1");
+			public async Task enables_it() {
+				var jsonResponse = await GetJson<JObject>("/users/test1");
 				HelperExtensions.AssertJson(
 					new {Success = true, Error = "Success", Data = new {LoginName = "test1", Disabled = true}},
 					jsonResponse);
@@ -246,14 +246,14 @@ namespace EventStore.Core.Tests.Http.Users {
 		class when_enabling_a_disabled_user_account : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-				MakeJsonPost(
+			protected override async Task Given() {
+				await MakeJsonPost(
 					"/users/", new {LoginName = "test1", FullName = "User Full Name", Password = "Pa55w0rd!"}, _admin);
-				MakePost("/users/test1/command/disable", _admin);
+				await MakePost("/users/test1/command/disable", _admin);
 			}
 
-			protected override void When() {
-				_response = MakePost("/users/test1/command/enable", _admin);
+			protected override async Task When() {
+				_response = await MakePost("/users/test1/command/enable", _admin);
 			}
 
 			[Test]
@@ -262,8 +262,8 @@ namespace EventStore.Core.Tests.Http.Users {
 			}
 
 			[Test]
-			public void disables_it() {
-				var jsonResponse = GetJson<JObject>("/users/test1");
+			public async Task disables_it() {
+				var jsonResponse = await GetJson<JObject>("/users/test1");
 				HelperExtensions.AssertJson(
 					new {Success = true, Error = "Success", Data = new {LoginName = "test1", Disabled = false}},
 					jsonResponse);
@@ -274,13 +274,13 @@ namespace EventStore.Core.Tests.Http.Users {
 		class when_updating_user_details : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-				MakeJsonPost(
+			protected override Task Given() {
+				return MakeJsonPost(
 					"/users/", new {LoginName = "test1", FullName = "User Full Name", Password = "Pa55w0rd!"}, _admin);
 			}
 
-			protected override void When() {
-				_response = MakeRawJsonPut("/users/test1", new {FullName = "Updated Full Name"}, _admin);
+			protected override async Task When() {
+				_response = await MakeRawJsonPut("/users/test1", new {FullName = "Updated Full Name"}, _admin);
 			}
 
 			[Test]
@@ -289,8 +289,8 @@ namespace EventStore.Core.Tests.Http.Users {
 			}
 
 			[Test]
-			public void updates_full_name() {
-				var jsonResponse = GetJson<JObject>("/users/test1");
+			public async Task updates_full_name() {
+				var jsonResponse = await GetJson<JObject>("/users/test1");
 				HelperExtensions.AssertJson(
 					new {Success = true, Error = "Success", Data = new {FullName = "Updated Full Name"}}, jsonResponse);
 			}
@@ -301,13 +301,13 @@ namespace EventStore.Core.Tests.Http.Users {
 		class when_resetting_a_password : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-				MakeJsonPost(
+			protected override Task Given() {
+				return MakeJsonPost(
 					"/users/", new {LoginName = "test1", FullName = "User Full Name", Password = "Pa55w0rd!"}, _admin);
 			}
 
-			protected override void When() {
-				_response = MakeJsonPost(
+			protected override async Task When() {
+				_response = await MakeJsonPost(
 					"/users/test1/command/reset-password", new {NewPassword = "NewPassword!"}, _admin);
 			}
 
@@ -317,8 +317,8 @@ namespace EventStore.Core.Tests.Http.Users {
 			}
 
 			[Test]
-			public void can_change_password_using_the_new_password() {
-				var response = MakeJsonPost(
+			public async Task can_change_password_using_the_new_password() {
+				var response = await MakeJsonPost(
 					"/users/test1/command/change-password",
 					new {CurrentPassword = "NewPassword!", NewPassword = "TheVeryNewPassword!"});
 				Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
@@ -330,13 +330,13 @@ namespace EventStore.Core.Tests.Http.Users {
 		class when_deleting_a_user_account : with_admin_user {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-				MakeJsonPost(
+			protected override Task Given() {
+				return MakeJsonPost(
 					"/users/", new {LoginName = "test1", FullName = "User Full Name", Password = "Pa55w0rd!"}, _admin);
 			}
 
-			protected override void When() {
-				_response = MakeDelete("/users/test1", _admin);
+			protected override async Task When() {
+				_response = await MakeDelete("/users/test1", _admin);
 			}
 
 			[Test]
@@ -345,8 +345,8 @@ namespace EventStore.Core.Tests.Http.Users {
 			}
 
 			[Test]
-			public void get_returns_not_found() {
-				GetJson<JObject>("/users/test1");
+			public async Task get_returns_not_found() {
+				await GetJson<JObject>("/users/test1");
 				Assert.AreEqual(HttpStatusCode.NotFound, _lastResponse.StatusCode);
 			}
 		}
