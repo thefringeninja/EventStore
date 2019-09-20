@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.ClientAPI.Exceptions;
 using EventStore.Core.Tests.ClientAPI.Helpers;
@@ -13,32 +14,32 @@ namespace EventStore.Core.Tests.ClientAPI {
 		private EventData _firstEvent;
 
 		[SetUp]
-		public override void SetUp() {
-			base.SetUp();
+		public override async Task SetUp() {
+			await base.SetUp();
 			_node = new MiniNode(PathName);
 			_node.Start();
 
 			_firstEvent = TestEvent.NewTestEvent();
 
 			_connection = BuildConnection(_node);
-			_connection.ConnectAsync().Wait();
+            await _connection.ConnectAsync();
 
-			Assert.AreEqual(2, _connection.AppendToStreamAsync("test-stream",
+			Assert.AreEqual(2, (await _connection.AppendToStreamAsync("test-stream",
 				ExpectedVersion.NoStream,
 				_firstEvent,
 				TestEvent.NewTestEvent(),
-				TestEvent.NewTestEvent()).Result.NextExpectedVersion);
+				TestEvent.NewTestEvent())).NextExpectedVersion);
 
-			using (var transaction = _connection.StartTransactionAsync("test-stream", 2).Result) {
-				Assert.AreEqual(2, transaction.CommitAsync().Result.NextExpectedVersion);
+			using (var transaction = await _connection.StartTransactionAsync("test-stream", 2)) {
+				Assert.AreEqual(2, (await transaction.CommitAsync()).NextExpectedVersion);
 			}
 		}
 
 		[TearDown]
-		public override void TearDown() {
+		public override Task TearDown() {
 			_connection.Close();
 			_node.Shutdown();
-			base.TearDown();
+			return base.TearDown();
 		}
 
 		protected virtual IEventStoreConnection BuildConnection(MiniNode node) {

@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.Core.Tests.ClientAPI.Helpers;
 using EventStore.Core.Tests.Helpers;
@@ -14,26 +15,26 @@ namespace EventStore.Core.Tests.ClientAPI {
 		private EventData[] _testEvents;
 
 		[SetUp]
-		public override void SetUp() {
-			base.SetUp();
+		public override async Task SetUp() {
+			await base.SetUp();
 			_node = new MiniNode(PathName);
 			_node.Start();
 
 			_connection = TestConnection.Create(_node.TcpEndPoint);
-			_connection.ConnectAsync().Wait();
+            await _connection.ConnectAsync();
 
-			_connection.SetStreamMetadataAsync(Stream, ExpectedVersion.NoStream,
-				StreamMetadata.Build().SetMaxCount(3)).Wait();
+            await _connection.SetStreamMetadataAsync(Stream, ExpectedVersion.NoStream,
+				StreamMetadata.Build().SetMaxCount(3));
 
 			_testEvents = Enumerable.Range(0, 5).Select(x => TestEvent.NewTestEvent(data: x.ToString())).ToArray();
-			_connection.AppendToStreamAsync(Stream, ExpectedVersion.NoStream, _testEvents).Wait();
+            await _connection.AppendToStreamAsync(Stream, ExpectedVersion.NoStream, _testEvents);
 		}
 
 		[TearDown]
-		public override void TearDown() {
+		public override Task TearDown() {
 			_connection.Close();
 			_node.Shutdown();
-			base.TearDown();
+			return base.TearDown();
 		}
 
 		[Test]

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.Common.Utils;
 using EventStore.Core.Messages;
@@ -16,16 +17,16 @@ namespace EventStore.Core.Tests.ClientAPI {
 		private MiniNode _node;
 
 		[SetUp]
-		public override void SetUp() {
-			base.SetUp();
+		public override async Task SetUp() {
+			await base.SetUp();
 			_node = new MiniNode(PathName);
 			_node.Start();
 		}
 
 		[TearDown]
-		public override void TearDown() {
+		public override Task TearDown() {
 			_node.Shutdown();
-			base.TearDown();
+			return base.TearDown();
 		}
 
 		protected virtual IEventStoreConnection BuildConnection(MiniNode node) {
