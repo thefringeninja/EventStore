@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.Core.Tests.Helpers;
 using NUnit.Framework;
@@ -9,10 +10,10 @@ using Newtonsoft.Json.Linq;
 
 namespace EventStore.Core.Tests.Http.StreamSecurity {
 	abstract class SpecificationWithUsers : HttpBehaviorSpecification {
-		protected override void Given() {
-			PostUser("user1", "User 1", "user1!", "other");
-			PostUser("user2", "User 2", "user2!", "other");
-			PostUser("guest", "Guest", "guest!");
+		protected override async Task Given() {
+			await PostUser("user1", "User 1", "user1!", "other");
+			await PostUser("user2", "User 2", "user2!", "other");
+			await PostUser("guest", "Guest", "guest!");
 		}
 
 		protected readonly NetworkCredential _admin = DefaultData.AdminNetworkCredentials;
@@ -26,28 +27,28 @@ namespace EventStore.Core.Tests.Http.StreamSecurity {
 				enableTrustedAuth: true);
 		}
 
-		protected void PostUser(string login, string userFullName, string password, params string[] groups) {
-			var response = MakeJsonPost(
+		protected async Task PostUser(string login, string userFullName, string password, params string[] groups) {
+			var response = await MakeJsonPost(
 				"/users/", new {LoginName = login + Tag, FullName = userFullName, Groups = groups, Password = password},
 				_admin);
 			Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
 		}
 
-		protected string PostMetadata(StreamMetadata metadata) {
-			var response = MakeArrayEventsPost(
+		protected async Task<string> PostMetadata(StreamMetadata metadata) {
+			var response = await MakeArrayEventsPost(
 				TestMetadataStream, new[] {new {EventId = Guid.NewGuid(), EventType = "event-type", Data = metadata}});
 			Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
 			return response.Headers.GetLocationAsString();
 		}
 
-		protected string PostEvent(int i) {
-			var response = MakeArrayEventsPost(
+		protected async Task<string> PostEvent(int i) {
+			var response = await MakeArrayEventsPost(
 				TestStream, new[] {new {EventId = Guid.NewGuid(), EventType = "event-type", Data = new {Number = i}}});
 			Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
 			return response.Headers.GetLocationAsString();
 		}
 
-		protected HttpResponseMessage PostEvent<T>(T data, NetworkCredential credentials = null) {
+		protected Task<HttpResponseMessage> PostEvent<T>(T data, NetworkCredential credentials = null) {
 			return MakeArrayEventsPost(
 				TestStream, new[] {new {EventId = Guid.NewGuid(), EventType = "event-type", Data = data}}, credentials);
 		}

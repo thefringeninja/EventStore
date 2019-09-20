@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.Common.Utils;
 using EventStore.Core.Services;
@@ -15,7 +16,7 @@ namespace EventStore.Core.Tests.Http.StreamSecurity {
 		class when_creating_a_secured_stream_by_posting_metadata : SpecificationWithUsers {
 			private HttpResponseMessage _response;
 
-			protected override void When() {
+			protected override async Task When() {
 				var metadata =
 					(StreamMetadata)
 					StreamMetadata.Build()
@@ -24,7 +25,7 @@ namespace EventStore.Core.Tests.Http.StreamSecurity {
 						.SetReadRole("")
 						.SetWriteRole("other");
 				var jsonMetadata = metadata.AsJsonString();
-				_response = MakeArrayEventsPost(
+				_response = await MakeArrayEventsPost(
 					TestMetadataStream,
 					new[] {
 						new {
@@ -41,19 +42,19 @@ namespace EventStore.Core.Tests.Http.StreamSecurity {
 			}
 
 			[Test]
-			public void refuses_to_post_event_as_anonymous() {
-				var response = PostEvent(new {Some = "Data"});
+			public async Task refuses_to_post_event_as_anonymous() {
+				var response = await PostEvent(new {Some = "Data"});
 				Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
 			}
 
 			[Test]
-			public void accepts_post_event_as_authorized_user() {
-				var response = PostEvent(new {Some = "Data"}, GetCorrectCredentialsFor("user1"));
+			public async Task accepts_post_event_as_authorized_user() {
+				var response = await PostEvent(new {Some = "Data"}, GetCorrectCredentialsFor("user1"));
 				Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
 			}
 
 			[Test]
-			public void accepts_post_event_as_authorized_user_by_trusted_auth() {
+			public async Task accepts_post_event_as_authorized_user_by_trusted_auth() {
 				var uri = MakeUrl(TestStream);
 
 				var request = new HttpRequestMessage(HttpMethod.Post, uri) {
@@ -66,7 +67,7 @@ namespace EventStore.Core.Tests.Http.StreamSecurity {
 						}
 					}
 				};
-				var response = GetRequestResponse(request);
+				var response = await GetRequestResponse(request);
 				Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
 			}
 		}

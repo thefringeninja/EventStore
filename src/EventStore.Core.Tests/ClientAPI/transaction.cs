@@ -121,7 +121,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public void should_commit_when_writing_with_exp_ver_any_even_while_somene_is_writing_in_parallel() {
+		public async Task should_commit_when_writing_with_exp_ver_any_even_while_somene_is_writing_in_parallelAsync() {
 			const string stream =
 				"should_commit_when_writing_with_exp_ver_any_even_while_somene_is_writing_in_parallel";
 
@@ -173,9 +173,9 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 			// check all written
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
-				var slice = store.ReadStreamEventsForwardAsync(stream, 0, totalTranWrites + totalPlainWrites, false)
-					.Result;
+                await store.ConnectAsync();
+				var slice = await store.ReadStreamEventsForwardAsync(stream, 0, totalTranWrites + totalPlainWrites, false)
+;
 				Assert.That(slice.Events.Length, Is.EqualTo(totalTranWrites + totalPlainWrites));
 
 				Assert.That(slice.Events.Count(ent => Helper.UTF8NoBom.GetString(ent.Event.Metadata) == "trans write"),
@@ -187,69 +187,67 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public void should_fail_to_commit_if_started_with_correct_ver_but_committing_with_bad() {
+		public async Task should_fail_to_commit_if_started_with_correct_ver_but_committing_with_bad() {
 			const string stream = "should_fail_to_commit_if_started_with_correct_ver_but_committing_with_bad";
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
+                await store.ConnectAsync();
 				using (var transaction = store.StartTransactionAsync(stream, ExpectedVersion.NoStream).Result) {
-					store.AppendToStreamAsync(stream, ExpectedVersion.NoStream, new[] {TestEvent.NewTestEvent()})
-						.Wait();
-					transaction.WriteAsync(TestEvent.NewTestEvent()).Wait();
-					Assert.That(() => transaction.CommitAsync().Wait(),
-						Throws.Exception.TypeOf<AggregateException>().With.InnerException
-							.TypeOf<WrongExpectedVersionException>());
+                    await store.AppendToStreamAsync(stream, ExpectedVersion.NoStream, new[] {TestEvent.NewTestEvent()})
+;
+                    await transaction.WriteAsync(TestEvent.NewTestEvent());
+                    Assert.ThrowsAsync<WrongExpectedVersionException>(() => transaction.CommitAsync());
 				}
 			}
 		}
 
 		[Test, Category("Network")]
-		public void should_not_fail_to_commit_if_started_with_wrong_ver_but_committing_with_correct_ver() {
+		public async Task should_not_fail_to_commit_if_started_with_wrong_ver_but_committing_with_correct_ver() {
 			const string stream = "should_not_fail_to_commit_if_started_with_wrong_ver_but_committing_with_correct_ver";
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
-				using (var transaction = store.StartTransactionAsync(stream, 0).Result) {
-					store.AppendToStreamAsync(stream, ExpectedVersion.NoStream, new[] {TestEvent.NewTestEvent()})
-						.Wait();
-					transaction.WriteAsync(TestEvent.NewTestEvent()).Wait();
-					Assert.AreEqual(1, transaction.CommitAsync().Result.NextExpectedVersion);
+                await store.ConnectAsync();
+				using (var transaction = await store.StartTransactionAsync(stream, 0)) {
+                    await store.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent())
+;
+                    await transaction.WriteAsync(TestEvent.NewTestEvent());
+                    var writeResult = await transaction.CommitAsync();
+                    Assert.AreEqual(1, writeResult.NextExpectedVersion);
 				}
 			}
 		}
 
 		[Test]
 		[Category("Network")]
-		public void should_fail_to_commit_if_started_with_correct_ver_but_on_commit_stream_was_deleted() {
+		public async Task should_fail_to_commit_if_started_with_correct_ver_but_on_commit_stream_was_deleted() {
 			const string stream = "should_fail_to_commit_if_started_with_correct_ver_but_on_commit_stream_was_deleted";
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
+                await store.ConnectAsync();
 				using (var transaction = store.StartTransactionAsync(stream, ExpectedVersion.NoStream).Result) {
-					transaction.WriteAsync(TestEvent.NewTestEvent()).Wait();
-					store.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: true).Wait();
-					Assert.That(() => transaction.CommitAsync().Wait(),
-						Throws.Exception.TypeOf<AggregateException>().With.InnerException
-							.TypeOf<StreamDeletedException>());
+                    await transaction.WriteAsync(TestEvent.NewTestEvent());
+                    await store.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: true);
+                    Assert.ThrowsAsync<StreamDeletedException>(() => transaction.CommitAsync());
 				}
 			}
 		}
 
 		[Test, Category("LongRunning")]
-		public void idempotency_is_correct_for_explicit_transactions_with_expected_version_any() {
+		public async Task idempotency_is_correct_for_explicit_transactions_with_expected_version_any() {
 			const string streamId = "idempotency_is_correct_for_explicit_transactions_with_expected_version_any";
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
+                await store.ConnectAsync();
 
 				var e = new EventData(Guid.NewGuid(), "SomethingHappened", true,
 					Helper.UTF8NoBom.GetBytes("{Value:42}"), null);
 
-				var transaction1 = store.StartTransactionAsync(streamId, ExpectedVersion.Any).Result;
-				transaction1.WriteAsync(new[] {e}).Wait();
-				Assert.AreEqual(0, transaction1.CommitAsync().Result.NextExpectedVersion);
+				var transaction1 = await store.StartTransactionAsync(streamId, ExpectedVersion.Any);
+                await transaction1.WriteAsync(e);
+				Assert.AreEqual(0, (await transaction1.CommitAsync()).NextExpectedVersion);
 
-				var transaction2 = store.StartTransactionAsync(streamId, ExpectedVersion.Any).Result;
-				transaction2.WriteAsync(new[] {e}).Wait();
-				Assert.AreEqual(0, transaction2.CommitAsync().Result.NextExpectedVersion);
+				var transaction2 = await store.StartTransactionAsync(streamId, ExpectedVersion.Any);
+                await transaction2.WriteAsync(e);
+                var writeResult = await transaction2.CommitAsync();
+                Assert.AreEqual(0, writeResult.NextExpectedVersion);
 
-				var res = store.ReadStreamEventsForwardAsync(streamId, 0, 100, false).Result;
+				var res = await store.ReadStreamEventsForwardAsync(streamId, 0, 100, false);
 				Assert.AreEqual(1, res.Events.Length);
 				Assert.AreEqual(e.EventId, res.Events[0].Event.EventId);
 			}

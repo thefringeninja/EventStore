@@ -18,8 +18,8 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 		when_getting_statistics_for_new_subscription_for_stream_with_existing_events : with_subscription_having_events {
 		private JArray _json;
 
-		protected override void When() {
-			_json = GetJson<JArray>("/subscriptions", accept: ContentType.Json);
+		protected override async Task When() {
+			_json = await GetJson<JArray>("/subscriptions", accept: ContentType.Json);
 		}
 
 		[Test]
@@ -40,8 +40,8 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 	class when_getting_all_statistics_in_json : with_subscription_having_events {
 		private JArray _json;
 
-		protected override void When() {
-			_json = GetJson<JArray>("/subscriptions", accept: ContentType.Json);
+		protected override async Task When() {
+			_json = await GetJson<JArray>("/subscriptions", accept: ContentType.Json);
 		}
 
 		[Test]
@@ -59,8 +59,8 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 	class when_getting_all_statistics_in_xml : with_subscription_having_events {
 		private XDocument _xml;
 
-		protected override void When() {
-			_xml = GetXml(MakeUrl("/subscriptions"));
+		protected override async Task When() {
+			_xml = await GetXml(MakeUrl("/subscriptions"));
 		}
 
 		[Test]
@@ -78,12 +78,11 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 	class when_getting_non_existent_single_statistics : with_admin_user {
 		private HttpResponseMessage _response;
 
-		protected override void Given() {
-		}
+		protected override Task Given() => Task.CompletedTask;
 
-		protected override void When() {
+		protected override async Task When() {
 			var request = CreateRequest("/subscriptions/fu/fubar", null, "GET", "text/xml");
-			_response = GetRequestResponse(request);
+			_response = await GetRequestResponse(request);
 		}
 
 		[Test]
@@ -96,12 +95,11 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 	class when_getting_non_existent_stream_statistics : with_admin_user {
 		private HttpResponseMessage _response;
 
-		protected override void Given() {
-		}
+		protected override Task Given() => Task.CompletedTask;
 
-		protected override void When() {
+		protected override async Task When() {
 			var request = CreateRequest("/subscriptions/fubar", null, "GET", "text/xml", null);
-			_response = GetRequestResponse(request);
+			_response = await GetRequestResponse(request);
 		}
 
 		[Test]
@@ -115,8 +113,8 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 		private JObject _json;
 
 
-		protected override void When() {
-			_json = GetJson<JObject>("/subscriptions/" + _streamName + "/" + _groupName + "/info", ContentType.Json);
+		protected override async Task When() {
+			_json = await GetJson<JObject>("/subscriptions/" + _streamName + "/" + _groupName + "/info", ContentType.Json);
 		}
 
 		[Test]
@@ -192,10 +190,10 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 
 		private JArray _json;
 
-		protected override void Given() {
-			base.Given();
-			_conn.CreatePersistentSubscriptionAsync(_streamName, "secondgroup", _settings,
-				DefaultData.AdminCredentials).Wait();
+		protected override async Task Given() {
+			await base.Given();
+            await _conn.CreatePersistentSubscriptionAsync(_streamName, "secondgroup", _settings,
+				DefaultData.AdminCredentials);
 			_conn.ConnectToPersistentSubscription(_streamName, "secondgroup",
 				(subscription, @event) => {
 					Console.WriteLine();
@@ -218,8 +216,8 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				DefaultData.AdminCredentials);
 		}
 
-		protected override void When() {
-			_json = GetJson<JArray>("/subscriptions", ContentType.Json);
+		protected override async Task When() {
+			_json = await GetJson<JArray>("/subscriptions", ContentType.Json);
 		}
 
 		[Test]
@@ -327,10 +325,10 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 		private EventStorePersistentSubscriptionBase _sub3;
 		private EventStorePersistentSubscriptionBase _sub5;
 
-		protected override void Given() {
-			base.Given();
-			_conn.CreatePersistentSubscriptionAsync(_streamName, "secondgroup", _settings,
-				DefaultData.AdminCredentials).Wait();
+		protected override async Task Given() {
+			await base.Given();
+            await _conn.CreatePersistentSubscriptionAsync(_streamName, "secondgroup", _settings,
+				DefaultData.AdminCredentials);
 			_sub3 = _conn.ConnectToPersistentSubscription(_streamName, "secondgroup",
 				(subscription, @event) => {
 					Console.WriteLine();
@@ -353,12 +351,12 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				DefaultData.AdminCredentials);
 		}
 
-		protected override void When() {
+		protected override async Task When() {
 			//make mcs stop bitching
 			Console.WriteLine(_sub3);
 			Console.WriteLine(_sub4);
 			Console.WriteLine(_sub5);
-			_json = GetJson<JArray>("/subscriptions/" + _streamName, ContentType.Json);
+			_json = await GetJson<JArray>("/subscriptions/" + _streamName, ContentType.Json);
 		}
 
 		[Test]
@@ -442,11 +440,11 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 			.DoNotResolveLinkTos()
 			.StartFromCurrent();
 
-		protected override void Given() {
+		protected override async Task Given() {
 			_conn = EventStoreConnection.Create(_node.TcpEndPoint);
-			_conn.ConnectAsync().Wait();
-			_conn.CreatePersistentSubscriptionAsync(_streamName, _groupName, _settings,
-				DefaultData.AdminCredentials).Wait();
+            await _conn.ConnectAsync();
+            await _conn.CreatePersistentSubscriptionAsync(_streamName, _groupName, _settings,
+				DefaultData.AdminCredentials);
 			_sub1 = _conn.ConnectToPersistentSubscription(_streamName, _groupName,
 				(subscription, @event) => {
 					Console.WriteLine();
@@ -462,12 +460,11 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				DefaultData.AdminCredentials);
 		}
 
-		protected override void When() {
-		}
+		protected override Task When() => Task.CompletedTask;
 
 		[OneTimeTearDown]
-		public void Teardown() {
-			_conn.DeletePersistentSubscriptionAsync(_streamName, _groupName, DefaultData.AdminCredentials).Wait();
+		public async Task Teardown() {
+            await _conn.DeletePersistentSubscriptionAsync(_streamName, _groupName, DefaultData.AdminCredentials);
 			_conn.Close();
 			_conn.Dispose();
 		}

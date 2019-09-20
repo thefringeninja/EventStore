@@ -9,6 +9,7 @@ using System.Threading;
 using Newtonsoft.Json.Linq;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 using HttpStatusCode = System.Net.HttpStatusCode;
 using EventStore.Transport.Http;
 
@@ -19,14 +20,14 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 		private HttpResponseMessage _response;
 		private string _ackLink;
 
-		protected override void Given() {
-			base.Given();
-			var json = GetJson<JObject>(
+		protected override async Task Given() {
+			await base.Given();
+			var json = await GetJson<JObject>(
 				SubscriptionPath + "/1",
 				ContentType.CompetingJson,
 				_admin);
 			Assert.AreEqual(HttpStatusCode.OK, _lastResponse.StatusCode);
-			_ackLink = ((JObject)json)["entries"].Children().First()["links"].Children()
+			_ackLink = json["entries"].Children().First()["links"].Children()
 				.First(x => x.Value<string>("relation") == "ack").Value<string>("uri");
 		}
 
@@ -35,8 +36,8 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 			_response.Dispose();
 		}
 
-		protected override void When() {
-			_response = MakePost(_ackLink, _admin);
+		protected override async Task When() {
+			_response = await MakePost(_ackLink, _admin);
 		}
 
 		[Test]
@@ -49,14 +50,14 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 		private HttpResponseMessage _response;
 		private string _ackAllLink;
 
-		protected override void Given() {
-			base.Given();
-			var json = GetJson<JObject>(
+		protected override async Task Given() {
+			await base.Given();
+			var json = await GetJson<JObject>(
 				SubscriptionPath + "/" + Events.Count,
 				ContentType.CompetingJson,
 				_admin);
 			Assert.AreEqual(HttpStatusCode.OK, _lastResponse.StatusCode);
-			_ackAllLink = ((JObject)json)["links"].Children().First(x => x.Value<string>("relation") == "ackAll")
+			_ackAllLink = json["links"].Children().First(x => x.Value<string>("relation") == "ackAll")
 				.Value<string>("uri");
 		}
 
@@ -65,8 +66,8 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 			_response.Dispose();
 		}
 
-		protected override void When() {
-			_response = MakePost(_ackAllLink, _admin);
+		protected override async Task When() {
+			_response = await MakePost(_ackAllLink, _admin);
 		}
 
 		[Test]

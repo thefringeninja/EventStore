@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.Transport.Http;
 using Newtonsoft.Json.Linq;
@@ -25,7 +25,7 @@ namespace EventStore.Core.Tests.Http.Streams {
 				get { return "Stream deleted"; }
 			}
 
-			public HttpResponseMessage PostEventWithExpectedVersion(long expectedVersion) {
+			public Task<HttpResponseMessage> PostEventWithExpectedVersion(long expectedVersion) {
 				var request = CreateRequest(TestStream, "", "POST", "application/json");
 				request.Headers.Add("ES-EventType", "SomeType");
 				request.Headers.Add("ES-ExpectedVersion", expectedVersion.ToString());
@@ -37,19 +37,19 @@ namespace EventStore.Core.Tests.Http.Streams {
 				return GetRequestResponse(request);
 			}
 
-			public void HardDeleteTestStream() {
-				DeleteTestStream(true);
+			public Task HardDeleteTestStream() {
+				return DeleteTestStream(true);
 			}
 
-			public void DeleteTestStream(bool hardDelete = false) {
+			public async Task DeleteTestStream(bool hardDelete = false) {
 				var deleteRequest = CreateRequest(TestStream, "", "DELETE", "application/json");
 				deleteRequest.Headers.Add("ES-ExpectedVersion", (ExpectedVersion.Any).ToString());
 				deleteRequest.Headers.Add("ES-HardDelete", hardDelete.ToString());
-				GetRequestResponse(deleteRequest);
+				await GetRequestResponse(deleteRequest);
 			}
 
-			public List<JToken> GetTestStream() {
-				var stream = GetJson<JObject>(TestStream + "/0/forward/10", accept: ContentType.Json);
+			public async Task<List<JToken>> GetTestStream() {
+				var stream = await GetJson<JObject>(TestStream + "/0/forward/10", accept: ContentType.Json);
 				return stream != null ? stream["entries"].ToList() : new List<JToken>();
 			}
 		}
@@ -61,12 +61,11 @@ namespace EventStore.Core.Tests.Http.Streams {
 			private HttpResponseMessage _response;
 			private List<JToken> _read;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
-				_response = PostEventWithExpectedVersion(ExpectedVersion.NoStream);
-				_read = GetTestStream();
+			protected override async Task When() {
+				_response = await PostEventWithExpectedVersion(ExpectedVersion.NoStream);
+				_read = await GetTestStream();
 			}
 
 			[Test]
@@ -85,13 +84,13 @@ namespace EventStore.Core.Tests.Http.Streams {
 			private HttpResponseMessage _response;
 			private List<JToken> _read;
 
-			protected override void Given() {
-				PostEventWithExpectedVersion(ExpectedVersion.Any);
+			protected override Task Given() {
+				return PostEventWithExpectedVersion(ExpectedVersion.Any);
 			}
 
-			protected override void When() {
-				_response = PostEventWithExpectedVersion(ExpectedVersion.NoStream);
-				_read = GetTestStream();
+			protected override async Task When() {
+				_response = await PostEventWithExpectedVersion(ExpectedVersion.NoStream);
+				_read = await GetTestStream();
 			}
 
 			[Test]
@@ -118,12 +117,11 @@ namespace EventStore.Core.Tests.Http.Streams {
 			private HttpResponseMessage _response;
 			private List<JToken> _read;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
-				_response = PostEventWithExpectedVersion(ExpectedVersion.Any);
-				_read = GetTestStream();
+			protected override async Task When() {
+				_response = await PostEventWithExpectedVersion(ExpectedVersion.Any);
+				_read = await GetTestStream();
 			}
 
 			[Test]
@@ -142,15 +140,15 @@ namespace EventStore.Core.Tests.Http.Streams {
 			private HttpResponseMessage _response;
 			private List<JToken> _read;
 
-			protected override void Given() {
+			protected override async Task Given() {
 				for (var i = 0; i < 3; i++) {
-					PostEventWithExpectedVersion(ExpectedVersion.Any);
+					await PostEventWithExpectedVersion(ExpectedVersion.Any);
 				}
 			}
 
-			protected override void When() {
-				_response = PostEventWithExpectedVersion(ExpectedVersion.Any);
-				_read = GetTestStream();
+			protected override async Task When() {
+				_response = await PostEventWithExpectedVersion(ExpectedVersion.Any);
+				_read = await GetTestStream();
 			}
 
 			[Test]
@@ -168,12 +166,12 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class should_fail_appending_with_any_exp_ver_to_deleted_stream : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-				HardDeleteTestStream();
+			protected override Task Given() {
+				return HardDeleteTestStream();
 			}
 
-			protected override void When() {
-				_response = PostEventWithExpectedVersion(ExpectedVersion.Any);
+			protected override async Task When() {
+				_response = await PostEventWithExpectedVersion(ExpectedVersion.Any);
 			}
 
 			[Test]
@@ -188,15 +186,15 @@ namespace EventStore.Core.Tests.Http.Streams {
 			private HttpResponseMessage _response;
 			private List<JToken> _read;
 
-			protected override void Given() {
+			protected override async Task Given() {
 				for (var i = 0; i < 3; i++) {
-					PostEventWithExpectedVersion(ExpectedVersion.Any);
+					await PostEventWithExpectedVersion(ExpectedVersion.Any);
 				}
 			}
 
-			protected override void When() {
-				_response = PostEventWithExpectedVersion(2);
-				_read = GetTestStream();
+			protected override async Task When() {
+				_response = await PostEventWithExpectedVersion(2);
+				_read = await GetTestStream();
 			}
 
 			[Test]
@@ -215,15 +213,15 @@ namespace EventStore.Core.Tests.Http.Streams {
 			private HttpResponseMessage _response;
 			private List<JToken> _read;
 
-			protected override void Given() {
+			protected override async Task Given() {
 				for (var i = 0; i < 2; i++) {
-					PostEventWithExpectedVersion(ExpectedVersion.Any);
+					await PostEventWithExpectedVersion(ExpectedVersion.Any);
 				}
 			}
 
-			protected override void When() {
-				_response = PostEventWithExpectedVersion(4);
-				_read = GetTestStream();
+			protected override async Task When() {
+				_response = await PostEventWithExpectedVersion(4);
+				_read = await GetTestStream();
 			}
 
 			[Test]
@@ -249,12 +247,11 @@ namespace EventStore.Core.Tests.Http.Streams {
 			private HttpResponseMessage _response;
 			private List<JToken> _read;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
-				_response = PostEventWithExpectedVersion(1);
-				_read = GetTestStream();
+			protected override async Task When() {
+				_response = await PostEventWithExpectedVersion(1);
+				_read = await GetTestStream();
 			}
 
 			[Test]
@@ -279,12 +276,12 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class should_fail_appending_with_correct_exp_ver_to_deleted_stream : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-				HardDeleteTestStream();
+			protected override Task Given() {
+				return HardDeleteTestStream();
 			}
 
-			protected override void When() {
-				_response = PostEventWithExpectedVersion(ExpectedVersion.NoStream);
+			protected override async Task When() {
+				_response = await PostEventWithExpectedVersion(ExpectedVersion.NoStream);
 			}
 
 			[Test]
@@ -298,12 +295,12 @@ namespace EventStore.Core.Tests.Http.Streams {
 		public class should_fail_appending_with_invalid_exp_ver_to_deleted_stream : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-				HardDeleteTestStream();
+			protected override Task Given() {
+				return HardDeleteTestStream();
 			}
 
-			protected override void When() {
-				_response = PostEventWithExpectedVersion(5);
+			protected override async Task When() {
+				_response = await PostEventWithExpectedVersion(5);
 			}
 
 			[Test]
@@ -318,13 +315,13 @@ namespace EventStore.Core.Tests.Http.Streams {
 			private HttpResponseMessage _response;
 			private List<JToken> _read;
 
-			protected override void Given() {
-				PostEventWithExpectedVersion(ExpectedVersion.Any);
+			protected override Task Given() {
+				return PostEventWithExpectedVersion(ExpectedVersion.Any);
 			}
 
-			protected override void When() {
-				_response = PostEventWithExpectedVersion(ExpectedVersion.StreamExists);
-				_read = GetTestStream();
+			protected override async Task When() {
+				_response = await PostEventWithExpectedVersion(ExpectedVersion.StreamExists);
+				_read = await GetTestStream();
 			}
 
 			[Test]
@@ -344,15 +341,15 @@ namespace EventStore.Core.Tests.Http.Streams {
 			private HttpResponseMessage _response;
 			private List<JToken> _read;
 
-			protected override void Given() {
+			protected override async Task Given() {
 				for (var i = 0; i < 2; i++) {
-					PostEventWithExpectedVersion(ExpectedVersion.Any);
+					await PostEventWithExpectedVersion(ExpectedVersion.Any);
 				}
 			}
 
-			protected override void When() {
-				_response = PostEventWithExpectedVersion(ExpectedVersion.StreamExists);
-				_read = GetTestStream();
+			protected override async Task When() {
+				_response = await PostEventWithExpectedVersion(ExpectedVersion.StreamExists);
+				_read = await GetTestStream();
 			}
 
 			[Test]
@@ -371,7 +368,7 @@ namespace EventStore.Core.Tests.Http.Streams {
 			private HttpResponseMessage _response;
 			private List<JToken> _read;
 
-			protected override void Given() {
+			protected override async Task Given() {
 				var request = CreateRequest(TestMetadataStream, "", "POST", "application/json");
 				request.Headers.Add("ES-EventType", "$user-created");
 				request.Headers.Add("ES-ExpectedVersion", ExpectedVersion.Any.ToString());
@@ -380,12 +377,12 @@ namespace EventStore.Core.Tests.Http.Streams {
 				request.Content = new ByteArrayContent(data) {
 					Headers = {ContentType = new MediaTypeHeaderValue("application/json")}
 				};
-				GetRequestResponse(request);
+				await GetRequestResponse(request);
 			}
 
-			protected override void When() {
-				_response = PostEventWithExpectedVersion(ExpectedVersion.StreamExists);
-				_read = GetTestStream();
+			protected override async Task When() {
+				_response = await PostEventWithExpectedVersion(ExpectedVersion.StreamExists);
+				_read = await GetTestStream();
 			}
 
 			[Test]
@@ -405,12 +402,11 @@ namespace EventStore.Core.Tests.Http.Streams {
 			private HttpResponseMessage _response;
 			private List<JToken> _read;
 
-			protected override void Given() {
-			}
+			protected override Task Given() => Task.CompletedTask;
 
-			protected override void When() {
-				_response = PostEventWithExpectedVersion(ExpectedVersion.StreamExists);
-				_read = GetTestStream();
+			protected override async Task When() {
+				_response = await PostEventWithExpectedVersion(ExpectedVersion.StreamExists);
+				_read = await GetTestStream();
 			}
 
 			[Test]
@@ -437,12 +433,12 @@ namespace EventStore.Core.Tests.Http.Streams {
 			should_fail_appending_with_stream_exists_exp_ver_to_hard_deleted_stream : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-				HardDeleteTestStream();
+			protected override Task Given() {
+				return HardDeleteTestStream();
 			}
 
-			protected override void When() {
-				_response = PostEventWithExpectedVersion(ExpectedVersion.StreamExists);
+			protected override async Task When() {
+				_response = await PostEventWithExpectedVersion(ExpectedVersion.StreamExists);
 			}
 
 			[Test]
@@ -457,12 +453,12 @@ namespace EventStore.Core.Tests.Http.Streams {
 			should_fail_appending_with_stream_exists_exp_ver_to_soft_deleted_stream : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
 
-			protected override void Given() {
-				DeleteTestStream();
+			protected override Task Given() {
+				return DeleteTestStream();
 			}
 
-			protected override void When() {
-				_response = PostEventWithExpectedVersion(ExpectedVersion.StreamExists);
+			protected override async Task When() {
+				_response = await PostEventWithExpectedVersion(ExpectedVersion.StreamExists);
 			}
 
 			[Test]
