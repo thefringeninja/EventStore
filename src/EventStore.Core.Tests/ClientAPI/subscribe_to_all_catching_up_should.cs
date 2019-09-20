@@ -22,23 +22,23 @@ namespace EventStore.Core.Tests.ClientAPI {
 		private IEventStoreConnection _conn;
 
 		[SetUp]
-		public override void SetUp() {
-			base.SetUp();
+		public override async Task SetUp() {
+			await base.SetUp();
 			_node = new MiniNode(PathName, skipInitializeStandardUsersCheck: false);
 			_node.Start();
 
 			_conn = BuildConnection(_node);
-			_conn.ConnectAsync().Wait();
-			_conn.SetStreamMetadataAsync("$all", -1,
+            await _conn.ConnectAsync();
+            await _conn.SetStreamMetadataAsync("$all", -1,
 				StreamMetadata.Build().SetReadRole(SystemRoles.All),
-				new UserCredentials(SystemUsers.Admin, SystemUsers.DefaultAdminPassword)).Wait();
+				new UserCredentials(SystemUsers.Admin, SystemUsers.DefaultAdminPassword));
 		}
 
 		[TearDown]
-		public override void TearDown() {
+		public override Task TearDown() {
 			_conn.Close();
 			_node.Shutdown();
-			base.TearDown();
+			return base.TearDown();
 		}
 
 		protected virtual IEventStoreConnection BuildConnection(MiniNode node) {
