@@ -1,4 +1,5 @@
-﻿using EventStore.ClientAPI.Exceptions;
+﻿using System.Threading.Tasks;
+using EventStore.ClientAPI.Exceptions;
 using EventStore.ClientAPI.SystemData;
 using NUnit.Framework;
 
@@ -9,30 +10,30 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void all_operations_succeeds_when_passing_no_explicit_credentials() {
-			ExpectNoException(() => ReadAllForward(null, null));
-			ExpectNoException(() => ReadAllBackward(null, null));
+		public async Task all_operations_succeeds_when_passing_no_explicit_credentials() {
+			await ReadAllForward(null, null);
+			await ReadAllBackward(null, null);
 
-			ExpectNoException(() => ReadEvent("read-stream", null, null));
-			ExpectNoException(() => ReadStreamForward("read-stream", null, null));
-			ExpectNoException(() => ReadStreamBackward("read-stream", null, null));
+			await ReadEvent("read-stream", null, null);
+			await ReadStreamForward("read-stream", null, null);
+			await ReadStreamBackward("read-stream", null, null);
 
-			ExpectNoException(() => WriteStream("write-stream", null, null));
-			ExpectNoException(() => {
-				var trans = TransStart("write-stream", null, null);
-				trans.WriteAsync().Wait();
-				trans.CommitAsync().Wait();
+			await WriteStream("write-stream", null, null);
+			await ExpectNoException(async () => {
+				var trans = await TransStart("write-stream", null, null);
+				await trans.WriteAsync();
+				await trans.CommitAsync();
 			});
 
-			ExpectNoException(() => ReadMeta("metaread-stream", null, null));
-			ExpectNoException(() => WriteMeta("metawrite-stream", null, null, "user1"));
+			await ReadMeta("metaread-stream", null, null);
+			await WriteMeta("metawrite-stream", null, null, "user1");
 
-			ExpectNoException(() => SubscribeToStream("read-stream", null, null));
-			ExpectNoException(() => SubscribeToAll(null, null));
+			await SubscribeToStream("read-stream", null, null);
+			await SubscribeToAll(null, null);
 		}
 
 		[Test]
-		public void all_operations_are_not_authenticated_when_overriden_with_not_existing_credentials() {
+		public async Task all_operations_are_not_authenticated_when_overriden_with_not_existing_credentials() {
 			Expect<NotAuthenticatedException>(() => ReadAllForward("badlogin", "badpass"));
 			Expect<NotAuthenticatedException>(() => ReadAllBackward("badlogin", "badpass"));
 
@@ -43,10 +44,10 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 			Expect<NotAuthenticatedException>(() => WriteStream("write-stream", "badlogin", "badpass"));
 			Expect<NotAuthenticatedException>(() => TransStart("write-stream", "badlogin", "badpass"));
 
-			var transId = TransStart("write-stream", null, null).TransactionId;
+			var transId = (await TransStart("write-stream", null, null)).TransactionId;
 			var trans = Connection.ContinueTransaction(transId, new UserCredentials("badlogin", "badpass"));
-			ExpectNoException(() => trans.WriteAsync().Wait());
-			Expect<NotAuthenticatedException>(() => trans.CommitAsync().Wait());
+			await trans.WriteAsync();
+			Expect<NotAuthenticatedException>(() => trans.CommitAsync());
 
 			Expect<NotAuthenticatedException>(() => ReadMeta("metaread-stream", "badlogin", "badpass"));
 			Expect<NotAuthenticatedException>(() => WriteMeta("metawrite-stream", "badlogin", "badpass", "user1"));
@@ -56,7 +57,7 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void all_operations_are_not_authorized_when_overriden_with_not_authorized_credentials() {
+		public async Task all_operations_are_not_authorized_when_overriden_with_not_authorized_credentials() {
 			Expect<AccessDeniedException>(() => ReadAllForward("user2", "pa$$2"));
 			Expect<AccessDeniedException>(() => ReadAllBackward("user2", "pa$$2"));
 
@@ -67,10 +68,10 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 			Expect<AccessDeniedException>(() => WriteStream("write-stream", "user2", "pa$$2"));
 			Expect<AccessDeniedException>(() => TransStart("write-stream", "user2", "pa$$2"));
 
-			var transId = TransStart("write-stream", null, null).TransactionId;
+			var transId = (await TransStart("write-stream", null, null)).TransactionId;
 			var trans = Connection.ContinueTransaction(transId, new UserCredentials("user2", "pa$$2"));
-			ExpectNoException(() => trans.WriteAsync().Wait());
-			Expect<AccessDeniedException>(() => trans.CommitAsync().Wait());
+			await trans.WriteAsync();
+			Expect<AccessDeniedException>(() => trans.CommitAsync());
 
 			Expect<AccessDeniedException>(() => ReadMeta("metaread-stream", "user2", "pa$$2"));
 			Expect<AccessDeniedException>(() => WriteMeta("metawrite-stream", "user2", "pa$$2", "user1"));

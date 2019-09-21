@@ -21,6 +21,7 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 			_userCredentials = userCredentials;
 		}
 
+
 		public virtual IEventStoreConnection SetupConnection(MiniNode node) {
 			return TestConnection.Create(node.TcpEndPoint, TcpType.Normal, _userCredentials);
 		}
@@ -168,97 +169,86 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 			return base.TestFixtureTearDown();
 		}
 
-		protected void ReadEvent(string streamId, string login, string password) {
-			Connection.ReadEventAsync(streamId, -1, false,
-					login == null && password == null ? null : new UserCredentials(login, password))
-				.Wait();
+		protected Task ReadEvent(string streamId, string login, string password) {
+			return Connection.ReadEventAsync(streamId, -1, false,
+					login == null && password == null ? null : new UserCredentials(login, password));
 		}
 
-		protected void ReadStreamForward(string streamId, string login, string password) {
-			Connection.ReadStreamEventsForwardAsync(streamId, 0, 1, false,
-					login == null && password == null ? null : new UserCredentials(login, password))
-				.Wait();
+		protected Task ReadStreamForward(string streamId, string login, string password) {
+			return Connection.ReadStreamEventsForwardAsync(streamId, 0, 1, false,
+					login == null && password == null ? null : new UserCredentials(login, password));
 		}
 
-		protected void ReadStreamBackward(string streamId, string login, string password) {
-			Connection.ReadStreamEventsBackwardAsync(streamId, 0, 1, false,
-					login == null && password == null ? null : new UserCredentials(login, password))
-				.Wait();
+		protected Task ReadStreamBackward(string streamId, string login, string password) {
+			return Connection.ReadStreamEventsBackwardAsync(streamId, 0, 1, false,
+					login == null && password == null ? null : new UserCredentials(login, password));
 		}
 
-		protected void WriteStream(string streamId, string login, string password) {
-			Connection.AppendToStreamAsync(streamId, ExpectedVersion.Any, CreateEvents(),
-					login == null && password == null ? null : new UserCredentials(login, password))
-				.Wait();
+		protected Task WriteStream(string streamId, string login, string password) {
+			return Connection.AppendToStreamAsync(streamId, ExpectedVersion.Any, CreateEvents(),
+					login == null && password == null ? null : new UserCredentials(login, password));
 		}
 
-		protected EventStoreTransaction TransStart(string streamId, string login, string password) {
+		protected Task<EventStoreTransaction> TransStart(string streamId, string login, string password) {
 			return Connection.StartTransactionAsync(streamId, ExpectedVersion.Any,
-					login == null && password == null ? null : new UserCredentials(login, password))
-				.Result;
+					login == null && password == null ? null : new UserCredentials(login, password));
 		}
 
-		protected void ReadAllForward(string login, string password) {
-			Connection.ReadAllEventsForwardAsync(Position.Start, 1, false,
-					login == null && password == null ? null : new UserCredentials(login, password))
-				.Wait();
+		protected Task ReadAllForward(string login, string password) {
+			return Connection.ReadAllEventsForwardAsync(Position.Start, 1, false,
+					login == null && password == null ? null : new UserCredentials(login, password));
 		}
 
-		protected void ReadAllBackward(string login, string password) {
-			Connection.ReadAllEventsBackwardAsync(Position.End, 1, false,
-					login == null && password == null ? null : new UserCredentials(login, password))
-				.Wait();
+		protected Task ReadAllBackward(string login, string password) {
+			return Connection.ReadAllEventsBackwardAsync(Position.End, 1, false,
+					login == null && password == null ? null : new UserCredentials(login, password));
 		}
 
-		protected void ReadMeta(string streamId, string login, string password) {
-			Connection.GetStreamMetadataAsRawBytesAsync(streamId,
-				login == null && password == null ? null : new UserCredentials(login, password)).Wait();
+		protected Task ReadMeta(string streamId, string login, string password) {
+			return Connection.GetStreamMetadataAsRawBytesAsync(streamId,
+				login == null && password == null ? null : new UserCredentials(login, password));
 		}
 
-		protected void WriteMeta(string streamId, string login, string password, string metawriteRole) {
-			Connection.SetStreamMetadataAsync(streamId, ExpectedVersion.Any,
+		protected Task WriteMeta(string streamId, string login, string password, string metawriteRole) {
+			return Connection.SetStreamMetadataAsync(streamId, ExpectedVersion.Any,
 					metawriteRole == null
 						? StreamMetadata.Build()
 						: StreamMetadata.Build().SetReadRole(metawriteRole)
 							.SetWriteRole(metawriteRole)
 							.SetMetadataReadRole(metawriteRole)
 							.SetMetadataWriteRole(metawriteRole),
-					login == null && password == null ? null : new UserCredentials(login, password))
-				.Wait();
+					login == null && password == null ? null : new UserCredentials(login, password));
 		}
 
-		protected void SubscribeToStream(string streamId, string login, string password) {
-			using (Connection.SubscribeToStreamAsync(streamId, false, (x, y) => Task.CompletedTask, (x, y, z) => { },
-				login == null && password == null ? null : new UserCredentials(login, password)).Result) {
+		protected async Task SubscribeToStream(string streamId, string login, string password) {
+			using (await Connection.SubscribeToStreamAsync(streamId, false, (x, y) => Task.CompletedTask, (x, y, z) => { },
+				login == null && password == null ? null : new UserCredentials(login, password))) {
 			}
 		}
 
-		protected void SubscribeToAll(string login, string password) {
-			using (Connection.SubscribeToAllAsync(false, (x, y) => Task.CompletedTask, (x, y, z) => { },
-				login == null && password == null ? null : new UserCredentials(login, password)).Result) {
+		protected async Task SubscribeToAll(string login, string password) {
+			using (await Connection.SubscribeToAllAsync(false, (x, y) => Task.CompletedTask, (x, y, z) => { },
+				login == null && password == null ? null : new UserCredentials(login, password))) {
 			}
 		}
 
-		protected string CreateStreamWithMeta(StreamMetadata metadata, string streamPrefix = null) {
+		protected async Task<string> CreateStreamWithMeta(StreamMetadata metadata, string streamPrefix = null) {
 			var stream = (streamPrefix ?? string.Empty) + TestContext.CurrentContext.Test.Name;
-			Connection.SetStreamMetadataAsync(stream, ExpectedVersion.NoStream,
-				metadata, new UserCredentials("adm", "admpa$$")).Wait();
+            await Connection.SetStreamMetadataAsync(stream, ExpectedVersion.NoStream,
+				metadata, new UserCredentials("adm", "admpa$$"));
 			return stream;
 		}
 
-		protected void DeleteStream(string streamId, string login, string password) {
-			Connection.DeleteStreamAsync(streamId, ExpectedVersion.Any, true,
-				login == null && password == null ? null : new UserCredentials(login, password)).Wait();
+		protected Task DeleteStream(string streamId, string login, string password) {
+			return Connection.DeleteStreamAsync(streamId, ExpectedVersion.Any, true,
+				login == null && password == null ? null : new UserCredentials(login, password));
 		}
 
-		protected void Expect<T>(Action action) where T : Exception {
-			Assert.That(() => action(),
-				Throws.Exception.InstanceOf<AggregateException>().With.InnerException.InstanceOf<T>());
+		protected void Expect<T>(AsyncTestDelegate action) where T : Exception {
+			Assert.ThrowsAsync<T>(action);
 		}
 
-		protected void ExpectNoException(Action action) {
-			Assert.That(() => action(), Throws.Nothing);
-		}
+		protected Task ExpectNoException(Func<Task> action) => action();
 
 		protected EventData[] CreateEvents() {
 			return new[] {new EventData(Guid.NewGuid(), "some-type", false, new byte[] {1, 2, 3}, null)};

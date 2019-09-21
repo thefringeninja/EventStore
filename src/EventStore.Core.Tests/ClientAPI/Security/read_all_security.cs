@@ -1,4 +1,5 @@
-﻿using EventStore.ClientAPI.Exceptions;
+﻿using System.Threading.Tasks;
+using EventStore.ClientAPI.Exceptions;
 using NUnit.Framework;
 
 namespace EventStore.Core.Tests.ClientAPI.Security {
@@ -23,15 +24,15 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void reading_all_with_authorized_user_credentials_succeeds() {
-			ExpectNoException(() => ReadAllForward("user1", "pa$$1"));
-			ExpectNoException(() => ReadAllBackward("user1", "pa$$1"));
+		public async Task reading_all_with_authorized_user_credentials_succeeds() {
+			await ReadAllForward("user1", "pa$$1");
+			await ReadAllBackward("user1", "pa$$1");
 		}
 
 		[Test]
-		public void reading_all_with_admin_credentials_succeeds() {
-			ExpectNoException(() => ReadAllForward("adm", "admpa$$"));
-			ExpectNoException(() => ReadAllBackward("adm", "admpa$$"));
+		public async Task reading_all_with_admin_credentials_succeeds() {
+			await ReadAllForward("adm", "admpa$$");
+			await ReadAllBackward("adm", "admpa$$");
 		}
 	}
 }

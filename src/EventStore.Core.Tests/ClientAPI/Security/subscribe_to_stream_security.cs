@@ -1,4 +1,5 @@
-﻿using EventStore.ClientAPI.Exceptions;
+﻿using System.Threading.Tasks;
+using EventStore.ClientAPI.Exceptions;
 using NUnit.Framework;
 
 namespace EventStore.Core.Tests.ClientAPI.Security {
@@ -20,19 +21,19 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void reading_stream_with_authorized_user_credentials_succeeds() {
-			ExpectNoException(() => SubscribeToStream("read-stream", "user1", "pa$$1"));
+		public async Task reading_stream_with_authorized_user_credentials_succeeds() {
+			await SubscribeToStream("read-stream", "user1", "pa$$1");
 		}
 
 		[Test]
-		public void reading_stream_with_admin_user_credentials_succeeds() {
-			ExpectNoException(() => SubscribeToStream("read-stream", "adm", "admpa$$"));
+		public async Task reading_stream_with_admin_user_credentials_succeeds() {
+			await SubscribeToStream("read-stream", "adm", "admpa$$");
 		}
 
 
 		[Test]
-		public void subscribing_to_no_acl_stream_succeeds_when_no_credentials_are_passed() {
-			ExpectNoException(() => SubscribeToStream("noacl-stream", null, null));
+		public async Task subscribing_to_no_acl_stream_succeeds_when_no_credentials_are_passed() {
+			await SubscribeToStream("noacl-stream", null, null);
 		}
 
 		[Test]
@@ -41,20 +42,20 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void subscribing_to_no_acl_stream_succeeds_when_any_existing_user_credentials_are_passed() {
-			ExpectNoException(() => SubscribeToStream("noacl-stream", "user1", "pa$$1"));
-			ExpectNoException(() => SubscribeToStream("noacl-stream", "user2", "pa$$2"));
+		public async Task subscribing_to_no_acl_stream_succeeds_when_any_existing_user_credentials_are_passed() {
+			await SubscribeToStream("noacl-stream", "user1", "pa$$1");
+			await SubscribeToStream("noacl-stream", "user2", "pa$$2");
 		}
 
 		[Test]
-		public void subscribing_to_no_acl_stream_succeeds_when_admin_user_credentials_are_passed() {
-			ExpectNoException(() => SubscribeToStream("noacl-stream", "adm", "admpa$$"));
+		public async Task subscribing_to_no_acl_stream_succeeds_when_admin_user_credentials_are_passed() {
+			await SubscribeToStream("noacl-stream", "adm", "admpa$$");
 		}
 
 
 		[Test]
-		public void subscribing_to_all_access_normal_stream_succeeds_when_no_credentials_are_passed() {
-			ExpectNoException(() => SubscribeToStream("normal-all", null, null));
+		public async Task subscribing_to_all_access_normal_stream_succeeds_when_no_credentials_are_passed() {
+			await SubscribeToStream("normal-all", null, null);
 		}
 
 		[Test]
@@ -64,14 +65,14 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void subscribing_to_all_access_normal_stream_succeeds_when_any_existing_user_credentials_are_passed() {
-			ExpectNoException(() => SubscribeToStream("normal-all", "user1", "pa$$1"));
-			ExpectNoException(() => SubscribeToStream("normal-all", "user2", "pa$$2"));
+		public async Task subscribing_to_all_access_normal_stream_succeeds_when_any_existing_user_credentials_are_passed() {
+			await SubscribeToStream("normal-all", "user1", "pa$$1");
+			await SubscribeToStream("normal-all", "user2", "pa$$2");
 		}
 
 		[Test]
-		public void subscribing_to_all_access_normal_streamm_succeeds_when_admin_user_credentials_are_passed() {
-			ExpectNoException(() => SubscribeToStream("normal-all", "adm", "admpa$$"));
+		public async Task subscribing_to_all_access_normal_streamm_succeeds_when_admin_user_credentials_are_passed() {
+			await SubscribeToStream("normal-all", "adm", "admpa$$");
 		}
 	}
 }

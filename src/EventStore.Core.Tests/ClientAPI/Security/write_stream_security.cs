@@ -1,4 +1,5 @@
-﻿using EventStore.ClientAPI.Exceptions;
+﻿using System.Threading.Tasks;
+using EventStore.ClientAPI.Exceptions;
 using NUnit.Framework;
 
 namespace EventStore.Core.Tests.ClientAPI.Security {
@@ -27,19 +28,19 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void writing_to_stream_with_authorized_user_credentials_succeeds() {
-			ExpectNoException(() => WriteStream("write-stream", "user1", "pa$$1"));
+		public async Task writing_to_stream_with_authorized_user_credentials_succeeds() {
+			await WriteStream("write-stream", "user1", "pa$$1");
 		}
 
 		[Test]
-		public void writing_to_stream_with_admin_user_credentials_succeeds() {
-			ExpectNoException(() => WriteStream("write-stream", "adm", "admpa$$"));
+		public async Task writing_to_stream_with_admin_user_credentials_succeeds() {
+			await WriteStream("write-stream", "adm", "admpa$$");
 		}
 
 
 		[Test]
-		public void writing_to_no_acl_stream_succeeds_when_no_credentials_are_passed() {
-			ExpectNoException(() => WriteStream("noacl-stream", null, null));
+		public async Task writing_to_no_acl_stream_succeeds_when_no_credentials_are_passed() {
+			await WriteStream("noacl-stream", null, null);
 		}
 
 		[Test]
@@ -48,20 +49,20 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void writing_to_no_acl_stream_succeeds_when_any_existing_user_credentials_are_passed() {
-			ExpectNoException(() => WriteStream("noacl-stream", "user1", "pa$$1"));
-			ExpectNoException(() => WriteStream("noacl-stream", "user2", "pa$$2"));
+		public async Task writing_to_no_acl_stream_succeeds_when_any_existing_user_credentials_are_passed() {
+			await WriteStream("noacl-stream", "user1", "pa$$1");
+			await WriteStream("noacl-stream", "user2", "pa$$2");
 		}
 
 		[Test]
-		public void writing_to_no_acl_stream_succeeds_when_any_admin_user_credentials_are_passed() {
-			ExpectNoException(() => WriteStream("noacl-stream", "adm", "admpa$$"));
+		public async Task writing_to_no_acl_stream_succeeds_when_any_admin_user_credentials_are_passed() {
+			await WriteStream("noacl-stream", "adm", "admpa$$");
 		}
 
 
 		[Test]
-		public void writing_to_all_access_normal_stream_succeeds_when_no_credentials_are_passed() {
-			ExpectNoException(() => WriteStream("normal-all", null, null));
+		public async Task writing_to_all_access_normal_stream_succeeds_when_no_credentials_are_passed() {
+			await WriteStream("normal-all", null, null);
 		}
 
 		[Test]
@@ -71,14 +72,14 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void writing_to_all_access_normal_stream_succeeds_when_any_existing_user_credentials_are_passed() {
-			ExpectNoException(() => WriteStream("normal-all", "user1", "pa$$1"));
-			ExpectNoException(() => WriteStream("normal-all", "user2", "pa$$2"));
+		public async Task writing_to_all_access_normal_stream_succeeds_when_any_existing_user_credentials_are_passed() {
+			await WriteStream("normal-all", "user1", "pa$$1");
+			await WriteStream("normal-all", "user2", "pa$$2");
 		}
 
 		[Test]
-		public void writing_to_all_access_normal_stream_succeeds_when_any_admin_user_credentials_are_passed() {
-			ExpectNoException(() => WriteStream("normal-all", "adm", "admpa$$"));
+		public async Task writing_to_all_access_normal_stream_succeeds_when_any_admin_user_credentials_are_passed() {
+			await WriteStream("normal-all", "adm", "admpa$$");
 		}
 	}
 }

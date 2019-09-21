@@ -1,4 +1,5 @@
-﻿using EventStore.ClientAPI.Exceptions;
+﻿using System.Threading.Tasks;
+using EventStore.ClientAPI.Exceptions;
 using EventStore.Core.Services;
 using NUnit.Framework;
 
@@ -21,19 +22,19 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void writing_meta_to_stream_with_authorized_user_credentials_succeeds() {
-			ExpectNoException(() => WriteMeta("metawrite-stream", "user1", "pa$$1", "user1"));
+		public async Task writing_meta_to_stream_with_authorized_user_credentials_succeeds() {
+			await WriteMeta("metawrite-stream", "user1", "pa$$1", "user1");
 		}
 
 		[Test]
-		public void writing_meta_to_stream_with_admin_user_credentials_succeeds() {
-			ExpectNoException(() => WriteMeta("metawrite-stream", "adm", "admpa$$", "user1"));
+		public async Task writing_meta_to_stream_with_admin_user_credentials_succeeds() {
+			await WriteMeta("metawrite-stream", "adm", "admpa$$", "user1");
 		}
 
 
 		[Test]
-		public void writing_meta_to_no_acl_stream_succeeds_when_no_credentials_are_passed() {
-			ExpectNoException(() => WriteMeta("noacl-stream", null, null, null));
+		public async Task writing_meta_to_no_acl_stream_succeeds_when_no_credentials_are_passed() {
+			await WriteMeta("noacl-stream", null, null, null);
 		}
 
 		[Test]
@@ -42,20 +43,20 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void writing_meta_to_no_acl_stream_succeeds_when_any_existing_user_credentials_are_passed() {
-			ExpectNoException(() => WriteMeta("noacl-stream", "user1", "pa$$1", null));
-			ExpectNoException(() => WriteMeta("noacl-stream", "user2", "pa$$2", null));
+		public async Task writing_meta_to_no_acl_stream_succeeds_when_any_existing_user_credentials_are_passed() {
+			await WriteMeta("noacl-stream", "user1", "pa$$1", null);
+			await WriteMeta("noacl-stream", "user2", "pa$$2", null);
 		}
 
 		[Test]
-		public void writing_meta_to_no_acl_stream_succeeds_when_admin_user_credentials_are_passed() {
-			ExpectNoException(() => WriteMeta("noacl-stream", "adm", "admpa$$", null));
+		public async Task writing_meta_to_no_acl_stream_succeeds_when_admin_user_credentials_are_passed() {
+			await WriteMeta("noacl-stream", "adm", "admpa$$", null);
 		}
 
 
 		[Test]
-		public void writing_meta_to_all_access_normal_stream_succeeds_when_no_credentials_are_passed() {
-			ExpectNoException(() => WriteMeta("normal-all", null, null, SystemRoles.All));
+		public async Task writing_meta_to_all_access_normal_stream_succeeds_when_no_credentials_are_passed() {
+			await WriteMeta("normal-all", null, null, SystemRoles.All);
 		}
 
 		[Test]
@@ -65,14 +66,14 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void writing_meta_to_all_access_normal_stream_succeeds_when_any_existing_user_credentials_are_passed() {
-			ExpectNoException(() => WriteMeta("normal-all", "user1", "pa$$1", SystemRoles.All));
-			ExpectNoException(() => WriteMeta("normal-all", "user2", "pa$$2", SystemRoles.All));
+		public async Task writing_meta_to_all_access_normal_stream_succeeds_when_any_existing_user_credentials_are_passed() {
+			await WriteMeta("normal-all", "user1", "pa$$1", SystemRoles.All);
+			await WriteMeta("normal-all", "user2", "pa$$2", SystemRoles.All);
 		}
 
 		[Test]
-		public void writing_meta_to_all_access_normal_stream_succeeds_when_admin_user_credentials_are_passed() {
-			ExpectNoException(() => WriteMeta("normal-all", "adm", "admpa$$", SystemRoles.All));
+		public async Task writing_meta_to_all_access_normal_stream_succeeds_when_admin_user_credentials_are_passed() {
+			await WriteMeta("normal-all", "adm", "admpa$$", SystemRoles.All);
 		}
 	}
 }
