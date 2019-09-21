@@ -34,20 +34,18 @@ namespace EventStore.Core.Tests.Services.Storage.HashCollisions {
 		}
 
 		[Test]
-		public void should_throw_wrong_expected_version() {
+		public async Task should_throw_wrong_expected_version() {
 			const string stream1 = "account--696193173";
 			const string stream2 = "LPN-FC002_LPK51001";
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
+                await store.ConnectAsync();
 				//Write event to stream 1
-				Assert.AreEqual(0,
-					store.AppendToStreamAsync(stream1, ExpectedVersion.NoStream,
-						new EventData(Guid.NewGuid(), "TestEvent", true, null, null)).Result.NextExpectedVersion);
+				Assert.AreEqual(0,  (await store.AppendToStreamAsync(stream1, ExpectedVersion.NoStream,
+						new EventData(Guid.NewGuid(), "TestEvent", true, null, null))).NextExpectedVersion);
 				//Write 100 events to stream 2 which will have the same hash as stream 1.
 				for (int i = 0; i < 100; i++) {
-					Assert.AreEqual(i,
-						store.AppendToStreamAsync(stream2, ExpectedVersion.Any,
-							new EventData(Guid.NewGuid(), "TestEvent", true, null, null)).Result.NextExpectedVersion);
+					Assert.AreEqual(i, (await store.AppendToStreamAsync(stream2, ExpectedVersion.Any,
+						new EventData(Guid.NewGuid(), "TestEvent", true, null, null))).NextExpectedVersion);
 				}
 			}
 
@@ -64,16 +62,11 @@ namespace EventStore.Core.Tests.Services.Storage.HashCollisions {
 				indexBitnessVersion: EventStore.Core.Index.PTableVersions.IndexV1);
 			_node.Start();
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
-				Exception exception = null;
-				try {
-					store.AppendToStreamAsync(stream1, ExpectedVersion.Any,
-						new EventData(Guid.NewGuid(), "TestEvent", true, null, null)).Wait();
-				} catch (Exception ex) {
-					exception = ex;
-				}
+                await store.ConnectAsync();
 
-				Assert.IsInstanceOf<WrongExpectedVersionException>(exception.InnerException);
+                Assert.ThrowsAsync<WrongExpectedVersionException>(
+	                () => store.AppendToStreamAsync(stream1, ExpectedVersion.Any,
+		                new EventData(Guid.NewGuid(), "TestEvent", true, null, null)));
 			}
 		}
 	}

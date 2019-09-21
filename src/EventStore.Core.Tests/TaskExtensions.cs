@@ -3,24 +3,20 @@ using System.Threading.Tasks;
 
 namespace EventStore.Core.Tests {
 	internal static class TaskExtensions {
-		public static async Task WithTimeout(this Task task, int timeoutMs = 3000) {
-			var timeoutTask = Task.Delay(timeoutMs);
+		public static Task WithTimeout(this Task task, int timeoutMs = 3000)
+			=> task.WithTimeout(TimeSpan.FromMilliseconds(timeoutMs));
 
-			if (timeoutTask == await Task.WhenAny(task, timeoutTask)) {
-				throw new TimeoutException();
-			}
-
-			await task;
+		public static async Task WithTimeout(this Task task, TimeSpan timeout) {
+			if(await Task.WhenAny(task, Task.Delay(timeout)) != task)
+				throw new TimeoutException("Timed out waiting for task");
 		}
 
-		public static async Task<T> WithTimeout<T>(this Task<T> task, int timeoutMs = 3000) {
-			var timeoutTask = Task.Delay(timeoutMs);
+		public static Task<T> WithTimeout<T>(this Task<T> task, int timeoutMs = 3000)
+			=> task.WithTimeout(TimeSpan.FromMilliseconds(timeoutMs));
 
-			if (timeoutTask == await Task.WhenAny(task, timeoutTask)) {
-				throw new TimeoutException();
-			}
-
-			return await task;
-		}
+		public static async Task<T> WithTimeout<T>(this Task<T> task, TimeSpan timeout)
+			 => await Task.WhenAny(task, Task.Delay(timeout)) == task
+                ? task.Result
+                : throw new TimeoutException("Timed out waiting for task");
 	}
 }

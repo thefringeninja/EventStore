@@ -13,7 +13,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 	public class connect_to_non_existing_persistent_subscription_with_permissions_async : SpecificationWithMiniNode {
 		private Exception _innerEx;
 
-		protected override void When() {
+		protected override Task When() {
 			_innerEx = Assert.Throws<AggregateException>(() => {
 				_conn.ConnectToPersistentSubscriptionAsync(
 					"nonexisting2",
@@ -24,6 +24,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 					},
 					(sub, reason, ex) => { }).Wait();
 			}).InnerException;
+			return Task.CompletedTask;
 		}
 
 		[Test]
@@ -42,16 +43,16 @@ namespace EventStore.Core.Tests.ClientAPI {
 			.DoNotResolveLinkTos()
 			.StartFromCurrent();
 
-		protected override void When() {
-			_conn.CreatePersistentSubscriptionAsync(_stream, "agroupname17", _settings, DefaultData.AdminCredentials)
-				.Wait();
-			_sub = _conn.ConnectToPersistentSubscriptionAsync(_stream,
+		protected override async Task When() {
+            await _conn.CreatePersistentSubscriptionAsync(_stream, "agroupname17", _settings, DefaultData.AdminCredentials)
+;
+			_sub = await _conn.ConnectToPersistentSubscriptionAsync(_stream,
 				"agroupname17",
 				(sub, e) => {
 					Console.Write("appeared");
 					return Task.CompletedTask;
 				},
-				(sub, reason, ex) => { }).Result;
+				(sub, reason, ex) => { });
 		}
 
 		[Test]
@@ -70,9 +71,9 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		private Exception _innerEx;
 
-		protected override void When() {
-			_conn.CreatePersistentSubscriptionAsync(_stream, "agroupname55", _settings,
-				DefaultData.AdminCredentials).Wait();
+		protected override async Task When() {
+            await _conn.CreatePersistentSubscriptionAsync(_stream, "agroupname55", _settings,
+				DefaultData.AdminCredentials);
 			_innerEx = Assert.Throws<AggregateException>(() => {
 				_conn.ConnectToPersistentSubscriptionAsync(
 					_stream,
@@ -106,12 +107,12 @@ namespace EventStore.Core.Tests.ClientAPI {
 		private const string _group = "startinbeginning1";
 		private EventStorePersistentSubscriptionBase _firstConn;
 
-		protected override void Given() {
-			base.Given();
-			_conn.CreatePersistentSubscriptionAsync(_stream, _group, _settings,
-				DefaultData.AdminCredentials).Wait();
+		protected override async Task Given() {
+			await base.Given();
+            await _conn.CreatePersistentSubscriptionAsync(_stream, _group, _settings,
+				DefaultData.AdminCredentials);
 			// First connection
-			_firstConn = _conn.ConnectToPersistentSubscriptionAsync(
+			_firstConn = await _conn.ConnectToPersistentSubscriptionAsync(
 				_stream,
 				_group,
 				(s, e) => {
@@ -119,10 +120,10 @@ namespace EventStore.Core.Tests.ClientAPI {
 					return Task.CompletedTask;
 				},
 				(sub, reason, ex) => { },
-				DefaultData.AdminCredentials).Result;
+				DefaultData.AdminCredentials);
 		}
 
-		protected override void When() {
+		protected override Task When() {
 			_innerEx = Assert.Throws<AggregateException>(() => {
 				// Second connection
 				_conn.ConnectToPersistentSubscriptionAsync(
@@ -135,6 +136,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 					(sub, reason, ex) => { },
 					DefaultData.AdminCredentials).Wait();
 			}).InnerException;
+			return Task.CompletedTask;
 		}
 
 		[Test]
@@ -166,21 +168,21 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		private const string _group = "startinbeginning1";
 
-		protected override void Given() {
-			_conn.CreatePersistentSubscriptionAsync(_stream, _group, _settings,
-				DefaultData.AdminCredentials).Wait();
+		protected override async Task Given() {
+            await _conn.CreatePersistentSubscriptionAsync(_stream, _group, _settings,
+				DefaultData.AdminCredentials);
 
-			_conn.ConnectToPersistentSubscriptionAsync(
+            await _conn.ConnectToPersistentSubscriptionAsync(
 				_stream,
 				_group,
 				HandleEvent,
 				(sub, reason, ex) => { },
-				DefaultData.AdminCredentials).Wait();
+				DefaultData.AdminCredentials);
 		}
 
-		protected override void When() {
-			_conn.AppendToStreamAsync(_stream, ExpectedVersion.Any, DefaultData.AdminCredentials,
-				new EventData(_id, "test", true, Encoding.UTF8.GetBytes("{'foo' : 'bar'}"), new byte[0])).Wait();
+		protected override Task When() {
+			return _conn.AppendToStreamAsync(_stream, ExpectedVersion.Any, DefaultData.AdminCredentials,
+				new EventData(_id, "test", true, Encoding.UTF8.GetBytes("{'foo' : 'bar'}"), new byte[0]));
 		}
 
 		private Task HandleEvent(EventStorePersistentSubscriptionBase sub, ResolvedEvent resolvedEvent) {
@@ -216,26 +218,24 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		private const string _group = "startinbeginning1";
 
-		protected override void Given() {
-			_conn.CreatePersistentSubscriptionAsync(_stream, _group, _settings,
-				DefaultData.AdminCredentials).Wait();
-			_conn.ConnectToPersistentSubscriptionAsync(
+		protected override async Task Given() {
+            await _conn.CreatePersistentSubscriptionAsync(_stream, _group, _settings,
+				DefaultData.AdminCredentials);
+            await _conn.ConnectToPersistentSubscriptionAsync(
 				_stream,
 				_group,
 				HandleEvent,
 				(sub, reason, ex) => { },
-				DefaultData.AdminCredentials).Wait();
+				DefaultData.AdminCredentials);
 		}
 
-		protected override void When() {
-			_conn.AppendToStreamAsync(_stream, ExpectedVersion.Any, DefaultData.AdminCredentials,
-					new EventData(Guid.NewGuid(), "test", true, Encoding.UTF8.GetBytes("{'foo' : 'bar'}"), new byte[0]))
-				.Wait();
-			_conn.AppendToStreamAsync(_stream, ExpectedVersion.Any, DefaultData.AdminCredentials,
-					new EventData(Guid.NewGuid(), "test", true, Encoding.UTF8.GetBytes("{'foo' : 'bar'}"), new byte[0]))
-				.Wait();
-			_conn.AppendToStreamAsync(_stream, ExpectedVersion.Any, DefaultData.AdminCredentials,
-				new EventData(_id, "test", true, Encoding.UTF8.GetBytes("{'foo' : 'bar'}"), new byte[0])).Wait();
+		protected override async Task When() {
+            await _conn.AppendToStreamAsync(_stream, ExpectedVersion.Any, DefaultData.AdminCredentials,
+					new EventData(Guid.NewGuid(), "test", true, Encoding.UTF8.GetBytes("{'foo' : 'bar'}"), new byte[0]));
+            await _conn.AppendToStreamAsync(_stream, ExpectedVersion.Any, DefaultData.AdminCredentials,
+					new EventData(Guid.NewGuid(), "test", true, Encoding.UTF8.GetBytes("{'foo' : 'bar'}"), new byte[0]));
+            await _conn.AppendToStreamAsync(_stream, ExpectedVersion.Any, DefaultData.AdminCredentials,
+				new EventData(_id, "test", true, Encoding.UTF8.GetBytes("{'foo' : 'bar'}"), new byte[0]));
 		}
 
 		private Task HandleEvent(EventStorePersistentSubscriptionBase sub, ResolvedEvent resolvedEvent) {
@@ -271,28 +271,27 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		private const string _group = "startinbeginning1";
 
-		protected override void Given() {
+		protected override async Task Given() {
 			WriteEvents(_conn);
-			_conn.CreatePersistentSubscriptionAsync(_stream, _group, _settings,
-				DefaultData.AdminCredentials).Wait();
+            await _conn.CreatePersistentSubscriptionAsync(_stream, _group, _settings,
+				DefaultData.AdminCredentials);
 		}
 
-		private void WriteEvents(IEventStoreConnection connection) {
+		private async Task WriteEvents(IEventStoreConnection connection) {
 			for (int i = 0; i < 10; i++) {
 				_ids.Add(Guid.NewGuid());
-				connection.AppendToStreamAsync(_stream, ExpectedVersion.Any, DefaultData.AdminCredentials,
-						new EventData(_ids[i], "test", true, Encoding.UTF8.GetBytes("{'foo' : 'bar'}"), new byte[0]))
-					.Wait();
+                await connection.AppendToStreamAsync(_stream, ExpectedVersion.Any, DefaultData.AdminCredentials,
+						new EventData(_ids[i], "test", true, Encoding.UTF8.GetBytes("{'foo' : 'bar'}"), new byte[0]));
 			}
 		}
 
-		protected override void When() {
-			_conn.ConnectToPersistentSubscriptionAsync(
+		protected override Task When() {
+			return _conn.ConnectToPersistentSubscriptionAsync(
 				_stream,
 				_group,
 				HandleEvent,
 				(sub, reason, ex) => { },
-				DefaultData.AdminCredentials).Wait();
+				DefaultData.AdminCredentials);
 		}
 
 		private Task HandleEvent(EventStorePersistentSubscriptionBase sub, ResolvedEvent resolvedEvent) {
@@ -327,28 +326,27 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		private const string _group = "startinbeginning1";
 
-		protected override void Given() {
-			WriteEvents(_conn);
-			_conn.CreatePersistentSubscriptionAsync(_stream, _group, _settings,
-				DefaultData.AdminCredentials).Wait();
+		protected override async Task Given() {
+			await WriteEvents(_conn);
+            await _conn.CreatePersistentSubscriptionAsync(_stream, _group, _settings,
+				DefaultData.AdminCredentials);
 		}
 
-		private void WriteEvents(IEventStoreConnection connection) {
+		private async Task WriteEvents(IEventStoreConnection connection) {
 			for (int i = 0; i < 10; i++) {
-				connection.AppendToStreamAsync(_stream, ExpectedVersion.Any, DefaultData.AdminCredentials,
+                await connection.AppendToStreamAsync(_stream, ExpectedVersion.Any, DefaultData.AdminCredentials,
 						new EventData(Guid.NewGuid(), "test", true, Encoding.UTF8.GetBytes("{'foo' : 'bar'}"),
-							new byte[0]))
-					.Wait();
+							new byte[0]));
 			}
 		}
 
-		protected override void When() {
-			_conn.ConnectToPersistentSubscriptionAsync(
+		protected override Task When() {
+			return _conn.ConnectToPersistentSubscriptionAsync(
 				_stream,
 				_group,
 				HandleEvent,
 				(sub, reason, ex) => { },
-				DefaultData.AdminCredentials).Wait();
+				DefaultData.AdminCredentials);
 		}
 
 		private Task HandleEvent(EventStorePersistentSubscriptionBase sub, ResolvedEvent resolvedEvent) {
