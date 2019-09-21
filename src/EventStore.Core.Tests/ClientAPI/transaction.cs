@@ -34,87 +34,83 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public void should_start_on_non_existing_stream_with_correct_exp_ver_and_create_stream_on_commit() {
+		public async Task should_start_on_non_existing_stream_with_correct_exp_ver_and_create_stream_on_commitAsync() {
 			const string stream =
 				"should_start_on_non_existing_stream_with_correct_exp_ver_and_create_stream_on_commit";
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
-				using (var transaction = store.StartTransactionAsync(stream, ExpectedVersion.NoStream).Result) {
-					transaction.WriteAsync(new[] {TestEvent.NewTestEvent()}).Wait();
-					Assert.AreEqual(0, transaction.CommitAsync().Result.NextExpectedVersion);
+                await store.ConnectAsync();
+				using (var transaction = await store.StartTransactionAsync(stream, ExpectedVersion.NoStream)) {
+                    await transaction.WriteAsync(TestEvent.NewTestEvent());
+					Assert.AreEqual(0, (await transaction.CommitAsync()).NextExpectedVersion);
 				}
 			}
 		}
 
 		[Test]
 		[Category("Network")]
-		public void should_start_on_non_existing_stream_with_exp_ver_any_and_create_stream_on_commit() {
+		public async Task should_start_on_non_existing_stream_with_exp_ver_any_and_create_stream_on_commitAsync() {
 			const string stream = "should_start_on_non_existing_stream_with_exp_ver_any_and_create_stream_on_commit";
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
-				using (var transaction = store.StartTransactionAsync(stream, ExpectedVersion.Any).Result) {
-					transaction.WriteAsync(new[] {TestEvent.NewTestEvent()}).Wait();
-					Assert.AreEqual(0, transaction.CommitAsync().Result.NextExpectedVersion);
+                await store.ConnectAsync();
+				using (var transaction = await store.StartTransactionAsync(stream, ExpectedVersion.Any)) {
+                    await transaction.WriteAsync(TestEvent.NewTestEvent());
+					Assert.AreEqual(0, (await transaction.CommitAsync()).NextExpectedVersion);
 				}
 			}
 		}
 
 		[Test]
 		[Category("Network")]
-		public void should_fail_to_commit_non_existing_stream_with_wrong_exp_ver() {
+		public async Task should_fail_to_commit_non_existing_stream_with_wrong_exp_verAsync() {
 			const string stream = "should_fail_to_commit_non_existing_stream_with_wrong_exp_ver";
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
-				using (var transaction = store.StartTransactionAsync(stream, 1).Result) {
-					transaction.WriteAsync(TestEvent.NewTestEvent()).Wait();
-					Assert.That(() => transaction.CommitAsync().Wait(),
-						Throws.Exception.TypeOf<AggregateException>()
-							.With.InnerException.TypeOf<WrongExpectedVersionException>());
+                await store.ConnectAsync();
+				using (var transaction = await store.StartTransactionAsync(stream, 1)) {
+                    await transaction.WriteAsync(TestEvent.NewTestEvent());
+                    Assert.ThrowsAsync<WrongExpectedVersionException>(() => transaction.CommitAsync());
 				}
 			}
 		}
 
 		[Test]
 		[Category("Network")]
-		public void should_do_nothing_if_commits_no_events_to_empty_stream() {
+		public async Task should_do_nothing_if_commits_no_events_to_empty_streamAsync() {
 			const string stream = "should_do_nothing_if_commits_no_events_to_empty_stream";
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
-				using (var transaction = store.StartTransactionAsync(stream, ExpectedVersion.NoStream).Result) {
-					Assert.AreEqual(-1, transaction.CommitAsync().Result.NextExpectedVersion);
+                await store.ConnectAsync();
+				using (var transaction = await store.StartTransactionAsync(stream, ExpectedVersion.NoStream)) {
+					Assert.AreEqual(-1, (await transaction.CommitAsync()).NextExpectedVersion);
 				}
 
-				var result = store.ReadStreamEventsForwardAsync(stream, 0, 1, resolveLinkTos: false).Result;
+				var result = await store.ReadStreamEventsForwardAsync(stream, 0, 1, resolveLinkTos: false);
 				Assert.That(result.Events.Length, Is.EqualTo(0));
 			}
 		}
 
 		[Test, Category("Network")]
-		public void should_do_nothing_if_transactionally_writing_no_events_to_empty_stream() {
+		public async Task should_do_nothing_if_transactionally_writing_no_events_to_empty_streamAsync() {
 			const string stream = "should_do_nothing_if_transactionally_writing_no_events_to_empty_stream";
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
-				using (var transaction = store.StartTransactionAsync(stream, ExpectedVersion.NoStream).Result) {
-					Assert.DoesNotThrow(() => transaction.WriteAsync().Wait());
-					Assert.AreEqual(-1, transaction.CommitAsync().Result.NextExpectedVersion);
+                await store.ConnectAsync();
+				using (var transaction = await store.StartTransactionAsync(stream, ExpectedVersion.NoStream)) {
+                    await transaction.WriteAsync();
+					Assert.AreEqual(-1, (await transaction.CommitAsync()).NextExpectedVersion);
 				}
 
-				var result = store.ReadStreamEventsForwardAsync(stream, 0, 1, resolveLinkTos: false).Result;
+				var result = await store.ReadStreamEventsForwardAsync(stream, 0, 1, resolveLinkTos: false);
 				Assert.That(result.Events.Length, Is.EqualTo(0));
 			}
 		}
 
 		[Test]
 		[Category("Network")]
-		public void should_validate_expectations_on_commit() {
+		public async Task should_validate_expectations_on_commitAsync() {
 			const string stream = "should_validate_expectations_on_commit";
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
-				using (var transaction = store.StartTransactionAsync(stream, 100500).Result) {
-					transaction.WriteAsync(TestEvent.NewTestEvent());
-					Assert.That(() => transaction.CommitAsync().Wait(),
-						Throws.Exception.TypeOf<AggregateException>().With.InnerException
-							.TypeOf<WrongExpectedVersionException>());
+                await store.ConnectAsync();
+				using (var transaction = await store.StartTransactionAsync(stream, 100500)) {
+					await transaction.WriteAsync(TestEvent.NewTestEvent());
+					Assert.ThrowsAsync<WrongExpectedVersionException>(() => transaction.CommitAsync());
 				}
 			}
 		}
@@ -191,8 +187,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 			const string stream = "should_fail_to_commit_if_started_with_correct_ver_but_committing_with_bad";
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
-				using (var transaction = store.StartTransactionAsync(stream, ExpectedVersion.NoStream).Result) {
-                    await store.AppendToStreamAsync(stream, ExpectedVersion.NoStream, new[] {TestEvent.NewTestEvent()})
+				using (var transaction = await store.StartTransactionAsync(stream, ExpectedVersion.NoStream)) {
+                    await store.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent())
 ;
                     await transaction.WriteAsync(TestEvent.NewTestEvent());
                     Assert.ThrowsAsync<WrongExpectedVersionException>(() => transaction.CommitAsync());
@@ -221,7 +217,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			const string stream = "should_fail_to_commit_if_started_with_correct_ver_but_on_commit_stream_was_deleted";
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
-				using (var transaction = store.StartTransactionAsync(stream, ExpectedVersion.NoStream).Result) {
+				using (var transaction = await store.StartTransactionAsync(stream, ExpectedVersion.NoStream)) {
                     await transaction.WriteAsync(TestEvent.NewTestEvent());
                     await store.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: true);
                     Assert.ThrowsAsync<StreamDeletedException>(() => transaction.CommitAsync());

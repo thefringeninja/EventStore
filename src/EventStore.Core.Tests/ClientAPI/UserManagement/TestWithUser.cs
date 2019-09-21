@@ -8,8 +8,8 @@ namespace EventStore.Core.Tests.ClientAPI.UserManagement {
 
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
-			_manager.CreateUserAsync(_username, "name", new[] {"foo", "admins"}, "password",
-				new UserCredentials("admin", "changeit")).Wait();
+            await _manager.CreateUserAsync(_username, "name", new[] {"foo", "admins"}, "password",
+				new UserCredentials("admin", "changeit"));
 		}
 	}
 }

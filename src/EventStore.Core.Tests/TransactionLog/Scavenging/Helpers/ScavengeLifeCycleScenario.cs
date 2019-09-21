@@ -35,7 +35,7 @@ namespace EventStore.Core.Tests.TransactionLog.Scavenging.Helpers {
 			FakeTableIndex = new FakeTableIndex();
 			TfChunkScavenger = new TFChunkScavenger(_dbResult.Db, Log, FakeTableIndex, new FakeReadIndex(_ => false));
 
-			When();
+			await When();
 		}
 
 		public override Task TestFixtureTearDown() {
@@ -44,6 +44,6 @@ namespace EventStore.Core.Tests.TransactionLog.Scavenging.Helpers {
 			return base.TestFixtureTearDown();
 		}
 
-		protected abstract void When();
+		protected abstract Task When();
 	}
 }

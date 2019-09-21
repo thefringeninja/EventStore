@@ -38,7 +38,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		public void the_exception_is_an_argument_exception() {
-			Assert.IsInstanceOf<ArgumentException>(_caught.InnerException);
+			Assert.IsInstanceOf<ArgumentException>(_caught);
 		}
 	}
 
@@ -95,9 +95,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 					(sub, reason, ex) => Console.WriteLine("dropped."));
 				throw new Exception("should have thrown.");
 			} catch (Exception ex) {
-				var innerEx = ex.InnerException;
-				Assert.IsInstanceOf<AggregateException>(innerEx);
-				Assert.IsInstanceOf<AccessDeniedException>(innerEx.InnerException);
+				Assert.IsInstanceOf<AggregateException>(ex);
+				Assert.IsInstanceOf<AccessDeniedException>(ex.InnerException);
 			}
 		}
 	}

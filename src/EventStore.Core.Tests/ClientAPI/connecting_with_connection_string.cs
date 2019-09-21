@@ -24,10 +24,10 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public void should_not_throw_when_connect_to_is_set() {
+		public async Task should_not_throw_when_connect_to_is_set() {
 			string connectionString = string.Format("ConnectTo=tcp://{0};", _node.TcpEndPoint);
 			using (var connection = EventStoreConnection.Create(connectionString)) {
-				Assert.DoesNotThrow(connection.ConnectAsync().Wait);
+                await connection.ConnectAsync();
 				connection.Close();
 			}
 		}

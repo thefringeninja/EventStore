@@ -51,8 +51,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 			const string stream = "read_stream_backward_respects_truncatebefore";
             await _conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, _testEvents);
 
-			_conn.SetStreamMetadataAsync(stream, ExpectedVersion.NoStream,
-				StreamMetadata.Build().SetTruncateBefore(2)).Wait();
+            await _conn.SetStreamMetadataAsync(stream, ExpectedVersion.NoStream,
+				StreamMetadata.Build().SetTruncateBefore(2));
 
 			var res = await _conn.ReadStreamEventsBackwardAsync(stream, -1, 100, false);
 			Assert.AreEqual(SliceReadStatus.Success, res.Status);

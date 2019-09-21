@@ -72,9 +72,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		[Test]
 		public void trying_to_set_metadata_with_wrong_expected_version_fails() {
 			const string stream = "trying_to_set_metadata_with_wrong_expected_version_fails";
-			Assert.That(() => _connection.SetStreamMetadataAsync(stream, 5, new byte[100]).Wait(),
-				Throws.Exception.InstanceOf<AggregateException>()
-					.With.InnerException.InstanceOf<WrongExpectedVersionException>());
+			Assert.ThrowsAsync<WrongExpectedVersionException>(() => _connection.SetStreamMetadataAsync(stream, 5, new byte[100]));
 		}
 
 		[Test]
@@ -129,16 +127,14 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public void setting_metadata_for_deleted_stream_throws_stream_deleted_exception() {
+		public async Task setting_metadata_for_deleted_stream_throws_stream_deleted_exception() {
 			const string stream = "setting_metadata_for_deleted_stream_throws_stream_deleted_exception";
 
-			_connection.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: true).Wait();
+            await _connection.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: true);
 
 			var metadataBytes = Guid.NewGuid().ToByteArray();
-			Assert.That(
-				() => _connection.SetStreamMetadataAsync(stream, ExpectedVersion.NoStream, metadataBytes).Wait(),
-				Throws.Exception.InstanceOf<AggregateException>()
-					.With.InnerException.InstanceOf<StreamDeletedException>());
+			Assert.ThrowsAsync<StreamDeletedException>(
+				() => _connection.SetStreamMetadataAsync(stream, ExpectedVersion.NoStream, metadataBytes));
 		}
 
 		[Test]

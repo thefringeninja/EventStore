@@ -37,9 +37,9 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public void not_throw_on_close_if_called_multiple_times() {
+		public async Task not_throw_on_close_if_called_multiple_times() {
 			var connection = TestConnection.To(_node, _tcpType);
-			connection.ConnectAsync().Wait();
+			await connection.ConnectAsync();
 			connection.Close();
 			Assert.DoesNotThrow(connection.Close);
 		}
@@ -53,7 +53,7 @@ namespace EventStore.Core.Tests.ClientAPI {
             var connection = TestConnection.To(_node, _tcpType);
             Assert.DoesNotThrow(() => connection.ConnectAsync().Wait());
 
-            Assert.That(() => connection.ConnectAsync().Wait(),
+            Assert.ThrowsAsync<>(() => connection.ConnectAsync().Wait(),
                         Throws.Exception.InstanceOf<AggregateException>().With.InnerException.InstanceOf<InvalidOperationException>());
         }
 
@@ -65,7 +65,7 @@ namespace EventStore.Core.Tests.ClientAPI {
             connection.ConnectAsync().Wait();
             connection.Close();
 
-            Assert.That(() => connection.ConnectAsync().Wait(),
+            Assert.ThrowsAsync<>(() => connection.ConnectAsync().Wait(),
                         Throws.Exception.InstanceOf<AggregateException>().With.InnerException.InstanceOf<InvalidOperationException>());
         }
 */
@@ -77,44 +77,29 @@ namespace EventStore.Core.Tests.ClientAPI {
 			const string s = "stream";
 			var events = new[] {TestEvent.NewTestEvent()};
 
-			Assert.That(() => connection.DeleteStreamAsync(s, 0).Wait(),
-				Throws.Exception.InstanceOf<AggregateException>().With.InnerException
-					.InstanceOf<InvalidOperationException>());
+			Assert.ThrowsAsync<InvalidOperationException>(() => connection.DeleteStreamAsync(s, 0));
 
-			Assert.That(() => connection.AppendToStreamAsync(s, 0, events).Wait(),
-				Throws.Exception.InstanceOf<AggregateException>().With.InnerException
-					.InstanceOf<InvalidOperationException>());
+			Assert.ThrowsAsync<InvalidOperationException>(() => connection.AppendToStreamAsync(s, 0, events));
 
-			Assert.That(() => connection.ReadStreamEventsForwardAsync(s, 0, 1, resolveLinkTos: false).Wait(),
-				Throws.Exception.InstanceOf<AggregateException>().With.InnerException
-					.InstanceOf<InvalidOperationException>());
+			Assert.ThrowsAsync<InvalidOperationException>(
+				() => connection.ReadStreamEventsForwardAsync(s, 0, 1, resolveLinkTos: false));
 
-			Assert.That(() => connection.ReadStreamEventsBackwardAsync(s, 0, 1, resolveLinkTos: false).Wait(),
-				Throws.Exception.InstanceOf<AggregateException>().With.InnerException
-					.InstanceOf<InvalidOperationException>());
+			Assert.ThrowsAsync<InvalidOperationException>(
+				() => connection.ReadStreamEventsBackwardAsync(s, 0, 1, resolveLinkTos: false));
 
-			Assert.That(() => connection.ReadAllEventsForwardAsync(Position.Start, 1, false).Wait(),
-				Throws.Exception.InstanceOf<AggregateException>().With.InnerException
-					.InstanceOf<InvalidOperationException>());
+			Assert.ThrowsAsync<InvalidOperationException>(
+				() => connection.ReadAllEventsForwardAsync(Position.Start, 1, false));
 
-			Assert.That(() => connection.ReadAllEventsBackwardAsync(Position.End, 1, false).Wait(),
-				Throws.Exception.InstanceOf<AggregateException>().With.InnerException
-					.InstanceOf<InvalidOperationException>());
+			Assert.ThrowsAsync<InvalidOperationException>(() =>
+				connection.ReadAllEventsBackwardAsync(Position.End, 1, false));
 
-			Assert.That(() => connection.StartTransactionAsync(s, 0).Wait(),
-				Throws.Exception.InstanceOf<AggregateException>().With.InnerException
-					.InstanceOf<InvalidOperationException>());
+			Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartTransactionAsync(s, 0));
 
-			Assert.That(
-				() => connection.SubscribeToStreamAsync(s, false, (_, __) => Task.CompletedTask, (_, __, ___) => { })
-					.Wait(),
-				Throws.Exception.InstanceOf<AggregateException>().With.InnerException
-					.InstanceOf<InvalidOperationException>());
+			Assert.ThrowsAsync<InvalidOperationException>(
+				() => connection.SubscribeToStreamAsync(s, false, (_, __) => Task.CompletedTask, (_, __, ___) => { }));
 
-			Assert.That(
-				() => connection.SubscribeToAllAsync(false, (_, __) => Task.CompletedTask, (_, __, ___) => { }).Wait(),
-				Throws.Exception.InstanceOf<AggregateException>().With.InnerException
-					.InstanceOf<InvalidOperationException>());
+			Assert.ThrowsAsync<InvalidOperationException>(
+				() => connection.SubscribeToAllAsync(false, (_, __) => Task.CompletedTask, (_, __, ___) => { }));
 		}
 	}
 }
