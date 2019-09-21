@@ -71,16 +71,14 @@ namespace EventStore.ClientAPI {
 			_autoAck = autoAck;
 		}
 
-		internal Task<EventStorePersistentSubscriptionBase> Start() {
+		internal async Task<EventStorePersistentSubscriptionBase> Start() {
 			_stopped.Reset();
 
-			var task = StartSubscription(_subscriptionId, _streamId, _bufferSize, _userCredentials, OnEventAppeared,
-				OnSubscriptionDropped, _settings).ContinueWith(t => {
-				_subscription = t.Result;
-				return this;
-			});
+			_subscription = await StartSubscription(_subscriptionId, _streamId, _bufferSize, _userCredentials,
+				OnEventAppeared,
+				OnSubscriptionDropped, _settings);
 
-			return task;
+			return this;
 		}
 
 		internal abstract Task<PersistentEventStoreSubscription> StartSubscription(

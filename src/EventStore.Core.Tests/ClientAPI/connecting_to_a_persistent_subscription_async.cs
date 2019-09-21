@@ -14,23 +14,20 @@ namespace EventStore.Core.Tests.ClientAPI {
 		private Exception _innerEx;
 
 		protected override Task When() {
-			_innerEx = Assert.Throws<AggregateException>(() => {
-				_conn.ConnectToPersistentSubscriptionAsync(
-					"nonexisting2",
-					"foo",
-					(sub, e) => {
-						Console.Write("appeared");
-						return Task.CompletedTask;
-					},
-					(sub, reason, ex) => { }).Wait();
-			}).InnerException;
+			_innerEx = Assert.ThrowsAsync<ArgumentException>(() => _conn.ConnectToPersistentSubscriptionAsync(
+				"nonexisting2",
+				"foo",
+				(sub, e) => {
+					Console.Write("appeared");
+					return Task.CompletedTask;
+				},
+				(sub, reason, ex) => { }));
 			return Task.CompletedTask;
 		}
 
 		[Test]
 		public void the_subscription_fails_to_connect_with_argument_exception() {
-			Assert.IsInstanceOf<AggregateException>(_innerEx);
-			Assert.IsInstanceOf<ArgumentException>(_innerEx.InnerException);
+			Assert.IsInstanceOf<ArgumentException>(_innerEx);
 		}
 	}
 
@@ -74,22 +71,19 @@ namespace EventStore.Core.Tests.ClientAPI {
 		protected override async Task When() {
             await _conn.CreatePersistentSubscriptionAsync(_stream, "agroupname55", _settings,
 				DefaultData.AdminCredentials);
-			_innerEx = Assert.Throws<AggregateException>(() => {
-				_conn.ConnectToPersistentSubscriptionAsync(
-					_stream,
-					"agroupname55",
-					(sub, e) => {
-						Console.Write("appeared");
-						return Task.CompletedTask;
-					},
-					(sub, reason, ex) => Console.WriteLine("dropped.")).Wait();
-			}).InnerException;
+			_innerEx = Assert.ThrowsAsync<AccessDeniedException>(() => _conn.ConnectToPersistentSubscriptionAsync(
+				_stream,
+				"agroupname55",
+				(sub, e) => {
+					Console.Write("appeared");
+					return Task.CompletedTask;
+				},
+				(sub, reason, ex) => Console.WriteLine("dropped.")));
 		}
 
 		[Test]
 		public void the_subscription_fails_to_connect_with_access_denied_exception() {
-			Assert.IsInstanceOf<AggregateException>(_innerEx);
-			Assert.IsInstanceOf<AccessDeniedException>(_innerEx.InnerException);
+			Assert.IsInstanceOf<AccessDeniedException>(_innerEx);
 		}
 	}
 
@@ -124,7 +118,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		protected override Task When() {
-			_innerEx = Assert.Throws<AggregateException>(() => {
+			_innerEx = Assert.ThrowsAsync<MaximumSubscribersReachedException>(() =>
 				// Second connection
 				_conn.ConnectToPersistentSubscriptionAsync(
 					_stream,
@@ -134,8 +128,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 						return Task.CompletedTask;
 					},
 					(sub, reason, ex) => { },
-					DefaultData.AdminCredentials).Wait();
-			}).InnerException;
+					DefaultData.AdminCredentials));
+			
 			return Task.CompletedTask;
 		}
 
@@ -146,8 +140,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		public void the_second_subscription_throws_maximum_subscribers_reached_exception() {
-			Assert.IsInstanceOf<AggregateException>(_innerEx);
-			Assert.IsInstanceOf<MaximumSubscribersReachedException>(_innerEx.InnerException);
+			Assert.IsInstanceOf<MaximumSubscribersReachedException>(_innerEx);
 		}
 	}
 
@@ -272,7 +265,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		private const string _group = "startinbeginning1";
 
 		protected override async Task Given() {
-			WriteEvents(_conn);
+			await WriteEvents(_conn);
             await _conn.CreatePersistentSubscriptionAsync(_stream, _group, _settings,
 				DefaultData.AdminCredentials);
 		}

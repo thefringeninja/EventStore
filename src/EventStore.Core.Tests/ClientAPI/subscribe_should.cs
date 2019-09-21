@@ -30,55 +30,55 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning")]
-		public void be_able_to_subscribe_to_non_existing_stream_and_then_catch_new_event() {
+		public async Task be_able_to_subscribe_to_non_existing_stream_and_then_catch_new_eventAsync() {
 			const string stream =
 				"subscribe_should_be_able_to_subscribe_to_non_existing_stream_and_then_catch_created_event";
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
+                await store.ConnectAsync();
 				var appeared = new CountdownEvent(1);
 				var dropped = new CountdownEvent(1);
 
-				using (store.SubscribeToStreamAsync(stream, false, (s, x) => {
+				using (await store.SubscribeToStreamAsync(stream, false, (s, x) => {
 					appeared.Signal();
-					return Task.CompletedTask;
-				}, (s, r, e) => dropped.Signal()).Result) {
-					store.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent()).Wait();
+					return;
+				}, (s, r, e) => dropped.Signal())) {
+                    await store.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent());
 					Assert.IsTrue(appeared.Wait(Timeout), "Appeared countdown event timed out.");
 				}
 			}
 		}
 
 		[Test, Category("LongRunning")]
-		public void allow_multiple_subscriptions_to_same_stream() {
+		public async Task allow_multiple_subscriptions_to_same_streamAsync() {
 			const string stream = "subscribe_should_allow_multiple_subscriptions_to_same_stream";
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
+                await store.ConnectAsync();
 				var appeared = new CountdownEvent(2);
 				var dropped = new CountdownEvent(2);
 
-				using (store.SubscribeToStreamAsync(stream, false, (s, x) => {
+				using (await store.SubscribeToStreamAsync(stream, false, (s, x) => {
 					appeared.Signal();
-					return Task.CompletedTask;
-				}, (s, r, e) => dropped.Signal()).Result)
-				using (store.SubscribeToStreamAsync(stream, false, (s, x) => {
+					return;
+				}, (s, r, e) => dropped.Signal()))
+				using (await store.SubscribeToStreamAsync(stream, false, (s, x) => {
 					appeared.Signal();
-					return Task.CompletedTask;
-				}, (s, r, e) => dropped.Signal()).Result) {
-					store.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent()).Wait();
+					return;
+				}, (s, r, e) => dropped.Signal())) {
+                    await store.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent());
 					Assert.IsTrue(appeared.Wait(Timeout), "Appeared countdown event timed out.");
 				}
 			}
 		}
 
 		[Test, Category("LongRunning")]
-		public void call_dropped_callback_after_unsubscribe_method_call() {
+		public async Task call_dropped_callback_after_unsubscribe_method_callAsync() {
 			const string stream = "subscribe_should_call_dropped_callback_after_unsubscribe_method_call";
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
+                await store.ConnectAsync();
 
 				var dropped = new CountdownEvent(1);
-				using (var subscription = store.SubscribeToStreamAsync(stream, false, (s, x) => Task.CompletedTask,
-					(s, r, e) => dropped.Signal()).Result) {
+				using (var subscription = await store.SubscribeToStreamAsync(stream, false, (s, x) => Task.CompletedTask,
+					(s, r, e) => dropped.Signal())) {
 					subscription.Unsubscribe();
 				}
 
@@ -87,19 +87,19 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning")]
-		public void catch_deleted_events_as_well() {
+		public async Task catch_deleted_events_as_wellAsync() {
 			const string stream = "subscribe_should_catch_created_and_deleted_events_as_well";
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
+                await store.ConnectAsync();
 
 				var appeared = new CountdownEvent(1);
 				var dropped = new CountdownEvent(1);
-				using (store.SubscribeToStreamAsync(stream, false, (s, x) => {
+				using (await store.SubscribeToStreamAsync(stream, false, (s, x) => {
 						appeared.Signal();
-						return Task.CompletedTask;
+						return;
 					},
-					(s, r, e) => dropped.Signal()).Result) {
-					store.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: true).Wait();
+					(s, r, e) => dropped.Signal())) {
+                    await store.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: true);
 					Assert.IsTrue(appeared.Wait(Timeout), "Appeared countdown event timed out.");
 				}
 			}

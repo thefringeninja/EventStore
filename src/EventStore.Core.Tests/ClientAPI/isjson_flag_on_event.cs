@@ -34,12 +34,12 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public void should_be_preserved_with_all_possible_write_and_read_methods() {
+		public async Task should_be_preserved_with_all_possible_write_and_read_methodsAsync() {
 			const string stream = "should_be_preserved_with_all_possible_write_methods";
 			using (var connection = BuildConnection(_node)) {
-				connection.ConnectAsync().Wait();
+                await connection.ConnectAsync();
 
-				connection.AppendToStreamAsync(
+                await connection.AppendToStreamAsync(
 						stream,
 						ExpectedVersion.Any,
 						new EventData(Guid.NewGuid(), "some-type", true,
@@ -48,19 +48,18 @@ namespace EventStore.Core.Tests.ClientAPI {
 							Helper.UTF8NoBom.GetBytes("{\"some\":\"json\"}")),
 						new EventData(Guid.NewGuid(), "some-type", true,
 							Helper.UTF8NoBom.GetBytes("{\"some\":\"json\"}"),
-							Helper.UTF8NoBom.GetBytes("{\"some\":\"json\"}")))
-					.Wait();
+							Helper.UTF8NoBom.GetBytes("{\"some\":\"json\"}")));
 
-				using (var transaction = connection.StartTransactionAsync(stream, ExpectedVersion.Any).Result) {
-					transaction.WriteAsync(
+				using (var transaction = await connection.StartTransactionAsync(stream, ExpectedVersion.Any)) {
+                    await transaction.WriteAsync(
 						new EventData(Guid.NewGuid(), "some-type", true,
 							Helper.UTF8NoBom.GetBytes("{\"some\":\"json\"}"), null),
 						new EventData(Guid.NewGuid(), "some-type", true, null,
 							Helper.UTF8NoBom.GetBytes("{\"some\":\"json\"}")),
 						new EventData(Guid.NewGuid(), "some-type", true,
 							Helper.UTF8NoBom.GetBytes("{\"some\":\"json\"}"),
-							Helper.UTF8NoBom.GetBytes("{\"some\":\"json\"}"))).Wait();
-					transaction.CommitAsync().Wait();
+							Helper.UTF8NoBom.GetBytes("{\"some\":\"json\"}")));
+                    await transaction.CommitAsync();
 				}
 
 				var done = new ManualResetEventSlim();

@@ -55,9 +55,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		public void the_completion_fails_with_invalid_stream() {
-			Assert.Throws<AggregateException>(() =>
-				_conn.CreatePersistentSubscriptionAsync("$all", "shitbird", _settings, DefaultData.AdminCredentials)
-					.Wait());
+			Assert.ThrowsAsync<InvalidOperationException>(() =>
+				_conn.CreatePersistentSubscriptionAsync("$all", "shitbird", _settings, DefaultData.AdminCredentials));
 		}
 	}
 

@@ -76,7 +76,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		private void AssertStartFailsAndDropsSubscriptionWithException(ApplicationException expectedException) {
-			Assert.That(() => _subscription.StartAsync().Wait(TimeoutMs), Throws.TypeOf<AggregateException>());
+			Assert.ThrowsAsync<ApplicationException>(() => _subscription.StartAsync());
 			Assert.That(_isDropped);
 			Assert.That(_dropReason, Is.EqualTo(SubscriptionDropReason.CatchUpError));
 			Assert.That(_dropException, Is.SameAs(expectedException));

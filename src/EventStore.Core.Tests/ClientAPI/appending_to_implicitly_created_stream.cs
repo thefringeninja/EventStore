@@ -116,7 +116,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		public async Task sequence_0em1_1e0_2e1_3e2_4e3_5e4_0e4_wev() {
 			const string stream = "appending_to_implicitly_created_stream_sequence_0em1_1e0_2e1_3e2_4e3_5e4_0e4_wev";
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
+                await store.ConnectAsync();
 
 				var events = Enumerable.Range(0, 6).Select(x => TestEvent.NewTestEvent(Guid.NewGuid())).ToArray();
 				var writer = new StreamWriter(store, stream, -1);

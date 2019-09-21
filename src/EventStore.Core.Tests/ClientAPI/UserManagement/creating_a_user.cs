@@ -44,13 +44,12 @@ namespace EventStore.Core.Tests.ClientAPI.UserManagement {
 		}
 
 		[Test]
-		public void creating_a_user_with_parameters_can_be_read() {
+		public async System.Threading.Tasks.Task creating_a_user_with_parameters_can_be_readAsync() {
 			UserDetails d = null;
-			_manager.CreateUserAsync("ouro", "ourofull", new[] {"foo", "bar"}, "ouro",
-				new UserCredentials("admin", "changeit")).Wait();
-			Assert.DoesNotThrow(() => {
-				d = _manager.GetUserAsync("ouro", new UserCredentials("admin", "changeit")).Result;
-			});
+			await _manager.CreateUserAsync("ouro", "ourofull", new[] {"foo", "bar"}, "ouro",
+				new UserCredentials("admin", "changeit"));
+			d = await _manager.GetUserAsync("ouro", new UserCredentials("admin", "changeit"));
+
 			Assert.AreEqual("ouro", d.LoginName);
 			Assert.AreEqual("ourofull", d.FullName);
 			Assert.AreEqual("foo", d.Groups[0]);

@@ -83,9 +83,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 		[Test]
 		public void trying_to_set_metadata_with_wrong_expected_version_fails() {
 			const string stream = "trying_to_set_metadata_with_wrong_expected_version_fails";
-			Assert.That(() => _connection.SetStreamMetadataAsync(stream, 2, StreamMetadata.Create()).Result,
-				Throws.Exception.InstanceOf<AggregateException>()
-					.With.InnerException.InstanceOf<WrongExpectedVersionException>());
+			Assert.ThrowsAsync<WrongExpectedVersionException>(() =>
+				_connection.SetStreamMetadataAsync(stream, 2, StreamMetadata.Create()));
 		}
 
 		[Test]
