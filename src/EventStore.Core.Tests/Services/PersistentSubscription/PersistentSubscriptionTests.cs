@@ -1541,23 +1541,22 @@ namespace EventStore.Core.Tests.Services.PersistentSubscription {
 
 	[TestFixture, Ignore("very long test")]
 	public class DeadlockTest : SpecificationWithMiniNode {
-		protected override void Given() {
+		protected override Task Given() {
 			_conn = BuildConnection(_node);
-			_conn.ConnectAsync().Wait();
+            return _conn.ConnectAsync();
 		}
 
-		protected override void When() {
-		}
+		protected override Task When() => Task.CompletedTask;
 
 		[Test]
-		public void read_whilst_ack_doesnt_deadlock_with_request_response_dispatcher() {
+		public async Task read_whilst_ack_doesnt_deadlock_with_request_response_dispatcher() {
 			var persistentSubscriptionSettings = PersistentSubscriptionSettings.Create().Build();
 			var userCredentials = DefaultData.AdminCredentials;
-			_conn.CreatePersistentSubscriptionAsync("TestStream", "TestGroup", persistentSubscriptionSettings,
-				userCredentials).Wait();
+            await _conn.CreatePersistentSubscriptionAsync("TestStream", "TestGroup", persistentSubscriptionSettings,
+				userCredentials);
 
 			const int count = 5000;
-			_conn.AppendToStreamAsync("TestStream", ExpectedVersion.Any, CreateEvent().Take(count)).Wait();
+            await _conn.AppendToStreamAsync("TestStream", ExpectedVersion.Any, CreateEvent().Take(count));
 
 
 			var received = 0;
@@ -1656,7 +1655,7 @@ namespace EventStore.Core.Tests.Services.PersistentSubscription {
 		public long MarkedAsProcessed { get; private set; }
 
 		public void ParkMessageCompleted(int idx, OperationResult result) {
-			if (_parkMessageCompleted != null) _parkMessageCompleted(ParkedEvents[idx], result);
+			_parkMessageCompleted?.Invoke(ParkedEvents[idx], result);
 		}
 
 		public void BeginParkMessage(ResolvedEvent ev, string reason,
@@ -1679,9 +1678,7 @@ namespace EventStore.Core.Tests.Services.PersistentSubscription {
 		}
 
 		public void BeginDelete(Action<IPersistentSubscriptionMessageParker> completed) {
-			if (_deleteAction != null) {
-				_deleteAction();
-			}
+			_deleteAction?.Invoke();
 		}
 	}
 
@@ -1700,9 +1697,7 @@ namespace EventStore.Core.Tests.Services.PersistentSubscription {
 		}
 
 		public void BeginDelete(Action<IPersistentSubscriptionCheckpointWriter> completed) {
-			if (_deleteAction != null) {
-				_deleteAction();
-			}
+			_deleteAction?.Invoke();
 		}
 	}
 }

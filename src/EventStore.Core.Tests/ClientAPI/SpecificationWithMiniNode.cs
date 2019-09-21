@@ -11,10 +11,9 @@ namespace EventStore.Core.Tests.ClientAPI {
 		protected IEventStoreConnection _conn;
 		protected IPEndPoint _HttpEndPoint;
 
-		protected virtual void Given() {
-		}
+		protected virtual Task Given() => Task.CompletedTask;
 
-		protected abstract void When();
+		protected abstract Task When();
 
 		protected virtual IEventStoreConnection BuildConnection(MiniNode node) {
 			return TestConnection.Create(node.TcpEndPoint);
@@ -28,8 +27,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 			_HttpEndPoint = _node.ExtHttpEndPoint;
 			_conn = BuildConnection(_node);
 			await _conn.ConnectAsync();
-			Given();
-			When();
+			await Given();
+			await When();
 		}
 
 		[OneTimeTearDown]

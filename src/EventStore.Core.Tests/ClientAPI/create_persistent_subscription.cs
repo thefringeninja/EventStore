@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.ClientAPI.Exceptions;
 using NUnit.Framework;
@@ -13,18 +14,15 @@ namespace EventStore.Core.Tests.ClientAPI {
 			.DoNotResolveLinkTos()
 			.StartFromCurrent();
 
-		protected override void When() {
-			_conn.AppendToStreamAsync(_stream, ExpectedVersion.Any,
+		protected override Task When() {
+			return _conn.AppendToStreamAsync(_stream, ExpectedVersion.Any,
 				new EventData(Guid.NewGuid(), "whatever", true, Encoding.UTF8.GetBytes("{'foo' : 2}"), new Byte[0]));
 		}
 
 		[Test]
-		public void the_completion_succeeds() {
-			Assert.DoesNotThrow(
-				() =>
-					_conn.CreatePersistentSubscriptionAsync(_stream, "existing", _settings,
-							DefaultData.AdminCredentials)
-						.Wait());
+		public async Task the_completion_succeeds() {
+			await _conn.CreatePersistentSubscriptionAsync(_stream, "existing", _settings,
+				DefaultData.AdminCredentials);
 		}
 	}
 
@@ -37,14 +35,12 @@ namespace EventStore.Core.Tests.ClientAPI {
 			.DoNotResolveLinkTos()
 			.StartFromCurrent();
 
-		protected override void When() {
-		}
+		protected override Task When() => Task.CompletedTask;
 
 		[Test]
-		public void the_completion_succeeds() {
-			Assert.DoesNotThrow(() =>
-				_conn.CreatePersistentSubscriptionAsync(_stream, "nonexistinggroup", _settings,
-					DefaultData.AdminCredentials).Wait());
+		public async Task the_completion_succeeds() {
+			await _conn.CreatePersistentSubscriptionAsync(_stream, "nonexistinggroup", _settings,
+				DefaultData.AdminCredentials);
 		}
 	}
 
@@ -55,8 +51,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			.DoNotResolveLinkTos()
 			.StartFromCurrent();
 
-		protected override void When() {
-		}
+		protected override Task When() => Task.CompletedTask;
 
 		[Test]
 		public void the_completion_fails_with_invalid_stream() {
@@ -69,8 +64,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 	[TestFixture, Category("LongRunning")]
 	public class create_persistent_subscription_with_too_big_message_timeout : SpecificationWithMiniNode {
-		protected override void When() {
-		}
+		protected override Task When() => Task.CompletedTask;
 
 		[Test]
 		public void the_build_fails_with_argument_exception() {
@@ -82,8 +76,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 	[TestFixture, Category("LongRunning")]
 	public class create_persistent_subscription_with_too_big_checkpoint_after : SpecificationWithMiniNode {
-		protected override void When() {
-		}
+		protected override Task When() => Task.CompletedTask;
 
 		[Test]
 		public void the_build_fails_with_argument_exception() {
@@ -101,8 +94,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			.StartFromCurrent()
 			.DontTimeoutMessages();
 
-		protected override void When() {
-		}
+		protected override Task When() => Task.CompletedTask;
 
 		[Test]
 		public void the_message_timeout_should_be_zero() {
@@ -110,12 +102,9 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public void the_subscription_is_created_without_error() {
-			Assert.DoesNotThrow(
-				() =>
-					_conn.CreatePersistentSubscriptionAsync(_stream, "dont-timeout", _settings,
-						DefaultData.AdminCredentials).Wait()
-			);
+		public async Task the_subscription_is_created_without_error() {
+			await _conn.CreatePersistentSubscriptionAsync(_stream, "dont-timeout", _settings,
+				DefaultData.AdminCredentials);
 		}
 	}
 
@@ -127,21 +116,15 @@ namespace EventStore.Core.Tests.ClientAPI {
 			.DoNotResolveLinkTos()
 			.StartFromCurrent();
 
-		protected override void When() {
-			_conn.CreatePersistentSubscriptionAsync(_stream, "group32", _settings, DefaultData.AdminCredentials).Wait();
+		protected override Task When() {
+			return _conn.CreatePersistentSubscriptionAsync(_stream, "group32", _settings, DefaultData.AdminCredentials);
 		}
 
 		[Test]
 		public void the_completion_fails_with_invalid_operation_exception() {
-			try {
-				_conn.CreatePersistentSubscriptionAsync(_stream, "group32", _settings, DefaultData.AdminCredentials)
-					.Wait();
-				throw new Exception("expected exception");
-			} catch (Exception ex) {
-				Assert.IsInstanceOf(typeof(AggregateException), ex);
-				var inner = ex.InnerException;
-				Assert.IsInstanceOf(typeof(InvalidOperationException), inner);
-			}
+			Assert.ThrowsAsync<InvalidOperationException>(
+				() => _conn.CreatePersistentSubscriptionAsync(_stream, "group32", _settings,
+					DefaultData.AdminCredentials));
 		}
 	}
 
@@ -154,16 +137,15 @@ namespace EventStore.Core.Tests.ClientAPI {
 			.DoNotResolveLinkTos()
 			.StartFromCurrent();
 
-		protected override void When() {
-			_conn.CreatePersistentSubscriptionAsync(_stream, "group3211", _settings, DefaultData.AdminCredentials)
-				.Wait();
+		protected override Task When() {
+			return _conn.CreatePersistentSubscriptionAsync(_stream, "group3211", _settings, DefaultData.AdminCredentials);
 		}
 
 		[Test]
-		public void the_completion_succeeds() {
-			Assert.DoesNotThrow(() =>
+		public async Task the_completion_succeeds() {
+			await
 				_conn.CreatePersistentSubscriptionAsync("someother" + _stream, "group3211", _settings,
-					DefaultData.AdminCredentials).Wait());
+					DefaultData.AdminCredentials);
 		}
 	}
 
@@ -175,19 +157,12 @@ namespace EventStore.Core.Tests.ClientAPI {
 			.DoNotResolveLinkTos()
 			.StartFromCurrent();
 
-		protected override void When() {
-		}
+		protected override Task When() => Task.CompletedTask;
 
 		[Test]
 		public void the_completion_succeeds() {
-			try {
-				_conn.CreatePersistentSubscriptionAsync(_stream, "group57", _settings, null).Wait();
-				throw new Exception("expected exception");
-			} catch (Exception ex) {
-				Assert.IsInstanceOf(typeof(AggregateException), ex);
-				var inner = ex.InnerException;
-				Assert.IsInstanceOf(typeof(AccessDeniedException), inner);
-			}
+			Assert.ThrowsAsync<AccessDeniedException>(() =>
+				_conn.CreatePersistentSubscriptionAsync(_stream, "group57", _settings, null));
 		}
 	}
 
@@ -200,19 +175,16 @@ namespace EventStore.Core.Tests.ClientAPI {
 			.DoNotResolveLinkTos()
 			.StartFromCurrent();
 
-		protected override void When() {
-			_conn.AppendToStreamAsync(_stream, ExpectedVersion.Any,
+		protected override async Task When() {
+			await _conn.AppendToStreamAsync(_stream, ExpectedVersion.Any,
 				new EventData(Guid.NewGuid(), "whatever", true, Encoding.UTF8.GetBytes("{'foo' : 2}"), new Byte[0]));
-			_conn.CreatePersistentSubscriptionAsync(_stream, "existing", _settings, DefaultData.AdminCredentials)
-				.Wait();
-			_conn.DeletePersistentSubscriptionAsync(_stream, "existing", DefaultData.AdminCredentials).Wait();
+            await _conn.CreatePersistentSubscriptionAsync(_stream, "existing", _settings, DefaultData.AdminCredentials);
+            await _conn.DeletePersistentSubscriptionAsync(_stream, "existing", DefaultData.AdminCredentials);
 		}
 
 		[Test]
-		public void the_completion_succeeds() {
-			Assert.DoesNotThrow(() =>
-				_conn.CreatePersistentSubscriptionAsync(_stream, "existing", _settings, DefaultData.AdminCredentials)
-					.Wait());
+		public async Task the_completion_succeeds() {
+            await _conn.CreatePersistentSubscriptionAsync(_stream, "existing", _settings, DefaultData.AdminCredentials);
 		}
 	}
 

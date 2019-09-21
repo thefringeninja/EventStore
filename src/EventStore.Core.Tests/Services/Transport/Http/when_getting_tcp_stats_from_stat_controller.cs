@@ -27,24 +27,24 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		private List<MonitoringMessage.TcpConnectionStats> _results = new List<MonitoringMessage.TcpConnectionStats>();
 		private HttpResponse _response;
 
-		protected override void Given() {
+		protected override async Task Given() {
 			_serverPort = PortsHelper.GetAvailablePort(IPAddress.Loopback);
 			_serverEndPoint = new IPEndPoint(IPAddress.Loopback, _serverPort);
 			_url = _HttpEndPoint.ToHttpUrl(EndpointExtensions.HTTP_SCHEMA, "/stats/tcp");
 
 			var settings = ConnectionSettings.Create();
 			_connection = EventStoreConnection.Create(settings, _node.TcpEndPoint, _clientConnectionName);
-			_connection.ConnectAsync().Wait();
+            await _connection.ConnectAsync();
 
 			var testEvent = new EventData(Guid.NewGuid(), "TestEvent", true,
 				Encoding.ASCII.GetBytes("{'Test' : 'OneTwoThree'}"), null);
-			_connection.AppendToStreamAsync("tests", ExpectedVersion.Any, testEvent).Wait();
+            await _connection.AppendToStreamAsync("tests", ExpectedVersion.Any, testEvent);
 
 			_portableServer = new PortableServer(_serverEndPoint);
 			_portableServer.SetUp();
 		}
 
-		protected override void When() {
+		protected override Task When() {
 			Func<HttpResponse, bool> verifier = response => {
 				_results = Codec.Json.From<List<MonitoringMessage.TcpConnectionStats>>(response.Body);
 				_response = response;
@@ -53,6 +53,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 
 			var res = _portableServer.StartServiceAndSendRequest(y => { }, _url, verifier);
 			Assert.IsEmpty(res.Item2, "Http call failed");
+			return Task.CompletedTask;
 		}
 
 		[Test]
