@@ -21,21 +21,21 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void multiple_roles_are_handled_correctly() {
+		public async Task multiple_roles_are_handled_correctly() {
 			Expect<AccessDeniedException>(() => ReadEvent("usr-stream", null, null));
-			ExpectNoException(() => ReadEvent("usr-stream", "user1", "pa$$1"));
-			ExpectNoException(() => ReadEvent("usr-stream", "user2", "pa$$2"));
-			ExpectNoException(() => ReadEvent("usr-stream", "adm", "admpa$$"));
+			await ReadEvent("usr-stream", "user1", "pa$$1");
+			await ReadEvent("usr-stream", "user2", "pa$$2");
+			await ReadEvent("usr-stream", "adm", "admpa$$");
 
 			Expect<AccessDeniedException>(() => WriteStream("usr-stream", null, null));
-			ExpectNoException(() => WriteStream("usr-stream", "user1", "pa$$1"));
+			await WriteStream("usr-stream", "user1", "pa$$1");
 			Expect<AccessDeniedException>(() => WriteStream("usr-stream", "user2", "pa$$2"));
-			ExpectNoException(() => WriteStream("usr-stream", "adm", "admpa$$"));
+			await WriteStream("usr-stream", "adm", "admpa$$");
 
-			ExpectNoException(() => DeleteStream("usr-stream1", null, null));
-			ExpectNoException(() => DeleteStream("usr-stream2", "user1", "pa$$1"));
-			ExpectNoException(() => DeleteStream("usr-stream3", "user2", "pa$$2"));
-			ExpectNoException(() => DeleteStream("usr-stream4", "adm", "admpa$$"));
+			await DeleteStream("usr-stream1", null, null);
+			await DeleteStream("usr-stream2", "user1", "pa$$1");
+			await DeleteStream("usr-stream3", "user2", "pa$$2");
+			await DeleteStream("usr-stream4", "adm", "admpa$$");
 		}
 	}
 }

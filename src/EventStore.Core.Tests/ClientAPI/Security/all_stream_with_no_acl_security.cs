@@ -11,8 +11,8 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 
-			Connection.SetStreamMetadataAsync("$all", ExpectedVersion.Any, StreamMetadata.Build(),
-				new UserCredentials("adm", "admpa$$")).Wait();
+            await Connection.SetStreamMetadataAsync("$all", ExpectedVersion.Any, StreamMetadata.Build(),
+				new UserCredentials("adm", "admpa$$"));
 		}
 
 		[Test]
@@ -49,12 +49,12 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void reading_and_subscribing_is_allowed_for_admin_user() {
-			ExpectNoException(() => ReadEvent("$all", "adm", "admpa$$"));
-			ExpectNoException(() => ReadStreamForward("$all", "adm", "admpa$$"));
-			ExpectNoException(() => ReadStreamBackward("$all", "adm", "admpa$$"));
-			ExpectNoException(() => ReadMeta("$all", "adm", "admpa$$"));
-			ExpectNoException(() => SubscribeToStream("$all", "adm", "admpa$$"));
+		public async Task reading_and_subscribing_is_allowed_for_admin_user() {
+			await ReadEvent("$all", "adm", "admpa$$");
+			await ReadStreamForward("$all", "adm", "admpa$$");
+			await ReadStreamBackward("$all", "adm", "admpa$$");
+			await ReadMeta("$all", "adm", "admpa$$");
+			await SubscribeToStream("$all", "adm", "admpa$$");
 		}
 
 
@@ -69,8 +69,8 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void meta_write_is_allowed_for_admin_user() {
-			ExpectNoException(() => WriteMeta("$all", "adm", "admpa$$", null));
+		public async Task meta_write_is_allowed_for_admin_user() {
+			await WriteMeta("$all", "adm", "admpa$$", null);
 		}
 	}
 }
