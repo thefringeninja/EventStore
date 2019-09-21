@@ -31,7 +31,7 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 			await base.TestFixtureSetUp();
 			_node = new MiniNode(PathName, enableTrustedAuth: true);
 			try {
-				_node.Start();
+				await _node.Start();
 
 				var userCreateEvent1 = new TaskCompletionSource<bool>();
 				_node.Node.MainQueue.Publish(

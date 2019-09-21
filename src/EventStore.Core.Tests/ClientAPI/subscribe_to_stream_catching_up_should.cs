@@ -23,7 +23,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 			_node = new MiniNode(PathName);
-			_node.Start();
+			await _node. Start();
 		}
 
 		[OneTimeTearDown]
@@ -37,10 +37,10 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning")]
-		public void be_able_to_subscribe_to_non_existing_stream() {
+		public async Task be_able_to_subscribe_to_non_existing_stream() {
 			const string stream = "be_able_to_subscribe_to_non_existing_stream";
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
+                await store.ConnectAsync();
 				var appeared = new ManualResetEventSlim(false);
 				var dropped = new CountdownEvent(1);
 
@@ -55,7 +55,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 					(_, __, ___) => dropped.Signal());
 
 				Thread.Sleep(100); // give time for first pull phase
-				store.SubscribeToStreamAsync(stream, false, (s, x) => Task.CompletedTask, (s, r, e) => { }).Wait();
+                await store.SubscribeToStreamAsync(stream, false, (s, x) => Task.CompletedTask, (s, r, e) => { });
 				Thread.Sleep(100);
 				Assert.IsFalse(appeared.Wait(0), "Some event appeared.");
 				Assert.IsFalse(dropped.Wait(0), "Subscription was dropped prematurely.");
@@ -65,10 +65,10 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning")]
-		public void be_able_to_subscribe_to_non_existing_stream_and_then_catch_event() {
+		public async Task be_able_to_subscribe_to_non_existing_stream_and_then_catch_event() {
 			const string stream = "be_able_to_subscribe_to_non_existing_stream_and_then_catch_event";
 			using (var store = BuildConnection(_node)) {
-				store.ConnectAsync().Wait();
+                await store.ConnectAsync();
 				var appeared = new CountdownEvent(1);
 				var dropped = new CountdownEvent(1);
 
@@ -82,7 +82,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 					_ => Log.Info("Live processing started."),
 					(_, __, ___) => dropped.Signal());
 
-				store.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent()).Wait();
+                await store.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent());
 
 				if (!appeared.Wait(Timeout)) {
 					Assert.IsFalse(dropped.Wait(0), "Subscription was dropped prematurely.");
@@ -96,7 +96,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning")]
-		public void allow_multiple_subscriptions_to_same_stream() {
+		public async Task allow_multiple_subscriptions_to_same_stream() {
 			const string stream = "allow_multiple_subscriptions_to_same_stream";
 			using (var store = BuildConnection(_node)) {
 				store.ConnectAsync().Wait();

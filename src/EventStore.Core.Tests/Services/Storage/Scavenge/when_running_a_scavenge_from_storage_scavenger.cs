@@ -26,13 +26,13 @@ namespace EventStore.Core.Tests.Services.Storage.Scavenge {
 			await base.TestFixtureSetUp();
 
 			_node = new MiniNode(PathName, skipInitializeStandardUsersCheck: false);
-			_node.Start();
+			await _node.Start();
 
 			var scavengeMessage =
 				new ClientMessage.ScavengeDatabase(new NoopEnvelope(), Guid.NewGuid(), SystemAccount.Principal, 0, 1);
 			_node.Node.MainQueue.Publish(scavengeMessage);
 
-			When();
+			await When();
 		}
 
 		[TearDown]
@@ -40,9 +40,9 @@ namespace EventStore.Core.Tests.Services.Storage.Scavenge {
 			_node.Shutdown();
 		}
 
-		public void When() {
+		public async Task When() {
 			using (var conn = TestConnection.Create(_node.TcpEndPoint, TcpType.Normal, DefaultData.AdminCredentials)) {
-				conn.ConnectAsync().Wait();
+                await conn.ConnectAsync();
 				var countdown = new CountdownEvent(2);
 				_result = new List<ResolvedEvent>();
 

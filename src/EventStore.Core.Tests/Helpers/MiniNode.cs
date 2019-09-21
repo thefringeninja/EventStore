@@ -167,10 +167,10 @@ namespace EventStore.Core.Tests.Helpers {
 			Node.ExternalHttpService.SetupController(new TestController(Node.MainQueue));
 		}
 
-		public void Start() {
+		public async Task Start() {
 			var monitorTcs = new TaskCompletionSource<object>();
 			MonitorFailures(monitorTcs);
-			StartMiniNode(monitorTcs.Task).Wait();
+            await StartMiniNode(monitorTcs.Task);
 			ContinueMonitoringFailures(monitorTcs);
 		}
 

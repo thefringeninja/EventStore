@@ -39,7 +39,7 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.projectionsManager {
 				_tag = "_1";
 
 				_node = CreateNode();
-				_node.Start();
+				await _node.Start();
 
 				_connection = TestConnection.Create(_node.TcpEndPoint);
                 await _connection.ConnectAsync();

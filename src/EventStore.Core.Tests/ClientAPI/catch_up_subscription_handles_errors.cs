@@ -46,7 +46,9 @@ namespace EventStore.Core.Tests.ClientAPI {
 			_subscription = new EventStoreStreamCatchUpSubscription(_connection, new NoopLogger(), StreamId, null, null,
 				(subscription, ev) => {
 					_raisedEvents.Add(ev);
-					_raisedEventEvent.TrySetResult(true);
+					if (_raisedEvents.Count >= 2) {
+						_raisedEventEvent.TrySetResult(true);
+					}
 					return Task.CompletedTask;
 				},
 				subscription => { _liveProcessingStarted = true; },

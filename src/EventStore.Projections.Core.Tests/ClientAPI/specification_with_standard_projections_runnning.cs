@@ -34,7 +34,7 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
             Assert.Ignore("These tests require DEBUG conditional");
 #else
 			QueueStatsCollector.InitializeIdleDetection();
-			CreateNode();
+			await CreateNode();
 			try {
 				_conn = EventStoreConnection.Create(_node.TcpEndPoint);
                 await _conn.ConnectAsync();
@@ -60,14 +60,12 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
 				When();
 			} catch {
 				try {
-					if (_conn != null)
-						_conn.Close();
+					_conn?.Close();
 				} catch {
 				}
 
 				try {
-					if (_node != null)
-						_node.Shutdown();
+					_node?.Shutdown();
 				} catch {
 				}
 
@@ -76,7 +74,7 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
 #endif
 		}
 
-		private void CreateNode() {
+		private Task CreateNode() {
 			var projectionWorkerThreadCount = GivenWorkerThreadCount();
 			_projections = new ProjectionsSubsystem(projectionWorkerThreadCount, runProjections: ProjectionType.All,
 				startStandardProjections: false,
@@ -85,7 +83,7 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
 			_node = new MiniNode(
 				PathName, inMemDb: true, skipInitializeStandardUsersCheck: false,
 				subsystems: new ISubsystem[] {_projections});
-			_node.Start();
+			return _node.Start();
 		}
 
 		protected virtual int GivenWorkerThreadCount() {
