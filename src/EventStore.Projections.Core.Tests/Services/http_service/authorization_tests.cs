@@ -31,7 +31,7 @@ namespace EventStore.Projections.Core.Tests.Services.Transport.Http {
 			return client;
 		}
 
-		private int SendRequest(HttpClient client, HttpMethod method, string url, string body, string contentType){
+		private async Task<int> SendRequest(HttpClient client, HttpMethod method, string url, string body, string contentType){
 			var request = new HttpRequestMessage();
 			request.Method = method;
 			request.RequestUri = new Uri(url);
@@ -46,7 +46,7 @@ namespace EventStore.Projections.Core.Tests.Services.Transport.Http {
 				request.Content = content;
 			}
 
-			var result = client.SendAsync(request).Result;
+			var result = await client.SendAsync(request);
 			return (int) result.StatusCode;
 		}
 
@@ -81,7 +81,7 @@ namespace EventStore.Projections.Core.Tests.Services.Transport.Http {
 					throw new Exception("Unknown authorization level");
 			}
         }
-		public void CreateUser(string username, string password){
+		public async Task CreateUser(string username, string password){
 			for(int trial=1;trial<=5;trial++){
 				try{
 					var dataStr = string.Format("{{loginName: '{0}', fullName: '{1}', password: '{2}', groups: []}}", username, username, password);
@@ -90,10 +90,10 @@ namespace EventStore.Projections.Core.Tests.Services.Transport.Http {
 					var content = new StreamContent(stream);
 					content.Headers.Add("Content-Type", "application/json");
 
-					var res = _httpClients["Admin"].PostAsync(
+					var res = await _httpClients["Admin"].PostAsync(
 						string.Format("http://{0}/users/", _nodes[_masterId].ExternalHttpEndPoint),
 						content
-					).Result;
+					);
 					res.EnsureSuccessStatusCode();
 					break;
 				}
@@ -101,13 +101,13 @@ namespace EventStore.Projections.Core.Tests.Services.Transport.Http {
 					if(trial == 5){
 						throw new Exception(string.Format("Error creating user: {0}", username));
 					}
-					Task.Delay(1000).Wait();
+                    await Task.Delay(1000);
 				}
 			}
 		}
 
-		protected override void Given() {
-			base.Given();
+		protected override async Task Given() {
+			await base.Given();
 			//find the master node
 			for(int i=0;i<_nodes.Length;i++){
 				if(_nodes[i].NodeState == EventStore.Core.Data.VNodeState.Master){
@@ -118,7 +118,7 @@ namespace EventStore.Projections.Core.Tests.Services.Transport.Http {
 
 			_httpClients["Admin"] = CreateHttpClient("admin", "changeit");
 			_httpClients["Ops"] = CreateHttpClient("ops", "changeit");
-			CreateUser("user","changeit");
+            await CreateUser("user","changeit");
 			_httpClients["User"] = CreateHttpClient("user", "changeit");
 			_httpClients["None"] = new HttpClient();
 		}
@@ -132,7 +132,7 @@ namespace EventStore.Projections.Core.Tests.Services.Transport.Http {
 		}
 
 		[Test, Combinatorial]
-		public void authorization_tests(
+		public async Task authorization_tests(
 			[Values(
 				"None",
 				"User",
@@ -183,7 +183,7 @@ namespace EventStore.Projections.Core.Tests.Services.Transport.Http {
 			var url = string.Format("http://{0}{1}", nodeEndpoint, endpointUrl);
 			var body = GetData(httpMethod, endpointUrl);
 			var contentType = httpMethod == HttpMethod.Post || httpMethod == HttpMethod.Put || httpMethod == HttpMethod.Delete ? "application/json" : null;
-			var statusCode = SendRequest(_httpClients[userAuthorizationLevel], httpMethod, url, body, contentType);
+			var statusCode = await SendRequest(_httpClients[userAuthorizationLevel], httpMethod, url, body, contentType);
 
 			if(GetAuthLevel(userAuthorizationLevel) >= GetAuthLevel(requiredMinAuthorizationLevel)){
 				Assert.AreNotEqual(401, statusCode);

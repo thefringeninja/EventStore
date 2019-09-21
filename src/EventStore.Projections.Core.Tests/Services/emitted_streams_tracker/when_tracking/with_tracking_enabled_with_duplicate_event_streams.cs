@@ -32,7 +32,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream_manager.when
 		}
 
 		[Test]
-		public async Task should_at_best_attempt_to_track_a_unique_list_of_streamsAsync() {
+		public async Task should_at_best_attempt_to_track_a_unique_list_of_streams() {
 			var result = await _conn.ReadStreamEventsForwardAsync(_projectionNamesBuilder.GetEmittedStreamsName(), 0, 200,
 				false, _credentials);
 			Assert.AreEqual(1, result.Events.Length);

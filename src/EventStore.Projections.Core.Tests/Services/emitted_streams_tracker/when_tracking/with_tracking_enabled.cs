@@ -29,7 +29,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_streams_tracker.whe
 		}
 
 		[Test]
-		public async Task should_write_a_stream_tracked_eventAsync() {
+		public async Task should_write_a_stream_tracked_event() {
 			var result = await _conn.ReadStreamEventsForwardAsync(_projectionNamesBuilder.GetEmittedStreamsName(), 0, 200,
 				false, _credentials);
 			Assert.AreEqual(1, result.Events.Length);

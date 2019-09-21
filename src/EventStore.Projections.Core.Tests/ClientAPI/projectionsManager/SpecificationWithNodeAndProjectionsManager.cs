@@ -42,27 +42,23 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.projectionsManager {
 				await _node.Start();
 
 				_connection = TestConnection.Create(_node.TcpEndPoint);
-                await _connection.ConnectAsync();
+				await _connection.ConnectAsync();
 			}
 
 			try {
 				_projManager = new ProjectionsManager(new ConsoleLogger(), _node.ExtHttpEndPoint, _timeout);
-				Given();
-				When();
+				await Given();
+                await When();
 			} catch {
 				if (createdMiniNode) {
-					if (_connection != null) {
-						try {
-							_connection.Close();
-						} catch {
-						}
+					try {
+						_connection?.Close();
+					} catch {
 					}
 
-					if (_node != null) {
-						try {
-							_node.Shutdown();
-						} catch {
-						}
+					try {
+						_node?.Shutdown();
+					} catch {
 					}
 				}
 
@@ -80,8 +76,8 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.projectionsManager {
 			return base.TestFixtureTearDown();
 		}
 
-		public abstract void Given();
-		public abstract void When();
+		public abstract Task Given();
+		public abstract Task When();
 
 		protected MiniNode CreateNode() {
 			var projections = new ProjectionsSubsystem(1, runProjections: ProjectionType.All,
@@ -97,18 +93,18 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.projectionsManager {
 			return new EventData(Guid.NewGuid(), eventType, true, Encoding.UTF8.GetBytes(data), null);
 		}
 
-		protected void PostEvent(string stream, string eventType, string data) {
-			_connection.AppendToStreamAsync(stream, ExpectedVersion.Any, new[] {CreateEvent(eventType, data)}).Wait();
+		protected Task PostEvent(string stream, string eventType, string data) {
+			return _connection.AppendToStreamAsync(stream, ExpectedVersion.Any, new[] {CreateEvent(eventType, data)});
 		}
 
-		protected void CreateOneTimeProjection() {
+		protected Task CreateOneTimeProjection() {
 			var query = CreateStandardQuery(Guid.NewGuid().ToString());
-			_projManager.CreateOneTimeAsync(query, _credentials).Wait();
+			return _projManager.CreateOneTimeAsync(query, _credentials);
 		}
 
-		protected void CreateContinuousProjection(string projectionName) {
+		protected Task CreateContinuousProjection(string projectionName) {
 			var query = CreateStandardQuery(Guid.NewGuid().ToString());
-			_projManager.CreateContinuousAsync(projectionName, query, _credentials).Wait();
+			return _projManager.CreateContinuousAsync(projectionName, query, _credentials);
 		}
 
 		protected string CreateStandardQuery(string stream) {

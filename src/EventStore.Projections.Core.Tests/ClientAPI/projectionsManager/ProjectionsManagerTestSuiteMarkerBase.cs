@@ -7,6 +7,7 @@ using EventStore.Core.Tests.Helpers;
 using EventStore.Core.Tests.ClientAPI.Helpers;
 using EventStore.Core.Util;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace EventStore.Projections.Core.Tests.ClientAPI.projectionsManager {
 	class ProjectionsManagerTestSuiteMarkerBase {
@@ -16,7 +17,7 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.projectionsManager {
 		public static int Counter;
 
 		[OneTimeSetUp]
-		public void SetUp() {
+		public Task SetUp() {
 			var typeName = GetType().Name.Length > 30 ? GetType().Name.Substring(0, 30) : GetType().Name;
 			PathName = Path.Combine(Path.GetTempPath(), string.Format("{0}-{1}", Guid.NewGuid(), typeName));
 			Directory.CreateDirectory(PathName);
@@ -25,7 +26,7 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.projectionsManager {
 			CreateNode();
 
 			Connection = TestConnection.Create(Node.TcpEndPoint);
-			Connection.ConnectAsync().Wait();
+			return Connection.ConnectAsync();
 		}
 
 		[OneTimeTearDown]
