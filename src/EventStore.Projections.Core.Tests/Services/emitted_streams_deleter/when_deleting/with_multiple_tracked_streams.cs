@@ -58,7 +58,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_streams_deleter.whe
 		}
 
 		[Test]
-		public async Task should_have_deleted_the_tracked_emitted_streamsAsync() {
+		public async Task should_have_deleted_the_tracked_emitted_streams() {
 			for (int i = 0; i < _numberOfTrackedEvents; i++) {
 				var result = await _conn.ReadStreamEventsForwardAsync(String.Format(_testStreamFormat, i), 0, 1, false,
 					new EventStore.ClientAPI.SystemData.UserCredentials("admin", "changeit"));
@@ -68,14 +68,14 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_streams_deleter.whe
 
 
 		[Test]
-		public async Task should_have_deleted_the_checkpoint_streamAsync() {
+		public async Task should_have_deleted_the_checkpoint_stream() {
 			var result = await _conn.ReadStreamEventsForwardAsync(_projectionNamesBuilder.GetEmittedStreamsCheckpointName(),
 				0, 1, false, new EventStore.ClientAPI.SystemData.UserCredentials("admin", "changeit"));
 			Assert.AreEqual(SliceReadStatus.StreamNotFound, result.Status);
 		}
 
 		[Test]
-		public async Task should_have_deleted_the_emitted_streams_streamAsync() {
+		public async Task should_have_deleted_the_emitted_streams_stream() {
 			var result = await _conn.ReadStreamEventsForwardAsync(_projectionNamesBuilder.GetEmittedStreamsName(), 0, 1,
 				false, new EventStore.ClientAPI.SystemData.UserCredentials("admin", "changeit"));
 			Assert.AreEqual(SliceReadStatus.StreamNotFound, result.Status);
