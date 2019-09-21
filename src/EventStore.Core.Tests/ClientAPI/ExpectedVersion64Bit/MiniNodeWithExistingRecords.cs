@@ -83,9 +83,9 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 
 			// start node with our created DB
 			Node = new MiniNode(PathName, inMemDb: false, dbPath: dbPath);
-			Node.Start();
+			await Node.Start();
 
-			Given();
+			await Given();
 		}
 
 		[OneTimeTearDown]
@@ -97,7 +97,7 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 		}
 
 		public abstract void WriteTestScenario();
-		public abstract void Given();
+		public abstract Task Given();
 
 		protected EventRecord WriteSingleEvent(string eventStreamId,
 			long eventNumber,

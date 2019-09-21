@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using EventStore.Core.Data;
 using EventStore.Core.Messages;
 using EventStore.Core.Messaging;
@@ -10,9 +11,9 @@ namespace EventStore.Core.Tests.TransactionLog.Truncation {
 	[TestFixture]
 	public class when_truncating_database : SpecificationWithDirectoryPerTestFixture {
 		[Test, Category("LongRunning")]
-		public void everything_should_go_fine() {
+		public async Task everything_should_go_fine() {
 			var miniNode = new MiniNode(PathName, inMemDb: false);
-			miniNode.Start();
+			await miniNode.Start();
 
 			var tcpPort = miniNode.TcpEndPoint.Port;
 			var tcpSecPort = miniNode.TcpSecEndPoint.Port;
@@ -40,7 +41,7 @@ namespace EventStore.Core.Tests.TransactionLog.Truncation {
 			// --- first restart and truncation
 			miniNode = new MiniNode(PathName, tcpPort, tcpSecPort, httpPort, inMemDb: false);
 
-			miniNode.Start();
+			await miniNode.Start();
 			Assert.AreEqual(-1, miniNode.Db.Config.TruncateCheckpoint.Read());
 			Assert.That(miniNode.Db.Config.WriterCheckpoint.Read(), Is.GreaterThanOrEqualTo(truncatePosition));
 
@@ -54,19 +55,19 @@ namespace EventStore.Core.Tests.TransactionLog.Truncation {
 			// -- second restart
 			miniNode = new MiniNode(PathName, tcpPort, tcpSecPort, httpPort, inMemDb: false);
 			Assert.AreEqual(-1, miniNode.Db.Config.TruncateCheckpoint.Read());
-			miniNode.Start();
+			await miniNode.Start();
 
 			// -- if we get here -- then everything is ok
 			miniNode.Shutdown();
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public void with_truncate_position_in_completed_chunk_everything_should_go_fine() {
+		public async Task with_truncate_position_in_completed_chunk_everything_should_go_fine() {
 			const int chunkSize = 1024 * 1024;
 			const int cachedSize = chunkSize * 3;
 
 			var miniNode = new MiniNode(PathName, chunkSize: chunkSize, cachedChunkSize: cachedSize, inMemDb: false);
-			miniNode.Start();
+			await miniNode.Start();
 
 			var tcpPort = miniNode.TcpEndPoint.Port;
 			var tcpSecPort = miniNode.TcpSecEndPoint.Port;
@@ -95,7 +96,7 @@ namespace EventStore.Core.Tests.TransactionLog.Truncation {
 			miniNode = new MiniNode(PathName, tcpPort, tcpSecPort, httpPort, chunkSize: chunkSize,
 				cachedChunkSize: cachedSize, inMemDb: false);
 
-			miniNode.Start();
+			await miniNode.Start();
 			Assert.AreEqual(-1, miniNode.Db.Config.TruncateCheckpoint.Read());
 			Assert.That(miniNode.Db.Config.WriterCheckpoint.Read(), Is.GreaterThanOrEqualTo(truncatePosition));
 

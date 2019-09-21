@@ -24,7 +24,7 @@ namespace EventStore.Core.Tests.Services.Storage.HashCollisions {
 				memTableSize: 20,
 				hashCollisionReadLimit: 1,
 				indexBitnessVersion: EventStore.Core.Index.PTableVersions.IndexV1);
-			_node.Start();
+			await _node.Start();
 		}
 
 		[OneTimeTearDown]
@@ -60,7 +60,7 @@ namespace EventStore.Core.Tests.Services.Storage.HashCollisions {
 				memTableSize: 20,
 				hashCollisionReadLimit: 1,
 				indexBitnessVersion: EventStore.Core.Index.PTableVersions.IndexV1);
-			_node.Start();
+			await _node.Start();
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
 

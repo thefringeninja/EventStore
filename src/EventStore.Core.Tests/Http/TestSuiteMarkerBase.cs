@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Net;
+using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.Core.Tests.ClientAPI.Helpers;
 using EventStore.Core.Tests.Helpers;
@@ -14,25 +15,25 @@ namespace EventStore.Core.Tests.Http {
 		private SpecificationWithDirectoryPerTestFixture _directory;
 
 		[OneTimeSetUp]
-		public void SetUp() {
+		public async Task SetUp() {
 			WebRequest.DefaultWebProxy = new WebProxy();
 			_counter = 0;
 			_directory = new SpecificationWithDirectoryPerTestFixture();
-			_directory.TestFixtureSetUp();
+			await _directory.TestFixtureSetUp();
 			_node = new MiniNode(_directory.PathName, skipInitializeStandardUsersCheck: false, enableTrustedAuth: true);
-			_node.Start();
+			await _node.Start();
 
 			_connection = TestConnection.Create(_node.TcpEndPoint);
-			_connection.ConnectAsync().Wait();
+            await _connection.ConnectAsync();
 		}
 
 		[OneTimeTearDown]
-		public void TearDown() {
+		public Task TearDown() {
 			_connection.Close();
 			_node.Shutdown();
 			_connection = null;
 			_node = null;
-			_directory.TestFixtureTearDown();
+			return _directory.TestFixtureTearDown();
 		}
 	}
 }

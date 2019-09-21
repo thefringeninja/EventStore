@@ -17,7 +17,7 @@ namespace EventStore.Core.Tests.ClientAPI.UserManagement {
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 			_node = new MiniNode(PathName);
-			_node.Start();
+			await _node.Start();
 			_manager = new UsersManager(new NoopLogger(), _node.ExtHttpEndPoint, TimeSpan.FromSeconds(5));
 		}
 

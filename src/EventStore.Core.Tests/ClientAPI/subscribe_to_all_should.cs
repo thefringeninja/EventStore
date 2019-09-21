@@ -20,7 +20,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		public override async Task SetUp() {
 			await base.SetUp();
 			_node = new MiniNode(PathName, skipInitializeStandardUsersCheck: false);
-			_node.Start();
+			await _node.Start();
 
 			_conn = BuildConnection(_node);
             await _conn.ConnectAsync();

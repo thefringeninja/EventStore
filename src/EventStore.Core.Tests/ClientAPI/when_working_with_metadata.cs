@@ -21,7 +21,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 			_node = new MiniNode(PathName);
-			_node.Start();
+			await _node.Start();
 
 			_connection = BuildConnection(_node);
 			await _connection.ConnectAsync();
@@ -39,12 +39,12 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public void when_getting_metadata_for_an_existing_stream_and_no_metadata_exists() {
+		public async Task when_getting_metadata_for_an_existing_stream_and_no_metadata_existsAsync() {
 			const string stream = "when_getting_metadata_for_an_existing_stream_and_no_metadata_exists";
 
-			_connection.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent()).Wait();
+            await _connection.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent());
 
-			var meta = _connection.GetStreamMetadataAsRawBytesAsync(stream).Result;
+			var meta = await _connection.GetStreamMetadataAsRawBytesAsync(stream);
 			Assert.AreEqual(stream, meta.Stream);
 			Assert.AreEqual(false, meta.IsStreamDeleted);
 			Assert.AreEqual(-1, meta.MetastreamVersion);

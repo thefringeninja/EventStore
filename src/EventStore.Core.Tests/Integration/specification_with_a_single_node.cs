@@ -20,29 +20,28 @@ namespace EventStore.Core.Tests.Integration {
 
 			BeforeNodeStarts();
 
-			_node.Start();
+			await _node.Start();
 
-			Given();
+			await Given();
 		}
 
 		protected virtual void BeforeNodeStarts() {
 		}
 
-		protected virtual void Given() {
-		}
+		protected virtual Task Given() => Task.CompletedTask;
 
 		protected void ShutdownNode() {
 			_node.Shutdown(keepDb: true, keepPorts: true);
 			_node = null;
 		}
 
-		protected void StartNode() {
+		protected Task StartNode() {
 			if (_node == null)
 				_node = new MiniNode(PathName, dbPath: Path.Combine(PathName, "db"), inMemDb: false);
 
 			BeforeNodeStarts();
 
-			_node.Start();
+			return _node.Start();
 		}
 
 		[OneTimeTearDown]

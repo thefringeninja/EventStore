@@ -23,7 +23,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 			_node = new MiniNode(PathName, skipInitializeStandardUsersCheck: false);
-			_node.Start();
+			await _node.Start();
 			_HttpEndPoint = _node.ExtHttpEndPoint;
 			_conn = BuildConnection(_node);
 			await _conn.ConnectAsync();

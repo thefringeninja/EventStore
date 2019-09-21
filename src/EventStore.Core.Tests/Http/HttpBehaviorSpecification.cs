@@ -62,7 +62,7 @@ namespace EventStore.Core.Tests.Http {
 				_createdMiniNode = true;
 				_tag = "_1";
 				_node = CreateMiniNode();
-				_node.Start();
+				await _node.Start();
 
 				_connection = TestConnection.Create(_node.TcpEndPoint);
 				await _connection.ConnectAsync();

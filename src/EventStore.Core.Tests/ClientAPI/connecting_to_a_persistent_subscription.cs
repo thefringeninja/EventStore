@@ -669,19 +669,19 @@ namespace EventStore.Core.Tests.ClientAPI {
 			_event1Id = event1.EventId;
 		}
 
-		public override void Given() {
+		public override async Task Given() {
 			_store = BuildConnection(Node);
-			_store.ConnectAsync().Wait();
+            await _store.ConnectAsync();
 
-			_store.CreatePersistentSubscriptionAsync(_linkedStreamName, _group, _settings,
-				DefaultData.AdminCredentials).Wait();
+            await _store.CreatePersistentSubscriptionAsync(_linkedStreamName, _group, _settings,
+				DefaultData.AdminCredentials);
 			_store.ConnectToPersistentSubscription(
 				_linkedStreamName,
 				_group,
 				HandleEvent,
 				(sub, reason, ex) => { },
 				DefaultData.AdminCredentials);
-			_store.AppendToStreamAsync(_linkedStreamName, ExpectedVersion.Any, new EventData(Guid.NewGuid(),
+			await _store.AppendToStreamAsync(_linkedStreamName, ExpectedVersion.Any, new EventData(Guid.NewGuid(),
 				SystemEventTypes.LinkTo, false, Helper.UTF8NoBom.GetBytes(
 					string.Format("{0}@{1}", intMaxValue + 1, StreamName)), null));
 		}
