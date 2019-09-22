@@ -174,33 +174,17 @@ namespace EventStore.Core.Tests.Helpers {
 			ContinueMonitoringFailures(monitorTcs);
 		}
 
-		private Task StartMiniNode(Task monitorFailuresTask) {
+		private async Task StartMiniNode(Task monitorFailuresTask) {
 			StartingTime.Start();
 
 			var startNodeTask = Node.StartAndWaitUntilReady(); //starts the node
-			var startupTimeoutTask = Task.Delay(TimeSpan.FromSeconds(60)); //startup timeout of 60s
 
-			return Task.WhenAny(
+			await Task.WhenAny(
 				monitorFailuresTask,
-				startNodeTask,
-				startupTimeoutTask
-			).ContinueWith((t) => {
-				StartingTime.Stop();
-				if (monitorFailuresTask.IsCompleted) {
-					if (monitorFailuresTask.Exception != null)
-						throw monitorFailuresTask.Exception;
-					else {
-						throw new ApplicationException(
-							"Monitor Failures task completed but no exceptions were thrown.");
-					}
-				} else if (startupTimeoutTask.IsCompleted) {
-					throw new TimeoutException("MiniNode has not started in 60 seconds.");
-				} else if (startNodeTask.IsCompleted) {
-					if (t.Status != TaskStatus.RanToCompletion)
-						throw new ApplicationException("MiniNode has not properly started.");
-					Log.Info("MiniNode successfully started!");
-				}
-			});
+				startNodeTask
+			).WithTimeout(TimeSpan.FromSeconds(60)); //startup timeout of 60s
+			StartingTime.Stop();
+			Log.Info("MiniNode successfully started!");
 		}
 
 		public void MonitorFailures(TaskCompletionSource<object> tcs) {
