@@ -147,8 +147,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		public void the_second_subscription_fails_to_connect() {
-			Assert.IsInstanceOf<AggregateException>(_exception);
-			Assert.IsInstanceOf<MaximumSubscribersReachedException>(_exception.InnerException);
+			Assert.IsInstanceOf<MaximumSubscribersReachedException>(_exception);
 		}
 	}
 
