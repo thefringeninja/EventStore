@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using EventStore.Core.Exceptions;
 
 namespace EventStore.Core.Tests.Index.IndexV1 {
+	[TestFixture]
 	public class table_index_with_corrupt_index_entries_should : SpecificationWithDirectoryPerTestFixture {
 		private TableIndex _tableIndex;
 		private IndexMap _indexMap;
@@ -75,10 +76,9 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 			_tableIndex.Initialize(long.MaxValue);
 		}
 
-		[OneTimeTearDown]
-		public override Task TestFixtureTearDown() {
+		[TearDown]
+		public void TearDown() {
 			_tableIndex.Close();
-			return base.TestFixtureTearDown();
 		}
 
 		private ulong GetOriginalHash(ulong stream, byte version) {
