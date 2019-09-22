@@ -32,7 +32,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		//TODO GFY THESE NEED TO BE LOOKED AT IN LINUX
-		[Test, Category("Network"), Platform("WIN")]
+		[Test, Category("Network")]
 		public async Task should_throw_exception_when_trying_to_reopen_closed_connection() {
 			ClientApiLoggerBridge.Default.Info("Starting '{0}' test...",
 				"should_throw_exception_when_trying_to_reopen_closed_connection");
@@ -56,9 +56,15 @@ namespace EventStore.Core.Tests.ClientAPI {
 
                     await connection.ConnectAsync();
 
-                    await closed.Task.WithTimeout(TimeSpan.FromSeconds(5)); // TCP connection timeout might be even 60 seconds
+                    await closed.Task.WithTimeout(TimeSpan.FromSeconds(120)); // TCP connection timeout might be even 60 seconds
 
-                    Assert.ThrowsAsync<InvalidOperationException>(() => connection.ConnectAsync().WithTimeout());
+                    Exception caughtException = null;
+                    try {
+	                    await connection.ConnectAsync().WithTimeout();
+                    } catch (Exception ex) {
+	                    caughtException = ex;
+                    }
+                    Assert.IsInstanceOf<InvalidOperationException>(caughtException);
 				}
 			} finally {
 				PortsHelper.ReturnPort(port);
@@ -66,7 +72,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		//TODO GFY THIS TEST TIMES OUT IN LINUX.
-		[Test, Category("Network"), Platform("WIN")]
+		[Test, Category("Network")]
 		public async Task should_close_connection_after_configured_amount_of_failed_reconnections() {
 			var closed = new TaskCompletionSource<bool>();
 			var settings =
@@ -100,10 +106,15 @@ namespace EventStore.Core.Tests.ClientAPI {
 
                     await closed.Task.WithTimeout(TimeSpan.FromSeconds(120)); // TCP connection timeout might be even 60 seconds
 
-                    Assert.ThrowsAsync<InvalidOperationException>(
-	                    () => connection
+                    Exception caughtException = null;
+                    try {
+	                    await connection
 		                    .AppendToStreamAsync("stream", ExpectedVersion.NoStream, TestEvent.NewTestEvent())
-		                    .WithTimeout());
+		                    .WithTimeout();
+                    } catch (Exception ex) {
+	                    caughtException = ex;
+                    }
+                    Assert.IsInstanceOf<ObjectDisposedException>(caughtException);
 				}
 			} finally {
 				PortsHelper.ReturnPort(port);
