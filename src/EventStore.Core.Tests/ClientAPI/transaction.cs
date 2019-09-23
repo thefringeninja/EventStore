@@ -34,7 +34,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public async Task should_start_on_non_existing_stream_with_correct_exp_ver_and_create_stream_on_commitAsync() {
+		public async Task should_start_on_non_existing_stream_with_correct_exp_ver_and_create_stream_on_commit() {
 			const string stream =
 				"should_start_on_non_existing_stream_with_correct_exp_ver_and_create_stream_on_commit";
 			using (var store = BuildConnection(_node)) {
@@ -48,7 +48,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public async Task should_start_on_non_existing_stream_with_exp_ver_any_and_create_stream_on_commitAsync() {
+		public async Task should_start_on_non_existing_stream_with_exp_ver_any_and_create_stream_on_commit() {
 			const string stream = "should_start_on_non_existing_stream_with_exp_ver_any_and_create_stream_on_commit";
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
@@ -61,7 +61,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public async Task should_fail_to_commit_non_existing_stream_with_wrong_exp_verAsync() {
+		public async Task should_fail_to_commit_non_existing_stream_with_wrong_exp_ver() {
 			const string stream = "should_fail_to_commit_non_existing_stream_with_wrong_exp_ver";
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
@@ -74,7 +74,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public async Task should_do_nothing_if_commits_no_events_to_empty_streamAsync() {
+		public async Task should_do_nothing_if_commits_no_events_to_empty_stream() {
 			const string stream = "should_do_nothing_if_commits_no_events_to_empty_stream";
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
@@ -88,7 +88,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("Network")]
-		public async Task should_do_nothing_if_transactionally_writing_no_events_to_empty_streamAsync() {
+		public async Task should_do_nothing_if_transactionally_writing_no_events_to_empty_stream() {
 			const string stream = "should_do_nothing_if_transactionally_writing_no_events_to_empty_stream";
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
@@ -104,7 +104,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public async Task should_validate_expectations_on_commitAsync() {
+		public async Task should_validate_expectations_on_commit() {
 			const string stream = "should_validate_expectations_on_commit";
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
@@ -117,7 +117,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public async Task should_commit_when_writing_with_exp_ver_any_even_while_somene_is_writing_in_parallelAsync() {
+		public async Task should_commit_when_writing_with_exp_ver_any_even_while_somene_is_writing_in_parallel() {
 			const string stream =
 				"should_commit_when_writing_with_exp_ver_any_even_while_somene_is_writing_in_parallel";
 

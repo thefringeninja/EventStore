@@ -31,14 +31,14 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 		}
 
 		[Test]
-		public async Task read_forward_from_zeroAsync() {
+		public async Task read_forward_from_zero() {
 			var result = await _store.ReadStreamEventsForwardAsync(StreamName, 0, 100, false);
 			Assert.AreEqual(0, result.Events.Length);
 			Assert.AreEqual(intMaxValue + 1, result.NextEventNumber);
 		}
 
 		[Test]
-		public async Task should_be_able_to_read_stream_forwardAsync() {
+		public async Task should_be_able_to_read_stream_forward() {
 			var result = await _store.ReadStreamEventsForwardAsync(StreamName, intMaxValue, 100, false);
 			Assert.AreEqual(5, result.Events.Count());
 			Assert.AreEqual(_r1.EventId, result.Events[0].Event.EventId);
@@ -49,7 +49,7 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 		}
 
 		[Test]
-		public async Task should_be_able_to_read_stream_backwardAsync() {
+		public async Task should_be_able_to_read_stream_backward() {
 			var result = await _store.ReadStreamEventsBackwardAsync(StreamName, intMaxValue + 6, 100, false);
 			Assert.AreEqual(5, result.Events.Count());
 			Assert.AreEqual(_r5.EventId, result.Events[0].Event.EventId);
@@ -60,7 +60,7 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 		}
 
 		[Test]
-		public async Task should_be_able_to_read_each_eventAsync() {
+		public async Task should_be_able_to_read_each_event() {
 			var record = await _store.ReadEventAsync(StreamName, intMaxValue + 1, false);
 			Assert.AreEqual(EventReadStatus.Success, record.Status);
 			Assert.AreEqual(_r1.EventId, record.Event.Value.Event.EventId);
@@ -83,7 +83,7 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 		}
 
 		[Test]
-		public async Task should_be_able_to_read_all_forwardAsync() {
+		public async Task should_be_able_to_read_all_forward() {
 			var result = await _store.ReadAllEventsForwardAsync(Position.Start, 100, false, DefaultData.AdminCredentials)
 ;
 			Assert.IsTrue(result.Events.Count() > 5);
@@ -97,7 +97,7 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 		}
 
 		[Test]
-		public async Task should_be_able_to_read_all_backwardAsync() {
+		public async Task should_be_able_to_read_all_backward() {
 			var result = await _store.ReadAllEventsBackwardAsync(Position.End, 100, false, DefaultData.AdminCredentials)
 ;
 			Assert.IsTrue(result.Events.Count() > 5);

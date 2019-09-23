@@ -32,7 +32,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task read_stream_forward_respects_truncatebeforeAsync() {
+		public async Task read_stream_forward_respects_truncatebefore() {
 			const string stream = "read_stream_forward_respects_truncatebefore";
             await _conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, _testEvents);
 
@@ -47,7 +47,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task read_stream_backward_respects_truncatebeforeAsync() {
+		public async Task read_stream_backward_respects_truncatebefore() {
 			const string stream = "read_stream_backward_respects_truncatebefore";
             await _conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, _testEvents);
 
@@ -62,7 +62,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task after_setting_less_strict_truncatebefore_read_event_reads_more_eventsAsync() {
+		public async Task after_setting_less_strict_truncatebefore_read_event_reads_more_events() {
 			const string stream = "after_setting_less_strict_truncatebefore_read_event_reads_more_events";
 
             await _conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, _testEvents);
@@ -88,7 +88,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task after_setting_more_strict_truncatebefore_read_event_reads_less_eventsAsync() {
+		public async Task after_setting_more_strict_truncatebefore_read_event_reads_less_events() {
 			const string stream = "after_setting_more_strict_truncatebefore_read_event_reads_less_events";
 
             await _conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, _testEvents);
@@ -114,7 +114,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task less_strict_max_count_doesnt_change_anything_for_event_readAsync() {
+		public async Task less_strict_max_count_doesnt_change_anything_for_event_read() {
 			const string stream = "less_strict_max_count_doesnt_change_anything_for_event_read";
 
             await _conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, _testEvents);
@@ -140,7 +140,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task more_strict_max_count_gives_less_events_for_event_readAsync() {
+		public async Task more_strict_max_count_gives_less_events_for_event_read() {
 			const string stream = "more_strict_max_count_gives_less_events_for_event_read";
 
             await _conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, _testEvents);
@@ -167,7 +167,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task after_setting_less_strict_truncatebefore_read_stream_forward_reads_more_eventsAsync() {
+		public async Task after_setting_less_strict_truncatebefore_read_stream_forward_reads_more_events() {
 			const string stream = "after_setting_less_strict_truncatebefore_read_stream_forward_reads_more_events";
 
             await _conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, _testEvents);
@@ -191,7 +191,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task after_setting_more_strict_truncatebefore_read_stream_forward_reads_less_eventsAsync() {
+		public async Task after_setting_more_strict_truncatebefore_read_stream_forward_reads_less_events() {
 			const string stream = "after_setting_more_strict_truncatebefore_read_stream_forward_reads_less_events";
 
             await _conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, _testEvents);
@@ -215,7 +215,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task less_strict_max_count_doesnt_change_anything_for_stream_forward_readAsync() {
+		public async Task less_strict_max_count_doesnt_change_anything_for_stream_forward_read() {
 			const string stream = "less_strict_max_count_doesnt_change_anything_for_stream_forward_read";
 
             await _conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, _testEvents);
@@ -239,7 +239,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task more_strict_max_count_gives_less_events_for_stream_forward_readAsync() {
+		public async Task more_strict_max_count_gives_less_events_for_stream_forward_read() {
 			const string stream = "more_strict_max_count_gives_less_events_for_stream_forward_read";
 
             await _conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, _testEvents);
@@ -263,7 +263,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task after_setting_less_strict_truncatebefore_read_stream_backward_reads_more_eventsAsync() {
+		public async Task after_setting_less_strict_truncatebefore_read_stream_backward_reads_more_events() {
 			const string stream = "after_setting_less_strict_truncatebefore_read_stream_backward_reads_more_events";
 
             await _conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, _testEvents);
@@ -287,7 +287,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task after_setting_more_strict_truncatebefore_read_stream_backward_reads_less_eventsAsync() {
+		public async Task after_setting_more_strict_truncatebefore_read_stream_backward_reads_less_events() {
 			const string stream = "after_setting_more_strict_truncatebefore_read_stream_backward_reads_less_events";
 
             await _conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, _testEvents);
@@ -311,7 +311,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task less_strict_max_count_doesnt_change_anything_for_stream_backward_readAsync() {
+		public async Task less_strict_max_count_doesnt_change_anything_for_stream_backward_read() {
 			const string stream = "less_strict_max_count_doesnt_change_anything_for_stream_backward_read";
 
             await _conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, _testEvents);
@@ -335,7 +335,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task more_strict_max_count_gives_less_events_for_stream_backward_readAsync() {
+		public async Task more_strict_max_count_gives_less_events_for_stream_backward_read() {
 			const string stream = "more_strict_max_count_gives_less_events_for_stream_backward_read";
 
             await _conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, _testEvents);

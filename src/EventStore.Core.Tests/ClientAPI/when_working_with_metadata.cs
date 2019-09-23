@@ -39,7 +39,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task when_getting_metadata_for_an_existing_stream_and_no_metadata_existsAsync() {
+		public async Task when_getting_metadata_for_an_existing_stream_and_no_metadata_exists() {
 			const string stream = "when_getting_metadata_for_an_existing_stream_and_no_metadata_exists";
 
             await _connection.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent());

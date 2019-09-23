@@ -27,7 +27,7 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 		}
 
 		[Test]
-		public async Task should_be_able_to_append_to_streamAsync() {
+		public async Task should_be_able_to_append_to_stream() {
 			var evnt = new EventData(Guid.NewGuid(), "EventType", false, new byte[10], new byte[15]);
 			var writeResult = await _store.AppendToStreamAsync(StreamName, intMaxValue + 5, evnt);
 			Assert.AreEqual(intMaxValue + 6, writeResult.NextExpectedVersion);

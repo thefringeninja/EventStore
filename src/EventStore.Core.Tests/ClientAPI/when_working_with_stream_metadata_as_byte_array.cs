@@ -36,7 +36,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task setting_empty_metadata_worksAsync() {
+		public async Task setting_empty_metadata_works() {
 			const string stream = "setting_empty_metadata_works";
 
             await _connection.SetStreamMetadataAsync(stream, ExpectedVersion.NoStream, (byte[])null);
@@ -49,7 +49,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task setting_metadata_few_times_returns_last_metadataAsync() {
+		public async Task setting_metadata_few_times_returns_last_metadata() {
 			const string stream = "setting_metadata_few_times_returns_last_metadata";
 
 			var metadataBytes = Guid.NewGuid().ToByteArray();
@@ -76,7 +76,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task setting_metadata_with_expected_version_any_worksAsync() {
+		public async Task setting_metadata_with_expected_version_any_works() {
 			const string stream = "setting_metadata_with_expected_version_any_works";
 
 			var metadataBytes = Guid.NewGuid().ToByteArray();
@@ -97,7 +97,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task setting_metadata_for_not_existing_stream_worksAsync() {
+		public async Task setting_metadata_for_not_existing_stream_works() {
 			const string stream = "setting_metadata_for_not_existing_stream_works";
 			var metadataBytes = Guid.NewGuid().ToByteArray();
             await _connection.SetStreamMetadataAsync(stream, ExpectedVersion.NoStream, metadataBytes);
@@ -110,7 +110,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task setting_metadata_for_existing_stream_worksAsync() {
+		public async Task setting_metadata_for_existing_stream_works() {
 			const string stream = "setting_metadata_for_existing_stream_works";
 
             await _connection.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent(),
@@ -138,7 +138,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task getting_metadata_for_nonexisting_stream_returns_empty_byte_arrayAsync() {
+		public async Task getting_metadata_for_nonexisting_stream_returns_empty_byte_array() {
 			const string stream = "getting_metadata_for_nonexisting_stream_returns_empty_byte_array";
 
 			var meta = await _connection.GetStreamMetadataAsRawBytesAsync(stream);
@@ -149,7 +149,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task getting_metadata_for_deleted_stream_returns_empty_byte_array_and_signals_stream_deletionAsync() {
+		public async Task getting_metadata_for_deleted_stream_returns_empty_byte_array_and_signals_stream_deletion() {
 			const string stream =
 				"getting_metadata_for_deleted_stream_returns_empty_byte_array_and_signals_stream_deletion";
 

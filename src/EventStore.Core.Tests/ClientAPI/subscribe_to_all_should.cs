@@ -41,7 +41,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning")]
-		public async Task allow_multiple_subscriptionsAsync() {
+		public async Task allow_multiple_subscriptions() {
 			const string stream = "subscribe_to_all_should_allow_multiple_subscriptions";
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();

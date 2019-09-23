@@ -60,7 +60,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			}
 		}
 
-		public async Task should_return_log_position_when_writingAsync() {
+		public async Task should_return_log_position_when_writing() {
 			const string stream = "delete_should_return_log_position_when_writing";
 			using (var connection = BuildConnection(_node)) {
 				await connection.ConnectAsync();

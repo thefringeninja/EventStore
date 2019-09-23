@@ -37,7 +37,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("Network")]
-		public async Task notify_using_status_code_if_stream_not_foundAsync() {
+		public async Task notify_using_status_code_if_stream_not_found() {
 			var res = await _conn.ReadEventAsync("unexisting-stream", 5, false);
 
 			Assert.AreEqual(EventReadStatus.NoStream, res.Status);
@@ -47,13 +47,13 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("Network")]
-		public async Task return_no_stream_if_requested_last_event_in_empty_streamAsync() {
+		public async Task return_no_stream_if_requested_last_event_in_empty_stream() {
 			var res = await _conn.ReadEventAsync("some-really-empty-stream", -1, false);
 			Assert.AreEqual(EventReadStatus.NoStream, res.Status);
 		}
 
 		[Test, Category("Network")]
-		public async Task notify_using_status_code_if_stream_was_deletedAsync() {
+		public async Task notify_using_status_code_if_stream_was_deleted() {
 			var res = await _conn.ReadEventAsync("deleted-stream", 5, false);
 
 			Assert.AreEqual(EventReadStatus.StreamDeleted, res.Status);
@@ -63,7 +63,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("Network")]
-		public async Task notify_using_status_code_if_stream_does_not_have_eventAsync() {
+		public async Task notify_using_status_code_if_stream_does_not_have_event() {
 			var res = await _conn.ReadEventAsync("test-stream", 5, false);
 
 			Assert.AreEqual(EventReadStatus.NotFound, res.Status);
@@ -73,7 +73,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("Network")]
-		public async Task return_existing_eventAsync() {
+		public async Task return_existing_event() {
 			var res = await _conn.ReadEventAsync("test-stream", 0, false);
 
 			Assert.AreEqual(EventReadStatus.Success, res.Status);
@@ -85,7 +85,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("Network")]
-		public async Task retrieve_the_is_json_flag_properlyAsync() {
+		public async Task retrieve_the_is_json_flag_properly() {
 			var res = await _conn.ReadEventAsync("test-stream", 1, false);
 
 			Assert.AreEqual(EventReadStatus.Success, res.Status);
@@ -94,7 +94,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("Network")]
-		public async Task return_last_event_in_stream_if_event_number_is_minus_oneAsync() {
+		public async Task return_last_event_in_stream_if_event_number_is_minus_one() {
 			var res = await _conn.ReadEventAsync("test-stream", -1, false);
 
 			Assert.AreEqual(EventReadStatus.Success, res.Status);

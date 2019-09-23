@@ -29,7 +29,7 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 		}
 
 		[Test]
-		public async Task should_be_able_to_append_to_stream_in_a_transactionAsync() {
+		public async Task should_be_able_to_append_to_stream_in_a_transaction() {
 			var evnt1 = new EventData(Guid.NewGuid(), "EventType", false, new byte[10], new byte[15]);
 			var evnt2 = new EventData(Guid.NewGuid(), "EventType", false, new byte[10], new byte[15]);
 

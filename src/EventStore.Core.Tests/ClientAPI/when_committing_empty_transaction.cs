@@ -47,7 +47,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task following_append_with_correct_expected_version_are_commited_correctlyAsync() {
+		public async Task following_append_with_correct_expected_version_are_commited_correctly() {
 			Assert.AreEqual(4,
 				(await _connection.AppendToStreamAsync("test-stream", 2, TestEvent.NewTestEvent(),
 					TestEvent.NewTestEvent())
@@ -62,7 +62,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task following_append_with_expected_version_any_are_commited_correctlyAsync() {
+		public async Task following_append_with_expected_version_any_are_commited_correctly() {
 			Assert.AreEqual(4,
 				(await _connection.AppendToStreamAsync("test-stream", ExpectedVersion.Any, TestEvent.NewTestEvent(),
 					TestEvent.NewTestEvent())).NextExpectedVersion);
@@ -76,7 +76,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task committing_first_event_with_expected_version_no_stream_is_idempotentAsync() {
+		public async Task committing_first_event_with_expected_version_no_stream_is_idempotent() {
 			Assert.AreEqual(0,
 				(await _connection.AppendToStreamAsync("test-stream", ExpectedVersion.NoStream, _firstEvent))
 				.NextExpectedVersion);

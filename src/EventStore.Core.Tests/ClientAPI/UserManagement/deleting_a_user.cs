@@ -37,7 +37,7 @@ namespace EventStore.Core.Tests.ClientAPI.UserManagement {
 		}
 
 		[Test]
-		public async Task can_delete_a_userAsync() {
+		public async Task can_delete_a_user() {
             await _manager.CreateUserAsync("ouro", "ouro", new[] {"foo", "bar"}, "ouro",
 				new UserCredentials("admin", "changeit"));
 				var x = await _manager.GetUserAsync("ouro", new UserCredentials("admin", "changeit"));
