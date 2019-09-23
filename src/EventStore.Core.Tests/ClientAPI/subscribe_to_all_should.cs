@@ -14,7 +14,6 @@ namespace EventStore.Core.Tests.ClientAPI {
 		private const int Timeout = 10000;
 
 		private MiniNode _node;
-		private IEventStoreConnection _conn;
 
 		[SetUp]
 		public override async Task SetUp() {
@@ -22,16 +21,17 @@ namespace EventStore.Core.Tests.ClientAPI {
 			_node = new MiniNode(PathName, skipInitializeStandardUsersCheck: false);
 			await _node.Start();
 
-			_conn = BuildConnection(_node);
-			await _conn.ConnectAsync();
-			await _conn.SetStreamMetadataAsync("$all", -1,
-				StreamMetadata.Build().SetReadRole(SystemRoles.All),
-				new UserCredentials(SystemUsers.Admin, SystemUsers.DefaultAdminPassword));
+			using (var connection = BuildConnection(_node))
+			{
+				await connection.ConnectAsync();
+				await connection.SetStreamMetadataAsync("$all", -1,
+					StreamMetadata.Build().SetReadRole(SystemRoles.All),
+					new UserCredentials(SystemUsers.Admin, SystemUsers.DefaultAdminPassword));
+			}
 		}
 
 		[TearDown]
 		public override Task TearDown() {
-			_conn.Close();
 			_node.Shutdown();
 			return base.TearDown();
 		}
