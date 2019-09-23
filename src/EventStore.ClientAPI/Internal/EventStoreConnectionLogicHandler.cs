@@ -137,8 +137,15 @@ namespace EventStore.ClientAPI.Internal {
 
 			LogDebug("EstablishTcpConnection to [{0}]", endPoint);
 
-			if (_state != ConnectionState.Connecting) return;
-			if (_connectingPhase != ConnectingPhase.EndPointDiscovery) return;
+			if (_state != ConnectionState.Connecting) {
+				LogDebug("EstablishTcpConnection to [{0}] skipped because expected state 'Connecting', was '{1}'", endPoint, _state);
+				return;
+			}
+
+			if (_connectingPhase != ConnectingPhase.EndPointDiscovery) {
+				LogDebug("EstablishTcpConnection to [{0}] skipped because expected connecting phase 'EndPointDiscovery', was '{1}'", endPoint, _connectingPhase);
+				return;
+			}
 
 			_connectingPhase = ConnectingPhase.ConnectionEstablishing;
 			_connection = new TcpPackageConnection(
