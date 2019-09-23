@@ -34,7 +34,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task should_be_preserved_with_all_possible_write_and_read_methodsAsync() {
+		public async Task should_be_preserved_with_all_possible_write_and_read_methods() {
 			const string stream = "should_be_preserved_with_all_possible_write_methods";
 			using (var connection = BuildConnection(_node)) {
                 await connection.ConnectAsync();

@@ -80,7 +80,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 					throw new Exception("Unknown authorization level");
 			}
         }
-		public async Task CreateUserAsync(string username, string password){
+		public async Task CreateUser(string username, string password){
 			for(int trial=1;trial<=5;trial++){
 				try{
 					var dataStr = string.Format("{{loginName: '{0}', fullName: '{1}', password: '{2}', groups: []}}", username, username, password);
@@ -119,7 +119,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 
 			_httpClients["Admin"] = CreateHttpClient("admin", "changeit");
 			_httpClients["Ops"] = CreateHttpClient("ops", "changeit");
-            await CreateUserAsync("user","changeit");
+            await CreateUser("user","changeit");
 			_httpClients["User"] = CreateHttpClient("user", "changeit");
 			_httpClients["None"] = new HttpClient();
 		}
@@ -133,7 +133,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		}
 
 		[Test, Combinatorial]
-		public async Task authorization_testsAsync(
+		public async Task authorization_tests(
 			[Values(
 				"None",
 				"User",

@@ -22,14 +22,14 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning")]
-		public async Task return_empty_slice_if_asked_to_read_from_endAsync() {
+		public async Task return_empty_slice_if_asked_to_read_from_end() {
 			var read = await _conn.ReadAllEventsForwardAsync(Position.End, 1, false);
 			Assert.That(read.IsEndOfStream, Is.True);
 			Assert.That(read.Events.Length, Is.EqualTo(0));
 		}
 
 		[Test, Category("LongRunning")]
-		public async Task return_events_in_same_order_as_writtenAsync() {
+		public async Task return_events_in_same_order_as_written() {
 			var read = await _conn.ReadAllEventsForwardAsync(Position.Start, _testEvents.Length + 10, false);
 			Assert.That(EventDataComparer.Equal(
 				_testEvents.ToArray(),
@@ -37,7 +37,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning")]
-		public async Task be_able_to_read_all_one_by_one_until_end_of_streamAsync() {
+		public async Task be_able_to_read_all_one_by_one_until_end_of_stream() {
 			var all = new List<RecordedEvent>();
 			var position = Position.Start;
 			AllEventsSlice slice;
@@ -51,7 +51,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning")]
-		public async Task be_able_to_read_events_slice_at_timeAsync() {
+		public async Task be_able_to_read_events_slice_at_time() {
 			var all = new List<RecordedEvent>();
 			var position = Position.Start;
 			AllEventsSlice slice;
@@ -65,7 +65,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning")]
-		public async Task return_partial_slice_if_not_enough_eventsAsync() {
+		public async Task return_partial_slice_if_not_enough_events() {
 			var read = await _conn.ReadAllEventsForwardAsync(Position.Start, 30, false);
 			Assert.That(read.Events.Length, Is.LessThan(30));
 			Assert.That(EventDataComparer.Equal(

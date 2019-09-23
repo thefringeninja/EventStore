@@ -38,7 +38,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task setting_empty_metadata_worksAsync() {
+		public async Task setting_empty_metadata_works() {
 			const string stream = "setting_empty_metadata_works";
 
             await _connection.SetStreamMetadataAsync(stream, ExpectedVersion.NoStream, StreamMetadata.Create());
@@ -51,7 +51,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task setting_metadata_few_times_returns_last_metadata_infoAsync() {
+		public async Task setting_metadata_few_times_returns_last_metadata_info() {
 			const string stream = "setting_metadata_few_times_returns_last_metadata_info";
 			var metadata =
 				StreamMetadata.Create(17, TimeSpan.FromSeconds(0xDEADBEEF), 10, TimeSpan.FromSeconds(0xABACABA));
@@ -88,7 +88,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task setting_metadata_with_expected_version_any_worksAsync() {
+		public async Task setting_metadata_with_expected_version_any_works() {
 			const string stream = "setting_metadata_with_expected_version_any_works";
 			var metadata =
 				StreamMetadata.Create(17, TimeSpan.FromSeconds(0xDEADBEEF), 10, TimeSpan.FromSeconds(0xABACABA));
@@ -118,7 +118,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task setting_metadata_for_not_existing_stream_worksAsync() {
+		public async Task setting_metadata_for_not_existing_stream_works() {
 			const string stream = "setting_metadata_for_not_existing_stream_works";
 			var metadata =
 				StreamMetadata.Create(17, TimeSpan.FromSeconds(0xDEADBEEF), 10, TimeSpan.FromSeconds(0xABACABA));
@@ -135,7 +135,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task setting_metadata_for_existing_stream_worksAsync() {
+		public async Task setting_metadata_for_existing_stream_works() {
 			const string stream = "setting_metadata_for_existing_stream_works";
 
             await _connection.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent());
@@ -155,7 +155,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task getting_metadata_for_nonexisting_stream_returns_empty_stream_metadataAsync() {
+		public async Task getting_metadata_for_nonexisting_stream_returns_empty_stream_metadata() {
 			const string stream = "getting_metadata_for_nonexisting_stream_returns_empty_stream_metadata";
 
 			var meta = await _connection.GetStreamMetadataAsync(stream);
@@ -169,7 +169,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Ignore("You can't get stream metadata for metastream through ClientAPI")]
-		public async Task getting_metadata_for_metastream_returns_correct_metadataAsync() {
+		public async Task getting_metadata_for_metastream_returns_correct_metadata() {
 			const string stream = "$$getting_metadata_for_metastream_returns_correct_metadata";
 
 			var meta = await _connection.GetStreamMetadataAsync(stream);
@@ -183,7 +183,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task getting_metadata_for_deleted_stream_returns_empty_stream_metadata_and_signals_stream_deletionAsync() {
+		public async Task getting_metadata_for_deleted_stream_returns_empty_stream_metadata_and_signals_stream_deletion() {
 			const string stream =
 				"getting_metadata_for_deleted_stream_returns_empty_stream_metadata_and_signals_stream_deletion";
 
@@ -205,7 +205,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task setting_correctly_formatted_metadata_as_raw_allows_to_read_it_as_structured_metadataAsync() {
+		public async Task setting_correctly_formatted_metadata_as_raw_allows_to_read_it_as_structured_metadata() {
 			const string stream =
 				"setting_correctly_formatted_metadata_as_raw_allows_to_read_it_as_structured_metadata";
 
@@ -260,7 +260,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task setting_structured_metadata_with_custom_properties_returns_them_untouchedAsync() {
+		public async Task setting_structured_metadata_with_custom_properties_returns_them_untouched() {
 			const string stream = "setting_structured_metadata_with_custom_properties_returns_them_untouched";
 
 			StreamMetadata metadata = StreamMetadata.Build()
@@ -312,7 +312,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task setting_structured_metadata_with_multiple_roles_can_be_read_backAsync() {
+		public async Task setting_structured_metadata_with_multiple_roles_can_be_read_back() {
 			const string stream = "setting_structured_metadata_with_multiple_roles_can_be_read_back";
 
 			StreamMetadata metadata = StreamMetadata.Build()
@@ -336,7 +336,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task setting_correct_metadata_with_multiple_roles_in_acl_allows_to_read_it_as_structured_metadataAsync() {
+		public async Task setting_correct_metadata_with_multiple_roles_in_acl_allows_to_read_it_as_structured_metadata() {
 			const string stream =
 				"setting_correct_metadata_with_multiple_roles_in_acl_allows_to_read_it_as_structured_metadata";
 

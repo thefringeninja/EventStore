@@ -37,7 +37,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task soft_deleted_stream_returns_no_stream_and_no_events_on_readAsync() {
+		public async Task soft_deleted_stream_returns_no_stream_and_no_events_on_read() {
 			const string stream = "soft_deleted_stream_returns_no_stream_and_no_events_on_read";
 
 			Assert.AreEqual(1,
@@ -79,7 +79,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task soft_deleted_stream_allows_recreation_when_expver_no_streamAsync() {
+		public async Task soft_deleted_stream_allows_recreation_when_expver_no_stream() {
 			const string stream = "soft_deleted_stream_allows_recreation_when_expver_no_stream";
 
 			Assert.AreEqual(1,
@@ -106,7 +106,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task soft_deleted_stream_allows_recreation_when_expver_is_exactAsync() {
+		public async Task soft_deleted_stream_allows_recreation_when_expver_is_exact() {
 			const string stream = "soft_deleted_stream_allows_recreation_when_expver_is_exact";
 
 			Assert.AreEqual(1,
@@ -132,7 +132,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task soft_deleted_stream_when_recreated_preserves_metadata_except_truncatebeforeAsync() {
+		public async Task soft_deleted_stream_when_recreated_preserves_metadata_except_truncatebefore() {
 			const string stream = "soft_deleted_stream_when_recreated_preserves_metadata_except_truncatebefore";
 
 			Assert.AreEqual(1,
@@ -169,7 +169,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task soft_deleted_stream_can_be_hard_deletedAsync() {
+		public async Task soft_deleted_stream_can_be_hard_deleted() {
 			const string stream = "soft_deleted_stream_can_be_deleted";
 
 			Assert.AreEqual(1,
@@ -188,7 +188,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task soft_deleted_stream_allows_recreation_only_for_first_writeAsync() {
+		public async Task soft_deleted_stream_allows_recreation_only_for_first_write() {
 			const string stream = "soft_deleted_stream_allows_recreation_only_for_first_write";
 
 			Assert.AreEqual(1,
@@ -217,7 +217,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning"), Category("Network")]
-		public async Task soft_deleted_stream_appends_both_writes_when_expver_anyAsync() {
+		public async Task soft_deleted_stream_appends_both_writes_when_expver_any() {
 			const string stream = "soft_deleted_stream_appends_both_concurrent_writes_when_expver_any";
 
 			Assert.AreEqual(1,

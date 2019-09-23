@@ -38,7 +38,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task read_stream_forward_respects_max_countAsync() {
+		public async Task read_stream_forward_respects_max_count() {
 			var res = await _connection.ReadStreamEventsForwardAsync(Stream, 0, 100, false);
 			Assert.AreEqual(SliceReadStatus.Success, res.Status);
 			Assert.AreEqual(3, res.Events.Length);
@@ -47,7 +47,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task read_stream_backward_respects_max_countAsync() {
+		public async Task read_stream_backward_respects_max_count() {
 			var res = await _connection.ReadStreamEventsBackwardAsync(Stream, -1, 100, false);
 			Assert.AreEqual(SliceReadStatus.Success, res.Status);
 			Assert.AreEqual(3, res.Events.Length);
@@ -56,7 +56,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task after_setting_less_strict_max_count_read_stream_forward_reads_more_eventsAsync() {
+		public async Task after_setting_less_strict_max_count_read_stream_forward_reads_more_events() {
 			var res = await _connection.ReadStreamEventsForwardAsync(Stream, 0, 100, false);
 			Assert.AreEqual(SliceReadStatus.Success, res.Status);
 			Assert.AreEqual(3, res.Events.Length);
@@ -73,7 +73,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task after_setting_more_strict_max_count_read_stream_forward_reads_less_eventsAsync() {
+		public async Task after_setting_more_strict_max_count_read_stream_forward_reads_less_events() {
 			var res = await _connection.ReadStreamEventsForwardAsync(Stream, 0, 100, false);
 			Assert.AreEqual(SliceReadStatus.Success, res.Status);
 			Assert.AreEqual(3, res.Events.Length);
@@ -90,7 +90,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task after_setting_less_strict_max_count_read_stream_backward_reads_more_eventsAsync() {
+		public async Task after_setting_less_strict_max_count_read_stream_backward_reads_more_events() {
 			var res = await _connection.ReadStreamEventsBackwardAsync(Stream, -1, 100, false);
 			Assert.AreEqual(SliceReadStatus.Success, res.Status);
 			Assert.AreEqual(3, res.Events.Length);
@@ -107,7 +107,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public async Task after_setting_more_strict_max_count_read_stream_backward_reads_less_eventsAsync() {
+		public async Task after_setting_more_strict_max_count_read_stream_backward_reads_less_events() {
 			var res = await _connection.ReadStreamEventsBackwardAsync(Stream, -1, 100, false);
 			Assert.AreEqual(SliceReadStatus.Success, res.Status);
 			Assert.AreEqual(3, res.Events.Length);

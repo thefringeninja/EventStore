@@ -32,14 +32,14 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("LongRunning")]
-		public async Task ensure_deleted_streamAsync() {
+		public async Task ensure_deleted_stream() {
 			var res = await _conn.ReadStreamEventsForwardAsync("stream", 0, 100, false);
 			Assert.AreEqual(SliceReadStatus.StreamNotFound, res.Status);
 			Assert.AreEqual(0, res.Events.Length);
 		}
 
 		[Test, Category("LongRunning")]
-		public async Task returns_unresolved_linktoAsync() {
+		public async Task returns_unresolved_linkto() {
 			var read = await _conn.ReadStreamEventsForwardAsync("links", 0, 1, true);
 			Assert.AreEqual(1, read.Events.Length);
 			Assert.IsNull(read.Events[0].Event);

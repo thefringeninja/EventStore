@@ -59,7 +59,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public async Task sequence_0em1_1e0_2e1_3e2_4e3_4e4_0any_idempotentAsync() {
+		public async Task sequence_0em1_1e0_2e1_3e2_4e3_4e4_0any_idempotent() {
 			const string stream =
 				"appending_to_implicitly_created_stream_sequence_0em1_1e0_2e1_3e2_4e3_4e4_0any_idempotent";
 			using (var store = BuildConnection(_node)) {
@@ -78,7 +78,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public async Task sequence_0em1_1e0_2e1_3e2_4e3_5e4_0e5_non_idempotentAsync() {
+		public async Task sequence_0em1_1e0_2e1_3e2_4e3_5e4_0e5_non_idempotent() {
 			const string stream =
 				"appending_to_implicitly_created_stream_sequence_0em1_1e0_2e1_3e2_4e3_5e4_0e5_non_idempotent";
 			using (var store = BuildConnection(_node)) {
@@ -129,7 +129,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public async Task sequence_0em1_0e0_non_idempotentAsync() {
+		public async Task sequence_0em1_0e0_non_idempotent() {
 			const string stream = "appending_to_implicitly_created_stream_sequence_0em1_0e0_non_idempotent";
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
@@ -147,7 +147,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public async Task sequence_0em1_0any_idempotentAsync() {
+		public async Task sequence_0em1_0any_idempotent() {
 			const string stream = "appending_to_implicitly_created_stream_sequence_0em1_0any_idempotent";
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
@@ -166,7 +166,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public async Task sequence_0em1_0em1_idempotentAsync() {
+		public async Task sequence_0em1_0em1_idempotent() {
 			const string stream = "appending_to_implicitly_created_stream_sequence_0em1_0em1_idempotent";
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
@@ -184,7 +184,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public async Task sequence_0em1_1e0_2e1_1any_1any_idempotentAsync() {
+		public async Task sequence_0em1_1e0_2e1_1any_1any_idempotent() {
 			const string stream = "appending_to_implicitly_created_stream_sequence_0em1_1e0_2e1_1any_1any_idempotent";
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
@@ -204,7 +204,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public async Task sequence_S_0em1_1em1_E_S_0em1_E_idempotentAsync() {
+		public async Task sequence_S_0em1_1em1_E_S_0em1_E_idempotent() {
 			const string stream = "appending_to_implicitly_created_stream_sequence_S_0em1_1em1_E_S_0em1_E_idempotent";
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
@@ -221,7 +221,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public async Task sequence_S_0em1_1em1_E_S_0any_E_idempotentAsync() {
+		public async Task sequence_S_0em1_1em1_E_S_0any_E_idempotent() {
 			const string stream = "appending_to_implicitly_created_stream_sequence_S_0em1_1em1_E_S_0any_E_idempotent";
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
@@ -238,7 +238,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public async Task sequence_S_0em1_1em1_E_S_1e0_E_idempotentAsync() {
+		public async Task sequence_S_0em1_1em1_E_S_1e0_E_idempotent() {
 			const string stream = "appending_to_implicitly_created_stream_sequence_S_0em1_1em1_E_S_1e0_E_idempotent";
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
@@ -255,7 +255,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Test]
 		[Category("Network")]
-		public async Task sequence_S_0em1_1em1_E_S_1any_E_idempotentAsync() {
+		public async Task sequence_S_0em1_1em1_E_S_1any_E_idempotent() {
 			const string stream = "appending_to_implicitly_created_stream_sequence_S_0em1_1em1_E_S_1any_E_idempotent";
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
