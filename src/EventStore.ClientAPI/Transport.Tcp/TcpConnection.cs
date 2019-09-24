@@ -282,9 +282,11 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 			_log.Info("Close reason: [{0}] {1}", socketError, reason);
 
 			if (_socket != null) {
-				Helper.EatException(() => _socket.Shutdown(SocketShutdown.Both));
-				Helper.EatException(() => _socket.Close(TcpConfiguration.SocketCloseTimeoutMs));
-				_socket = null;
+				using (_socket) {
+					Helper.EatException(() => _socket.Shutdown(SocketShutdown.Both));
+					Helper.EatException(() => _socket.Close(TcpConfiguration.SocketCloseTimeoutMs));
+					_socket = null;
+				}
 			}
 
 			lock (_sendLock) {
