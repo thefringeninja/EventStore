@@ -97,10 +97,5 @@ namespace EventStore.Core.Tests.Services.Transport.Tcp {
 				return new X509Certificate2(mem.ToArray(), "1111");
 			}
 		}
-
-		[TearDown]
-		public virtual void TearDown() {
-			PortsHelper.ReturnPort(_port);
-		}
 	}
 }

@@ -30,9 +30,6 @@ namespace EventStore.Core.Tests {
 
 			Application.AddDefines(new[] {Application.AdditionalCommitChecks});
 			LogEnvironmentInfo();
-
-			if (!Debugger.IsAttached)
-				PortsHelper.InitPorts(IPAddress.Loopback);
 		}
 
 		private void LogEnvironmentInfo() {

@@ -111,7 +111,7 @@ namespace EventStore.Core.Tests.Integration {
 		}
 
 		protected void ShutdownNode(int nodeNum) {
-			_nodes[nodeNum].Shutdown(keepDb: true, keepPorts: true);
+			_nodes[nodeNum].Shutdown(keepDb: true);
 		}
 
 		protected void StartNode(int nodeNum) {
@@ -133,10 +133,6 @@ namespace EventStore.Core.Tests.Integration {
 
 		[OneTimeTearDown]
 		public override Task TestFixtureTearDown() {
-			for (var i = 0; i < _portsUsed.Count; i++) {
-				PortsHelper.ReturnPort(_portsUsed[i]);
-			}
-
 			_conn.Close();
 			_nodes[0].Shutdown();
 			_nodes[1].Shutdown();

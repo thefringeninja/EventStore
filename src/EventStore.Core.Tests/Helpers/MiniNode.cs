@@ -216,20 +216,11 @@ namespace EventStore.Core.Tests.Helpers {
 			});
 		}
 
-		public void Shutdown(bool keepDb = false, bool keepPorts = false) {
+		public void Shutdown(bool keepDb = false) {
 			StoppingTime.Start();
 
 			if (!Node.Stop(TimeSpan.FromSeconds(20), true, true))
 				throw new TimeoutException("MiniNode has not shut down in 20 seconds.");
-
-			if (!keepPorts) {
-				PortsHelper.ReturnPort(TcpEndPoint.Port);
-				PortsHelper.ReturnPort(TcpSecEndPoint.Port);
-				PortsHelper.ReturnPort(IntHttpEndPoint.Port);
-				PortsHelper.ReturnPort(ExtHttpEndPoint.Port);
-				PortsHelper.ReturnPort(IntTcpEndPoint.Port);
-				PortsHelper.ReturnPort(IntSecTcpEndPoint.Port);
-			}
 
 			if (!keepDb)
 				TryDeleteDirectory(DbPath);
