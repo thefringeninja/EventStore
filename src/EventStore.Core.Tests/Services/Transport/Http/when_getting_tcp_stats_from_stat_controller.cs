@@ -83,7 +83,6 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 
 		[OneTimeTearDown]
 		public override Task TestFixtureTearDown() {
-			PortsHelper.ReturnPort(_serverPort);
 			_portableServer.TearDown();
 			_connection.Dispose();
 			return base.TestFixtureTearDown();

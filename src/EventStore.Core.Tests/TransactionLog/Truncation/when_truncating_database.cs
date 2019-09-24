@@ -36,7 +36,7 @@ namespace EventStore.Core.Tests.TransactionLog.Truncation {
 			Assert.IsTrue(countdown.Wait(TimeSpan.FromSeconds(10)), "Took too long writing second part of events.");
 			countdown.Reset();
 
-			miniNode.Shutdown(keepDb: true, keepPorts: true);
+			miniNode.Shutdown(keepDb: true);
 
 			// --- first restart and truncation
 			miniNode = new MiniNode(PathName, tcpPort, tcpSecPort, httpPort, inMemDb: false);
@@ -50,7 +50,7 @@ namespace EventStore.Core.Tests.TransactionLog.Truncation {
 			Assert.IsTrue(countdown.Wait(TimeSpan.FromSeconds(10)), "Took too long writing third part of events.");
 			countdown.Reset();
 
-			miniNode.Shutdown(keepDb: true, keepPorts: true);
+			miniNode.Shutdown(keepDb: true);
 
 			// -- second restart
 			miniNode = new MiniNode(PathName, tcpPort, tcpSecPort, httpPort, inMemDb: false);
@@ -90,7 +90,7 @@ namespace EventStore.Core.Tests.TransactionLog.Truncation {
 			Assert.IsTrue(countdown.Wait(TimeSpan.FromSeconds(10)), "Took too long writing second part of events.");
 			countdown.Reset();
 
-			miniNode.Shutdown(keepDb: true, keepPorts: true);
+			miniNode.Shutdown(keepDb: true);
 
 			// --- first restart and truncation
 			miniNode = new MiniNode(PathName, tcpPort, tcpSecPort, httpPort, chunkSize: chunkSize,

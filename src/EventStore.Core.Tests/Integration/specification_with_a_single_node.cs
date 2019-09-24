@@ -31,7 +31,7 @@ namespace EventStore.Core.Tests.Integration {
 		protected virtual Task Given() => Task.CompletedTask;
 
 		protected void ShutdownNode() {
-			_node.Shutdown(keepDb: true, keepPorts: true);
+			_node.Shutdown(keepDb: true);
 			_node = null;
 		}
 
