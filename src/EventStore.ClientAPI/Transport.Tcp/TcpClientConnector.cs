@@ -98,19 +98,21 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 		}
 
 		private void HandleBadConnect(SocketAsyncEventArgs socketArgs) {
-			var serverEndPoint = socketArgs.RemoteEndPoint;
-			var socketError = socketArgs.SocketError;
-			var callbacks = (CallbacksStateToken)socketArgs.UserToken;
-			var onConnectionFailed = callbacks.OnConnectionFailed;
-			var pendingConnection = callbacks.PendingConnection;
+			using (socketArgs.AcceptSocket) {
+				var serverEndPoint = socketArgs.RemoteEndPoint;
+				var socketError = socketArgs.SocketError;
+				var callbacks = (CallbacksStateToken)socketArgs.UserToken;
+				var onConnectionFailed = callbacks.OnConnectionFailed;
+				var pendingConnection = callbacks.PendingConnection;
 
-			Helper.EatException(() => socketArgs.AcceptSocket.Close(TcpConfiguration.SocketCloseTimeoutMs));
-			socketArgs.AcceptSocket = null;
-			callbacks.Reset();
-			_connectSocketArgsPool.Return(socketArgs);
+				Helper.EatException(() => socketArgs.AcceptSocket.Close(TcpConfiguration.SocketCloseTimeoutMs));
+				socketArgs.AcceptSocket = null;
+				callbacks.Reset();
+				_connectSocketArgsPool.Return(socketArgs);
 
-			if (RemoveFromConnecting(pendingConnection))
-				onConnectionFailed((IPEndPoint)serverEndPoint, socketError);
+				if (RemoveFromConnecting(pendingConnection))
+					onConnectionFailed((IPEndPoint)serverEndPoint, socketError);
+			}
 		}
 
 		private void OnSocketConnected(SocketAsyncEventArgs socketArgs) {
