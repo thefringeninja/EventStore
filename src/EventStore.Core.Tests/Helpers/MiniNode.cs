@@ -168,10 +168,12 @@ namespace EventStore.Core.Tests.Helpers {
 		}
 
 		public async Task Start() {
-			var monitorTcs = new TaskCompletionSource<object>();
-			MonitorFailures(monitorTcs);
-            await StartMiniNode(monitorTcs.Task);
-			ContinueMonitoringFailures(monitorTcs);
+			StartingTime.Start();
+
+			await Node.StartAndWaitUntilReady().WithTimeout(TimeSpan.FromSeconds(60)); //starts the node
+
+			StartingTime.Stop();
+			Log.Info("MiniNode successfully started!");
 		}
 
 		private async Task StartMiniNode(Task monitorFailuresTask) {
