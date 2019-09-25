@@ -56,10 +56,11 @@ namespace EventStore.ClientAPI.Internal {
 			_handler = new EventStoreConnectionLogicHandler(this, settings);
 		}
 
-		public Task ConnectAsync() {
+		public async Task ConnectAsync() {
 			var source = TaskCompletionSourceFactory.Create<object>();
 			_handler.EnqueueMessage(new StartConnectionMessage(source, _endPointDiscoverer));
-			return source.Task;
+			await source.Task;
+			await Task.Delay(TimeSpan.FromSeconds(1));
 		}
 
 		void IDisposable.Dispose() {
