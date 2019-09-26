@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using EventStore.ClientAPI.ClientOperations;
 using EventStore.ClientAPI.Common;
@@ -60,7 +61,9 @@ namespace EventStore.ClientAPI.Internal {
 			var source = TaskCompletionSourceFactory.Create<object>();
 			_handler.EnqueueMessage(new StartConnectionMessage(source, _endPointDiscoverer));
 			await source.Task;
-			await Task.Delay(TimeSpan.FromSeconds(1));
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
+				await Task.Delay(TimeSpan.FromSeconds(2));
+			}
 		}
 
 		void IDisposable.Dispose() {
