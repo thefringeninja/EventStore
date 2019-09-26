@@ -34,18 +34,18 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		public void with_advertise_ip_set_only_host_is_changed() {
 			var requestedUri =
 				HttpEntity.BuildRequestedUrl(new FakeHttpRequest(inputUri,
-					new NameValueCollection()), IPAddress.Parse("192.168.1.13"), 0);
+					new NameValueCollection()), IPAddress.Parse("127.0.1.13"), 0);
 
-			Assert.AreEqual(new Uri("http://192.168.1.13:1234/path/?key=value#anchor"), requestedUri);
+			Assert.AreEqual(new Uri("http://127.0.1.13:1234/path/?key=value#anchor"), requestedUri);
 		}
 
 		[Test]
 		public void with_advertise_ip_and_http_port_set_both_host_and_port_is_changed() {
 			var requestedUri =
 				HttpEntity.BuildRequestedUrl(new FakeHttpRequest(inputUri,
-					new NameValueCollection()), IPAddress.Parse("192.168.1.13"), 2116);
+					new NameValueCollection()), IPAddress.Parse("127.0.1.13"), 2116);
 
-			Assert.AreEqual(new Uri("http://192.168.1.13:2116/path/?key=value#anchor"), requestedUri);
+			Assert.AreEqual(new Uri("http://127.0.1.13:2116/path/?key=value#anchor"), requestedUri);
 		}
 
 		[Test]
@@ -109,7 +109,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			string host = "www.my-host.com";
 			var headers = new NameValueCollection {{"X-Forwarded-Host", host}};
 			var requestedUri =
-				HttpEntity.BuildRequestedUrl(new FakeHttpRequest(inputUri, headers), IPAddress.Parse("192.168.10.13"),
+				HttpEntity.BuildRequestedUrl(new FakeHttpRequest(inputUri, headers), IPAddress.Parse("127.0.10.13"),
 					0);
 			Assert.AreEqual(new Uri("http://www.my-host.com:1234/path/?key=value#anchor"), requestedUri);
 		}
@@ -127,11 +127,11 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 
 		[Test]
 		public void with_proto_forward_host_containing_hosts_with_ports_host_and_port_is_used() {
-			string host = "192.168.10.13:2231";
+			string host = "127.0.10.13:2231";
 			var headers = new NameValueCollection {{"X-Forwarded-Host", host}};
 			var requestedUri =
 				HttpEntity.BuildRequestedUrl(new FakeHttpRequest(inputUri, headers), null, 0);
-			Assert.AreEqual(new Uri("http://192.168.10.13:2231/path/?key=value#anchor"), requestedUri);
+			Assert.AreEqual(new Uri("http://127.0.10.13:2231/path/?key=value#anchor"), requestedUri);
 		}
 
 		class FakeHttpRequest : IHttpRequest {

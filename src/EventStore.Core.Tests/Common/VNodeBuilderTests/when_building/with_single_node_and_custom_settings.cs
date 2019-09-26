@@ -406,7 +406,7 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 		private IPEndPoint _externalTcp;
 
 		public override void Given() {
-			var baseIpAddress = IPAddress.Parse("192.168.1.15");
+			var baseIpAddress = IPAddress.Parse("127.0.1.15");
 			_internalHttp = new IPEndPoint(baseIpAddress, 1112);
 			_externalHttp = new IPEndPoint(baseIpAddress, 1113);
 			_internalTcp = new IPEndPoint(baseIpAddress, 1114);
@@ -458,7 +458,7 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 		private string _extLoopbackPrefix;
 
 		public override void Given() {
-			var baseIpAddress = IPAddress.Parse("192.168.1.15");
+			var baseIpAddress = IPAddress.Parse("127.0.1.15");
 			int intPort = 1112;
 			int extPort = 1113;
 
@@ -628,8 +628,8 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 		private Data.GossipAdvertiseInfo _advertiseInfo;
 
 		public override void Given() {
-			var internalIPToAdvertise = IPAddress.Parse("192.168.1.1");
-			var externalIPToAdvertise = IPAddress.Parse("192.168.1.2");
+			var internalIPToAdvertise = IPAddress.Parse("127.0.1.1");
+			var externalIPToAdvertise = IPAddress.Parse("127.0.1.2");
 			var intTcpEndpoint = new IPEndPoint(internalIPToAdvertise, 1111);
 			var intSecTcpEndpoint = new IPEndPoint(internalIPToAdvertise, 1112);
 			var extTcpEndpoint = new IPEndPoint(externalIPToAdvertise, 1113);
