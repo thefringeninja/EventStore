@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
+using EventStore.Core.Tests;
 
 [assembly: AssemblyTitle("EventStore.Core.Tests")]
 [assembly: AssemblyDescription("")]
@@ -19,3 +20,4 @@ using System.Runtime.InteropServices;
 
 [assembly: NUnit.Framework.Category("All")]
 
+[assembly: Timeout(2 * 60 * 1000)] // two minutes
