@@ -4,8 +4,6 @@ using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.IO;
 using System.Net;
-using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using EventStore.Common.Exceptions;
 using EventStore.Common.Options;
@@ -16,8 +14,7 @@ using EventStore.Core.PluginModel;
 using EventStore.Core.Services.Monitoring;
 using EventStore.Core.Services.Transport.Http.Controllers;
 using EventStore.Core.Util;
-using System.Net.NetworkInformation;
-using EventStore.Core.Data;
+using System.Threading.Tasks;
 using EventStore.Core.Services.PersistentSubscription.ConsumerStrategy;
 
 namespace EventStore.ClusterNode {
@@ -26,10 +23,12 @@ namespace EventStore.ClusterNode {
 		private ExclusiveDbLock _dbLock;
 		private ClusterNodeMutex _clusterNodeMutex;
 
-		public static void Main(string[] args) {
-			Console.CancelKeyPress += delegate { Environment.Exit((int)ExitCode.Success); };
+		public static Task<int> Main(string[] args) {
+			Console.CancelKeyPress += delegate {
+				Application.Exit(0, "Cancelled.");
+			};
 			var p = new Program();
-			p.Run(args);
+			return p.Run(args);
 		}
 
 		protected override string GetLogsDirectory(ClusterNodeOptions options) {
