@@ -28,7 +28,7 @@ jobs:
   - powershell: |
       (Get-ChildItem -Attributes Directory src | % FullName) -Match '.Tests' | `
         ForEach-Object {
-          dotnet test -v normal -c $(Configuration) --no-build --logger trx $_ -- RunConfiguration.TargetPlatform=x64
+          dotnet test -v normal -c $(Configuration) --no-build --logger trx --blame --settings ci\ci.runsettings $_ -- RunConfiguration.TargetPlatform=x64
           if (-Not $?) { throw "Exit code is $?" }
         }
     workingDirectory: $(Build.SourcesDirectory)
@@ -69,7 +69,7 @@ jobs:
       includePreviewVersions: true
   - bash: dotnet build -c $(Configuration) src/EventStore.sln
     displayName: Compile
-  - bash: find ./src -maxdepth 1 -type d -name "*.Tests" -print0| xargs -0 -n1 dotnet test -v normal -c $(Configuration) --logger trx
+  - bash: find ./src -maxdepth 1 -type d -name "*.Tests" -print0| xargs -0 -n1 dotnet test -v normal -c $(Configuration) --logger trx --blame --settings ./ci/ci.runsettings
     displayName: Run Tests
   - task: PublishTestResults@2
     displayName: Publish Test Results
@@ -107,7 +107,7 @@ jobs:
       includePreviewVersions: true
   - bash: dotnet build -c $(Configuration) src/EventStore.sln
     displayName: Compile
-  - bash: find ./src -maxdepth 1 -type d -name "*.Tests" -print0| xargs -0 -n1 dotnet test -v normal -c $(Configuration) --logger trx
+  - bash: find ./src -maxdepth 1 -type d -name "*.Tests" -print0| xargs -0 -n1 dotnet test -v normal -c $(Configuration) --logger trx --blame --settings ./ci/ci.runsettings
     displayName: Run Tests
   - task: PublishTestResults@2
     displayName: Publish Test Results
