@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using EventStore.Core.Tests.Services.Storage;
 using EventStore.Core.TransactionLog.Chunks;
 using NUnit.Framework;
@@ -35,7 +36,11 @@ namespace EventStore.Core.Tests.TransactionLog.Scavenging.Helpers {
 			FakeTableIndex = new FakeTableIndex();
 			TfChunkScavenger = new TFChunkScavenger(_dbResult.Db, Log, FakeTableIndex, new FakeReadIndex(_ => false));
 
-			await When();
+			try {
+				await When().WithTimeout();
+			} catch (Exception ex) {
+				throw new Exception("When Failed", ex);
+			}
 		}
 
 		public override Task TestFixtureTearDown() {

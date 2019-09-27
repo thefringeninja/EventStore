@@ -32,7 +32,11 @@ namespace EventStore.Core.Tests.Services.Storage.Scavenge {
 				new ClientMessage.ScavengeDatabase(new NoopEnvelope(), Guid.NewGuid(), SystemAccount.Principal, 0, 1);
 			_node.Node.MainQueue.Publish(scavengeMessage);
 
-			await When();
+			try {
+				await When().WithTimeout();
+			} catch (Exception ex) {
+				throw new Exception("When Failed", ex);
+			}
 		}
 
 		[TearDown]

@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
@@ -27,8 +28,18 @@ namespace EventStore.Core.Tests.ClientAPI {
 			_HttpEndPoint = _node.ExtHttpEndPoint;
 			_conn = BuildConnection(_node);
 			await _conn.ConnectAsync();
-			await Given();
-			await When();
+
+			try {
+				await Given().WithTimeout();
+			} catch (Exception ex) {
+				throw new Exception("Given Failed", ex);
+			}
+
+			try {
+				await When().WithTimeout();
+			} catch (Exception ex) {
+				throw new Exception("When Failed", ex);
+			}
 		}
 
 		[OneTimeTearDown]
