@@ -11,6 +11,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		protected MiniNode _node;
 		protected IEventStoreConnection _conn;
 		protected IPEndPoint _HttpEndPoint;
+		protected virtual TimeSpan Timeout { get; } = TimeSpan.FromSeconds(3);
 
 		protected virtual Task Given() => Task.CompletedTask;
 
@@ -30,13 +31,13 @@ namespace EventStore.Core.Tests.ClientAPI {
 			await _conn.ConnectAsync();
 
 			try {
-				await Given().WithTimeout();
+				await Given().WithTimeout(Timeout);
 			} catch (Exception ex) {
 				throw new Exception("Given Failed", ex);
 			}
 
 			try {
-				await When().WithTimeout();
+				await When().WithTimeout(Timeout);
 			} catch (Exception ex) {
 				throw new Exception("When Failed", ex);
 			}

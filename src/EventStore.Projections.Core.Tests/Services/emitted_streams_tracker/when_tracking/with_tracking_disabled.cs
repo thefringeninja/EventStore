@@ -10,6 +10,8 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_streams_tracker.whe
 		private CountdownEvent _eventAppeared = new CountdownEvent(1);
 		private UserCredentials _credentials = new UserCredentials("admin", "changeit");
 
+		protected override TimeSpan Timeout { get; } = TimeSpan.FromSeconds(10);
+
 		protected override Task Given() {
 			_trackEmittedStreams = false;
 			return base.Given();
