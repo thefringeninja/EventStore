@@ -37,7 +37,7 @@ namespace EventStore.Core.Tests.TransactionLog.Scavenging.Helpers {
 			TfChunkScavenger = new TFChunkScavenger(_dbResult.Db, Log, FakeTableIndex, new FakeReadIndex(_ => false));
 
 			try {
-				await When().WithTimeout();
+				await When().WithTimeout(TimeSpan.FromMinutes(1));
 			} catch (Exception ex) {
 				throw new Exception("When Failed", ex);
 			}

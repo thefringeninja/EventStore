@@ -14,6 +14,8 @@ namespace EventStore.Core.Tests.Integration {
 		private const int _numberOfNodeStarts = 5;
 		private readonly AutoResetEvent _waitForStart = new AutoResetEvent(false);
 
+		protected override TimeSpan Timeout { get; } = TimeSpan.FromMinutes(1);
+
 		protected override void BeforeNodeStarts() {
 			_node.Node.MainBus.Subscribe(new AdHocHandler<SystemMessage.EpochWritten>(Handle));
 			base.BeforeNodeStarts();

@@ -13,6 +13,8 @@ namespace EventStore.Core.Tests.Integration {
 	public class specification_with_a_single_node : SpecificationWithDirectoryPerTestFixture {
 		protected MiniNode _node;
 
+		protected virtual TimeSpan Timeout { get; } = TimeSpan.FromSeconds(3);
+
 		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
@@ -23,7 +25,7 @@ namespace EventStore.Core.Tests.Integration {
 			await _node.Start();
 
 			try {
-				await Given().WithTimeout();
+				await Given().WithTimeout(Timeout);
 			} catch (Exception ex) {
 				throw new Exception("Given Failed", ex);
 			}
