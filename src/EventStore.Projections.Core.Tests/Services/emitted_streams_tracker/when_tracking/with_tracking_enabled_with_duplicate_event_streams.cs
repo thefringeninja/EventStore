@@ -12,6 +12,8 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream_manager.when
 		private CountdownEvent _eventAppeared = new CountdownEvent(2);
 		private UserCredentials _credentials = new UserCredentials("admin", "changeit");
 
+		protected override TimeSpan Timeout { get; } = TimeSpan.FromSeconds(10);
+
 		protected override async Task When() {
 			var sub = await _conn.SubscribeToStreamAsync(_projectionNamesBuilder.GetEmittedStreamsName(), true, (s, evnt) => {
 				_eventAppeared.Signal();
