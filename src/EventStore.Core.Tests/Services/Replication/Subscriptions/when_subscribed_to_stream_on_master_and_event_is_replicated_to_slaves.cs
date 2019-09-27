@@ -79,8 +79,6 @@ namespace EventStore.Core.Tests.Replication.ReadStream {
 		public void should_receive_event_on_slaves() {
 			if (!(_slaveSubscriptions[0].EventAppeared.Wait(2000) && _slaveSubscriptions[1].EventAppeared.Wait(2000))) {
 				Assert.Fail("Timed out waiting for slave subscriptions to get events");
-			} else {
-				Assert.Pass();
 			}
 		}
 	}
