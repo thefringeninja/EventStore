@@ -56,8 +56,17 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
 					await EnableStandardProjections();
 
 				QueueStatsCollector.WaitIdle();
-				await Given();
-				await When();
+				try {
+					await Given().WithTimeout();
+				} catch (Exception ex) {
+					throw new Exception("Given Failed", ex);
+				}
+
+				try {
+					await When().WithTimeout();
+				} catch (Exception ex) {
+					throw new Exception("When Failed", ex);
+				}
 			} catch {
 				try {
 					_conn?.Close();

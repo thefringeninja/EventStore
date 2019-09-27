@@ -85,7 +85,11 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 			Node = new MiniNode(PathName, inMemDb: false, dbPath: dbPath);
 			await Node.Start();
 
-			await Given();
+			try {
+				await Given().WithTimeout();
+			} catch (Exception ex) {
+				throw new Exception("Given Failed", ex);
+			}
 		}
 
 		[OneTimeTearDown]

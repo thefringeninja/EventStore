@@ -81,8 +81,17 @@ namespace EventStore.Core.Tests.Http {
 				}.Uri
 			};
 			try {
-				await Given();
-				await When();
+				try {
+					await Given().WithTimeout();
+				} catch (Exception ex) {
+					throw new Exception("Given Failed", ex);
+				}
+
+				try {
+					await When().WithTimeout();
+				} catch (Exception ex) {
+					throw new Exception("When Failed", ex);
+				}
 			} catch {
 				if (_createdMiniNode) {
 					try {

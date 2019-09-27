@@ -22,7 +22,11 @@ namespace EventStore.Core.Tests.Integration {
 
 			await _node.Start();
 
-			await Given();
+			try {
+				await Given().WithTimeout();
+			} catch (Exception ex) {
+				throw new Exception("Given Failed", ex);
+			}
 		}
 
 		protected virtual void BeforeNodeStarts() {
