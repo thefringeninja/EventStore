@@ -5,14 +5,14 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-  <ItemGroup>
-		<PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
-		<PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="16.3.52" />
-    <PackageReference Include="NUnit" Version="3.11.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.10.0" />
-  </ItemGroup>
-  <ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CSharp" Version="4.5.0"/>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0"/>
+		<PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="16.3.52"/>
+		<PackageReference Include="NUnit" Version="3.12.0"/>
+		<PackageReference Include="NUnit3TestAdapter" Version="3.15.1"/>
+	</ItemGroup>
+	<ItemGroup>
     <ProjectReference Include="..\EventStore.ClientAPI.Embedded\EventStore.ClientAPI.Embedded.csproj" />    
     <ProjectReference Include="..\EventStore.ClientAPI\EventStore.ClientAPI.csproj" />  
     <ProjectReference Include="..\EventStore.Common\EventStore.Common.csproj" />

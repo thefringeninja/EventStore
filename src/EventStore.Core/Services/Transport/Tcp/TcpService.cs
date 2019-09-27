@@ -95,7 +95,6 @@ namespace EventStore.Core.Services.Transport.Tcp {
 				_serverListener.StartListening(OnConnectionAccepted, _securityType.ToString());
 			} catch (Exception e) {
 				Application.Exit(ExitCode.Error, e.Message);
-				throw;
 			}
 		}
 
