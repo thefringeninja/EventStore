@@ -57,13 +57,13 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
 
 				QueueStatsCollector.WaitIdle();
 				try {
-					await Given().WithTimeout();
+					await Given().WithTimeout(TimeSpan.FromSeconds(10));
 				} catch (Exception ex) {
 					throw new Exception("Given Failed", ex);
 				}
 
 				try {
-					await When().WithTimeout();
+					await When().WithTimeout(TimeSpan.FromSeconds(10));
 				} catch (Exception ex) {
 					throw new Exception("When Failed", ex);
 				}
