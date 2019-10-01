@@ -2,15 +2,13 @@ using System;
 using System.Linq;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Projections.Core.Tests.Services.event_reader.heading_event_reader;
 using EventStore.Core.Data;
 
 namespace EventStore.Projections.Core.Tests.Services.core_service {
-	[TestFixture]
 	public class when_a_subscribed_projection_handler_throws : TestFixtureWithProjectionCoreService {
-		[SetUp]
-		public new void Setup() {
+		public when_a_subscribed_projection_handler_throws() {
 			var readerStrategy = new FakeReaderStrategy();
 			var projectionCorrelationId = Guid.NewGuid();
 			_readerService.Handle(
@@ -23,9 +21,9 @@ namespace EventStore.Projections.Core.Tests.Services.core_service {
 					"type", false, new byte[0], new byte[0]));
 		}
 
-		[Test]
+		[Fact]
 		public void projection_is_notified_that_it_is_to_fault() {
-			Assert.AreEqual(1, _consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.Failed>().Count());
+			Assert.Equal(1, _consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.Failed>().Count());
 		}
 	}
 }

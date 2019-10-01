@@ -1,7 +1,6 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.parallel_processing_load_balancer {
-	[TestFixture]
 	public class when_scheduling_many_unmeasured_tasks : specification_with_parallel_processing_load_balancer {
 		private bool _task5Scheduled;
 
@@ -19,9 +18,9 @@ namespace EventStore.Projections.Core.Tests.Services.parallel_processing_load_ba
 		}
 
 
-		[Test]
+		[Fact]
 		public void last_task_remains_unscheduled() {
-			Assert.IsFalse(_task5Scheduled);
+			Assert.False(_task5Scheduled);
 		}
 	}
 }

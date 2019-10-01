@@ -10,7 +10,7 @@ using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager.bi_state {
 	public static class a_new_posted_projection {
@@ -51,7 +51,6 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.bi_stat
 			}
 		}
 
-		[TestFixture]
 		public class when_get_state : Base {
 			protected override IEnumerable<WhenStep> When() {
 				foreach (var m in base.When()) yield return m;
@@ -59,19 +58,18 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.bi_stat
 					new ProjectionManagementMessage.Command.GetState(new PublishEnvelope(_bus), _projectionName, ""));
 			}
 
-			[Test]
+			[Fact]
 			public void returns_correct_state() {
-				Assert.AreEqual(
-					1, _consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionState>().Count());
-				Assert.AreEqual(
+				Assert.Equal(
+					1, Consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionState>().Count());
+				Assert.Equal(
 					_projectionName,
-					_consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionState>().Single().Name);
-				Assert.AreEqual(
-					"", _consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionState>().Single().State);
+					Consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionState>().Single().Name);
+				Assert.Equal(
+					"", Consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionState>().Single().State);
 			}
 		}
 
-		[TestFixture]
 		public class when_stopping : Base {
 			private Guid _reader;
 
@@ -79,9 +77,9 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.bi_stat
 				foreach (var m in base.When()) yield return m;
 
 				var readerAssignedMessage =
-					_consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.ReaderAssignedReader>()
+					Consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.ReaderAssignedReader>()
 						.LastOrDefault();
-				Assert.IsNotNull(readerAssignedMessage);
+				Assert.NotNull(readerAssignedMessage);
 				_reader = readerAssignedMessage.ReaderId;
 
 				yield return
@@ -101,7 +99,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.bi_stat
 						new PublishEnvelope(_bus), _projectionName, ProjectionManagementMessage.RunAs.System);
 			}
 
-			[Test]
+			[Fact]
 			public void writes_both_stream_and_shared_partition_checkpoints() {
 				var writeProjectionCheckpoints =
 					HandledMessages.OfType<ClientMessage.WriteEvents>()
@@ -110,11 +108,11 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.bi_stat
 					HandledMessages.OfType<ClientMessage.WriteEvents>()
 						.OfEventType(ProjectionEventTypes.PartitionCheckpoint).ToArray();
 
-				Assert.AreEqual(1, writeProjectionCheckpoints.Length);
-				Assert.AreEqual(@"[{""data"": 2}]", Encoding.UTF8.GetString(writeProjectionCheckpoints[0].Data));
-				Assert.AreEqual(2, writeCheckpoints.Length);
+				Assert.Equal(1, writeProjectionCheckpoints.Length);
+				Assert.Equal(@"[{""data"": 2}]", Encoding.UTF8.GetString(writeProjectionCheckpoints[0].Data));
+				Assert.Equal(2, writeCheckpoints.Length);
 
-				Assert.That(
+				Assert.True(
 					writeCheckpoints.All(
 						v => Encoding.UTF8.GetString(v.Data) == @"[{""data"": 1},{""data"": 1}]"));
 			}

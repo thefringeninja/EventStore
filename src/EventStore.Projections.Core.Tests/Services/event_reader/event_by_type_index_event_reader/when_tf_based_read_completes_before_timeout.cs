@@ -7,11 +7,10 @@ using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Core.Tests.Services.TimeService;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.event_by_type_index_event_reader {
-	[TestFixture]
 	public class when_tf_based_read_completes_before_timeout : EventByTypeIndexEventReaderTestFixture {
 		private EventByTypeIndexEventReader _eventReader;
 		private Guid _distributionCorrelationId;
@@ -22,8 +21,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.event_by_type_
 
 		private FakeTimeProvider _fakeTimeProvider;
 
-		[SetUp]
-		public new void When() {
+			public when_tf_based_read_completes_before_timeout() {
 			_distributionCorrelationId = Guid.NewGuid();
 			_fakeTimeProvider = new FakeTimeProvider();
 			var fromPositions = new Dictionary<string, long>();
@@ -60,10 +58,10 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.event_by_type_
 			TimeoutRead("$all", correlationId);
 		}
 
-		[Test]
+		[Fact]
 		public void should_deliver_events() {
-			Assert.AreEqual(2,
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
+			Assert.Equal(2,
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
 		}
 	}
 }

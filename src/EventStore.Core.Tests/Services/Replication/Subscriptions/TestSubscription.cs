@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Collections.Generic;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Messages;
 using EventStore.Core.Messaging;
 using EventStore.Core.Services.UserManagement;
@@ -36,7 +36,7 @@ namespace EventStore.Core.Tests.Replication.ReadStream {
 						case "SubscriptionDropped":
 							break;
 						default:
-							Assert.Fail("Unexpected message type :" + x.GetType().Name);
+							throw new Exception("Unexpected message type :" + x.GetType().Name);
 							break;
 					}
 				}), Guid.NewGuid(), StreamId, false, SystemAccount.Principal);

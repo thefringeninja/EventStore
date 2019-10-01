@@ -9,7 +9,7 @@ using EventStore.Core.Services.UserManagement;
 using EventStore.Core.Tests.Helpers.IODispatcherTests;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_manager.multi_stream {
@@ -29,8 +29,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 
 		private bool _hasRead;
 
-		[OneTimeSetUp]
-		public void TestFixtureSetUp() {
+		protected with_multi_stream_checkpoint_manager() {
 			_ioDispatcher = new IODispatcher(_bus, new PublishEnvelope(_bus));
 			_projectionVersion = new ProjectionVersion(3, 1, 2);
 			_projectionConfig = new ProjectionConfig(SystemAccount.Principal, 10, 1000, 1000, 10, true, true, true,

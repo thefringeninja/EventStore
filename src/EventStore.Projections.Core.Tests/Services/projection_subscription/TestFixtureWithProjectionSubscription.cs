@@ -5,7 +5,7 @@ using EventStore.Core.Tests.Bus.Helpers;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projection_subscription {
 	public abstract class TestFixtureWithProjectionSubscription {
@@ -29,8 +29,7 @@ namespace EventStore.Projections.Core.Tests.Services.projection_subscription {
 		protected int _checkpointAfterMs;
 		protected IReaderStrategy _readerStrategy;
 
-		[SetUp]
-		public void setup() {
+		public TestFixtureWithProjectionSubscription() {
 			_checkpointUnhandledBytesThreshold = 1000;
 			_checkpointProcessedEventsThreshold = 2000;
 			_checkpointAfterMs = 10000;

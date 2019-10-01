@@ -1,29 +1,30 @@
+using System.Collections.Generic;
 using EventStore.Core.Index;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Index.IndexV4 {
-	[TestFixture(PTableVersions.IndexV4, false)]
-	[TestFixture(PTableVersions.IndexV4, true)]
 	public class
-		when_merging_ptables_with_entries_to_nonexisting_record : IndexV1.
-			when_merging_ptables_with_entries_to_nonexisting_record_in_newer_index_versions {
-		public when_merging_ptables_with_entries_to_nonexisting_record(byte version, bool skipIndexVerify) : base(
-			version, skipIndexVerify) {
+		when_merging_ptables_with_entries_to_nonexisting_record :
+			IndexV1.when_merging_ptables_with_entries_to_nonexisting_record_in_newer_index_versions {
+		public static IEnumerable<object[]> TestCases() {
+			yield return new object[] {PTableVersions.IndexV4, false};
+			yield return new object[] {PTableVersions.IndexV4, true};
 		}
 
-		[Test]
-		public void the_correct_midpoints_are_cached() {
-			PTable.Midpoint[] midpoints = _newtable.GetMidPoints();
-			var requiredMidpoints = PTable.GetRequiredMidpointCountCached(_newtable.Count, _ptableVersion);
+		[Theory, MemberData(nameof(TestCases))]
+		public void the_correct_midpoints_are_cached(byte version, bool skipIndexVerify) {
+			using var fixture = new Fixture(version, skipIndexVerify);
+			PTable.Midpoint[] midpoints = fixture.NewTable.GetMidPoints();
+			var requiredMidpoints = PTable.GetRequiredMidpointCountCached(fixture.NewTable.Count, version);
 
-			Assert.AreEqual(requiredMidpoints, midpoints.Length);
+			Assert.Equal(requiredMidpoints, midpoints.LongLength);
 
 			var position = 0;
-			foreach (var item in _newtable.IterateAllInOrder()) {
-				if (PTable.IsMidpointIndex(position, _newtable.Count, requiredMidpoints)) {
-					Assert.AreEqual(item.Stream, midpoints[position].Key.Stream);
-					Assert.AreEqual(item.Version, midpoints[position].Key.Version);
-					Assert.AreEqual(position, midpoints[position].ItemIndex);
+			foreach (var item in fixture.NewTable.IterateAllInOrder()) {
+				if (PTable.IsMidpointIndex(position, fixture.NewTable.Count, requiredMidpoints)) {
+					Assert.Equal(item.Stream, midpoints[position].Key.Stream);
+					Assert.Equal(item.Version, midpoints[position].Key.Version);
+					Assert.Equal(position, midpoints[position].ItemIndex);
 					position++;
 				}
 			}

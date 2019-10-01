@@ -1,13 +1,12 @@
 ﻿using EventStore.ClientAPI.Common.Utils;
 using EventStore.ClientAPI.SystemData;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace EventStore.Projections.Core.Tests.Services.emitted_streams_tracker.when_tracking {
-	[TestFixture]
 	public class with_tracking_enabled : SpecificationWithEmittedStreamsTrackerAndDeleter {
 		private CountdownEvent _eventAppeared = new CountdownEvent(1);
 		private UserCredentials _credentials = new UserCredentials("admin", "changeit");
@@ -28,13 +27,13 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_streams_tracker.whe
 			sub.Unsubscribe();
 		}
 
-		[Test]
+		[Fact]
 		public async Task should_write_a_stream_tracked_event() {
 			var result = await _conn.ReadStreamEventsForwardAsync(_projectionNamesBuilder.GetEmittedStreamsName(), 0, 200,
 				false, _credentials);
-			Assert.AreEqual(1, result.Events.Length);
-			Assert.AreEqual("test_stream", Helper.UTF8NoBom.GetString(result.Events[0].Event.Data));
-			Assert.AreEqual(0, _eventAppeared.CurrentCount);
+			Assert.Equal(1, result.Events.Length);
+			Assert.Equal("test_stream", Helper.UTF8NoBom.GetString(result.Events[0].Event.Data));
+			Assert.Equal(0, _eventAppeared.CurrentCount);
 		}
 	}
 }

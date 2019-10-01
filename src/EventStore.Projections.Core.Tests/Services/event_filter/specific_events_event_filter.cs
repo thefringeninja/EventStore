@@ -1,7 +1,6 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.event_filter {
-	[TestFixture]
 	public class specific_events_event_filter : TestFixtureWithEventFilter {
 		protected override void Given() {
 			_builder.FromAll();
@@ -9,34 +8,34 @@ namespace EventStore.Projections.Core.Tests.Services.event_filter {
 			_builder.IncludeEvent("eventTwo");
 		}
 
-		[Test]
+		[Fact]
 		public void can_be_built() {
-			Assert.IsNotNull(_ef);
+			Assert.NotNull(_ef);
 		}
 
-		[Test]
+		[Fact]
 		public void should_allow_non_linked_events() {
-			Assert.IsTrue(_ef.Passes(false, "stream", "eventOne"));
+			Assert.True(_ef.Passes(false, "stream", "eventOne"));
 		}
 
-		[Test]
+		[Fact]
 		public void should_allow_events_from_event_type_stream() {
-			Assert.IsTrue(_ef.Passes(true, "$et-eventOne", "eventOne"));
+			Assert.True(_ef.Passes(true, "$et-eventOne", "eventOne"));
 		}
 
-		[Test]
+		[Fact]
 		public void should_not_allow_events_from_event_type_stream_that_is_not_included() {
-			Assert.IsFalse(_ef.Passes(true, "$et-eventThree", "eventThree"));
+			Assert.False(_ef.Passes(true, "$et-eventThree", "eventThree"));
 		}
 
-		[Test]
+		[Fact]
 		public void should_not_allow_events_from_system_streams() {
-			Assert.IsFalse(_ef.Passes(false, "$ct-test", "eventOne"));
+			Assert.False(_ef.Passes(false, "$ct-test", "eventOne"));
 		}
 
-		[Test]
+		[Fact]
 		public void should_not_allow_linked_events_from_system_streams() {
-			Assert.IsFalse(_ef.Passes(true, "$ct-test", "eventOne"));
+			Assert.False(_ef.Passes(true, "$ct-test", "eventOne"));
 		}
 	}
 }

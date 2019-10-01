@@ -10,7 +10,7 @@ using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Management;
 using EventStore.Core.Services.TimerService;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager.continuous {
 	public static class a_new_posted_projection {
@@ -57,7 +57,6 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.continu
 			}
 		}
 
-		[TestFixture]
 		public class when_get_query : Base {
 			protected override IEnumerable<WhenStep> When() {
 				foreach (var m in base.When())
@@ -67,18 +66,17 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.continu
 						new PublishEnvelope(_bus), _projectionName, ProjectionManagementMessage.RunAs.Anonymous));
 			}
 
-			[Test]
+			[Fact]
 			public void returns_correct_source() {
-				Assert.AreEqual(
-					1, _consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionQuery>().Count());
+				Assert.Equal(
+					1, Consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionQuery>().Count());
 				var projectionQuery =
-					_consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionQuery>().Single();
-				Assert.AreEqual(_projectionName, projectionQuery.Name);
-				Assert.AreEqual("", projectionQuery.Query);
+					Consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionQuery>().Single();
+				Assert.Equal(_projectionName, projectionQuery.Name);
+				Assert.Equal("", projectionQuery.Query);
 			}
 		}
 
-		[TestFixture]
 		public class when_get_state : Base {
 			protected override void Given() {
 				base.Given();
@@ -92,33 +90,32 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.continu
 					_projectionName, ""));
 			}
 
-			[Test]
+			[Fact]
 			public void returns_correct_state() {
-				Assert.AreEqual(
-					1, _consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionState>().Count());
-				Assert.AreEqual(
+				Assert.Equal(
+					1, Consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionState>().Count());
+				Assert.Equal(
 					_projectionName,
-					_consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionState>().Single().Name);
+					Consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionState>().Single().Name);
 				//at least projection initializaed message is here
-				Assert.AreEqual(
+				Assert.Equal(
 					"{\"data\": 1}",
-					_consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionState>().Single().State);
-				Assert.AreEqual(
+					Consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionState>().Single().State);
+				Assert.Equal(
 					_all.Last(v => !SystemStreams.IsSystemStream(v.Value.EventStreamId)).Key,
-					_consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionState>()
+					Consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionState>()
 						.Single()
 						.Position.Position);
 			}
 		}
 
-		[TestFixture]
 		public class when_failing : Base {
 			protected override IEnumerable<WhenStep> When() {
 				foreach (var m in base.When()) yield return m;
 				var readerAssignedMessage =
-					_consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.ReaderAssignedReader>()
+					Consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.ReaderAssignedReader>()
 						.LastOrDefault();
-				Assert.IsNotNull(readerAssignedMessage);
+				Assert.NotNull(readerAssignedMessage);
 				var reader = readerAssignedMessage.ReaderId;
 
 				yield return
@@ -127,32 +124,32 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.continu
 						"fail", false, new byte[0], new byte[0], 100, 33.3f));
 			}
 
-			[Test]
+			[Fact]
 			public void publishes_faulted_message() {
-				Assert.AreEqual(1, _consumer.HandledMessages.OfType<CoreProjectionStatusMessage.Faulted>().Count());
+				Assert.Equal(1, Consumer.HandledMessages.OfType<CoreProjectionStatusMessage.Faulted>().Count());
 			}
 
-			[Test]
+			[Fact]
 			public void the_projection_status_becomes_faulted() {
 				_manager.Handle(
 					new ProjectionManagementMessage.Command.GetStatistics(
 						new PublishEnvelope(_bus), null, _projectionName, false));
 
-				Assert.AreEqual(1, _consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().Count());
-				Assert.AreEqual(
+				Assert.Equal(1, Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().Count());
+				Assert.Equal(
 					1,
-					_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
+					Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
 						.Single()
 						.Projections.Length);
-				Assert.AreEqual(
+				Assert.Equal(
 					_projectionName,
-					_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
+					Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
 						.Single()
 						.Projections.Single()
 						.Name);
-				Assert.AreEqual(
+				Assert.Equal(
 					ManagedProjectionState.Faulted,
-					_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
+					Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
 						.Single()
 						.Projections.Single()
 						.MasterStatus);
@@ -172,9 +169,9 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.continu
 			protected override IEnumerable<WhenStep> When() {
 				foreach (var m in base.When()) yield return m;
 				var readerAssignedMessage =
-					_consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.ReaderAssignedReader>()
+					Consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.ReaderAssignedReader>()
 						.LastOrDefault();
-				Assert.IsNotNull(readerAssignedMessage);
+				Assert.NotNull(readerAssignedMessage);
 				_reader = readerAssignedMessage.ReaderId;
 
 				yield return
@@ -184,27 +181,26 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.continu
 						"type", false, new byte[0], new byte[0], 100, 33.3f));
 				_timeProvider.AddTime(TimeSpan.FromMinutes(6));
 				yield return Yield;
-				foreach (var m in _consumer.HandledMessages.OfType<TimerMessage.Schedule>().ToArray())
+				foreach (var m in Consumer.HandledMessages.OfType<TimerMessage.Schedule>().ToArray())
 					m.Envelope.ReplyWith(m.ReplyMessage);
 			}
 		}
 
-		[TestFixture]
 		public class when_retrieving_statistics : Base {
 			protected override IEnumerable<WhenStep> When() {
 				foreach (var s in base.When()) yield return s;
-				_consumer.HandledMessages.Clear();
+				Consumer.HandledMessages.Clear();
 				yield return (
 					new ProjectionManagementMessage.Command.GetStatistics(
 						new PublishEnvelope(_bus), null, _projectionName, false));
 			}
 
-			[Test]
+			[Fact]
 			public void projection_is_not_deleted() {
-				Assert.IsFalse(_consumer.HandledMessages.OfType<ProjectionManagementMessage.NotFound>().Any());
-				var res = _consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
+				Assert.False(Consumer.HandledMessages.OfType<ProjectionManagementMessage.NotFound>().Any());
+				var res = Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
 					.First(x => x.Projections.Any(y => y.Name == _projectionName));
-				Assert.AreEqual("Running", res.Projections.First(x => x.Name == _projectionName).Status);
+				Assert.Equal("Running", res.Projections.First(x => x.Name == _projectionName).Status);
 			}
 		}
 	}

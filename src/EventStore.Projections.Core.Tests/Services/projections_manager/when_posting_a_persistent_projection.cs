@@ -9,10 +9,9 @@ using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Management;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager {
-	[TestFixture]
 	public class when_posting_a_persistent_projection : TestFixtureWithProjectionCoreAndManagementServices {
 		private string _projectionName;
 
@@ -34,32 +33,32 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 			OneWriteCompletes();
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void the_projection_status_is_writing() {
 			_manager.Handle(
 				new ProjectionManagementMessage.Command.GetStatistics(new PublishEnvelope(_bus), null, _projectionName,
 					true));
-			Assert.AreEqual(
+			Assert.Equal(
 				ManagedProjectionState.Prepared,
-				_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().Single().Projections[0]
+				Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().Single().Projections[0]
 					.MasterStatus);
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void a_projection_created_event_is_written() {
-			Assert.AreEqual(
+			Assert.Equal(
 				ProjectionEventTypes.ProjectionCreated,
-				_consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().First().Events[0].EventType);
-			Assert.AreEqual(
+				Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().First().Events[0].EventType);
+			Assert.Equal(
 				_projectionName,
-				Helper.UTF8NoBom.GetString(_consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().First()
+				Helper.UTF8NoBom.GetString(Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().First()
 					.Events[0].Data));
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void a_projection_updated_message_is_not_published() {
 			// not published until all writes complete
-			Assert.AreEqual(0, _consumer.HandledMessages.OfType<ProjectionManagementMessage.Updated>().Count());
+			Assert.Equal(0, Consumer.HandledMessages.OfType<ProjectionManagementMessage.Updated>().Count());
 		}
 	}
 }

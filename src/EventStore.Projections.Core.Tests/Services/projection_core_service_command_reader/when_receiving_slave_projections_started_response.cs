@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projection_core_service_command_reader {
-	[TestFixture]
 	public class
 		when_receiving_slave_projections_started_response :
 			specification_with_projection_core_service_command_reader_started {
@@ -30,13 +29,13 @@ namespace EventStore.Projections.Core.Tests.Services.projection_core_service_com
 					true);
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_projection_get_result_message() {
 			var command = HandledMessages.OfType<CoreProjectionManagementMessage.GetResult>().LastOrDefault();
-			Assert.IsNotNull(command);
-			Assert.AreEqual(_projectionId, command.ProjectionId);
-			Assert.AreEqual(_correlationId, command.CorrelationId);
-			Assert.AreEqual(_partition, command.Partition);
+			Assert.NotNull(command);
+			Assert.Equal(_projectionId, command.ProjectionId);
+			Assert.Equal(_correlationId, command.CorrelationId);
+			Assert.Equal(_partition, command.Partition);
 		}
 	}
 }

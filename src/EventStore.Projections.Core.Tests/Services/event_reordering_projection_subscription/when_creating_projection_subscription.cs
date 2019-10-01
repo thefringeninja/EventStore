@@ -3,12 +3,11 @@ using EventStore.Core.Services.TimerService;
 using EventStore.Core.Tests.Fakes;
 using EventStore.Core.Tests.Services.TimeService;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reordering_projection_subscription {
-	[TestFixture]
 	public class when_creating_projection_subscription {
-		[Test]
+		[Fact]
 		public void it_can_be_created() {
 			new EventReorderingReaderSubscription(
 				new FakePublisher(),
@@ -22,7 +21,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reordering_projection
 				500);
 		}
 
-		[Test]
+		[Fact]
 		public void null_publisher_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				new EventReorderingReaderSubscription(
@@ -38,7 +37,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reordering_projection
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void null_describe_source_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				new EventReorderingReaderSubscription(
@@ -54,7 +53,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reordering_projection
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void null_time_provider_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				new EventReorderingReaderSubscription(

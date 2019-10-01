@@ -11,12 +11,11 @@ using EventStore.Core.Util;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Management;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Services;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager {
-	[TestFixture]
 	public class when_starting_the_projection_manager_with_existing_projection : TestFixtureWithExistingEvents {
 		private new ITimeProvider _timeProvider;
 		private ProjectionManager _manager;
@@ -32,8 +31,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 		}
 
 
-		[SetUp]
-		public void setup() {
+		public when_starting_the_projection_manager_with_existing_projection() {
 			_timeProvider = new FakeTimeProvider();
 			var queues = new Dictionary<Guid, IPublisher> {{_workerId, _bus}};
 			_manager = new ProjectionManager(
@@ -51,29 +49,28 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 			_manager.Handle(new ProjectionManagementMessage.ReaderReady());
 		}
 
-		[TearDown]
-		public void TearDown() {
+		public override void Dispose() {
 			_manager.Dispose();
 		}
 
-		[Test]
+		[Fact]
 		public void projection_status_can_be_retrieved() {
 			_manager.Handle(
 				new ProjectionManagementMessage.Command.GetStatistics(new PublishEnvelope(_bus), null, "projection1",
 					true));
-			Assert.IsNotNull(
-				_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().SingleOrDefault(
+			Assert.NotNull(
+				Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().SingleOrDefault(
 					v => v.Projections[0].Name == "projection1"));
 		}
 
-		[Test]
+		[Fact]
 		public void projection_status_is_starting() {
 			_manager.Handle(
 				new ProjectionManagementMessage.Command.GetStatistics(new PublishEnvelope(_bus), null, "projection1",
 					true));
-			Assert.AreEqual(
+			Assert.Equal(
 				ManagedProjectionState.Preparing,
-				_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().SingleOrDefault(
+				Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().SingleOrDefault(
 					v => v.Projections[0].Name == "projection1").Projections[0].MasterStatus);
 		}
 	}

@@ -12,10 +12,9 @@ using EventStore.Core.TransactionLog.Checkpoint;
 using EventStore.Core.TransactionLog.Chunks;
 using EventStore.Core.TransactionLog.FileNamingStrategy;
 using EventStore.Core.Util;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Storage {
-	[TestFixture]
 	public abstract class SimpleDbTestScenario : SpecificationWithDirectoryPerTestFixture {
 		protected readonly int MaxEntriesInMemTable;
 		protected TableIndex TableIndex;

@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Storage.Scavenge {
-	[TestFixture]
 	public class when_having_commit_spanning_multiple_chunks : ReadIndexTestScenario {
 		private List<LogRecord> _survivors;
 		private List<LogRecord> _scavenged;
@@ -28,7 +27,7 @@ namespace EventStore.Core.Tests.Services.Storage.Scavenge {
 					"event-type",
 					new byte[3],
 					new byte[3]);
-				Assert.IsTrue(Writer.Write(r, out tmp));
+				Assert.True(Writer.Write(r, out tmp));
 				Writer.CompleteChunk();
 
 				_scavenged.Add(r);
@@ -51,21 +50,21 @@ namespace EventStore.Core.Tests.Services.Storage.Scavenge {
 
 			Scavenge(completeLast: false, mergeChunks: true);
 
-			Assert.AreEqual(13, _survivors.Count + _scavenged.Count);
+			Assert.Equal(13, _survivors.Count + _scavenged.Count);
 		}
 
-		[Test]
+		[Fact]
 		public void all_chunks_are_merged_and_scavenged() {
 			foreach (var rec in _scavenged) {
 				var chunk = Db.Manager.GetChunkFor(rec.LogPosition);
-				Assert.IsFalse(chunk.TryReadAt(rec.LogPosition).Success);
+				Assert.False(chunk.TryReadAt(rec.LogPosition).Success);
 			}
 
 			foreach (var rec in _survivors) {
 				var chunk = Db.Manager.GetChunkFor(rec.LogPosition);
 				var res = chunk.TryReadAt(rec.LogPosition);
-				Assert.IsTrue(res.Success);
-				Assert.AreEqual(rec, res.LogRecord);
+				Assert.True(res.Success);
+				Assert.Equal(rec, res.LogRecord);
 			}
 		}
 	}

@@ -3,10 +3,10 @@ using System.Text;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.ClientAPI.Exceptions;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
-	[TestFixture, Category("ClientAPI"), Category("LongRunning")]
+	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
 	public class create_persistent_subscription_on_existing_stream : SpecificationWithMiniNode {
 		private readonly string _stream = Guid.NewGuid().ToString();
 
@@ -19,7 +19,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 				new EventData(Guid.NewGuid(), "whatever", true, Encoding.UTF8.GetBytes("{'foo' : 2}"), new Byte[0]));
 		}
 
-		[Test]
+		[Fact]
 		public async Task the_completion_succeeds() {
 			await _conn.CreatePersistentSubscriptionAsync(_stream, "existing", _settings,
 				DefaultData.AdminCredentials);
@@ -27,7 +27,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 	}
 
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class create_persistent_subscription_on_non_existing_stream : SpecificationWithMiniNode {
 		private readonly string _stream = Guid.NewGuid().ToString();
 
@@ -37,7 +37,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		protected override Task When() => Task.CompletedTask;
 
-		[Test]
+		[Fact]
 		public async Task the_completion_succeeds() {
 			await _conn.CreatePersistentSubscriptionAsync(_stream, "nonexistinggroup", _settings,
 				DefaultData.AdminCredentials);
@@ -45,7 +45,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 	}
 
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class create_persistent_subscription_on_all_stream : SpecificationWithMiniNode {
 		private readonly PersistentSubscriptionSettings _settings = PersistentSubscriptionSettings.Create()
 			.DoNotResolveLinkTos()
@@ -53,19 +53,19 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		protected override Task When() => Task.CompletedTask;
 
-		[Test]
-		public async Task the_completion_fails_with_invalid_stream() {
-			await AssertEx.ThrowsAsync<InvalidOperationException>(() =>
+		[Fact]
+		public void the_completion_fails_with_invalid_stream() {
+			Assert.ThrowsAsync<InvalidOperationException>(() =>
 				_conn.CreatePersistentSubscriptionAsync("$all", "shitbird", _settings, DefaultData.AdminCredentials));
 		}
 	}
 
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class create_persistent_subscription_with_too_big_message_timeout : SpecificationWithMiniNode {
 		protected override Task When() => Task.CompletedTask;
 
-		[Test]
+		[Fact]
 		public void the_build_fails_with_argument_exception() {
 			Assert.Throws<ArgumentException>(() =>
 				PersistentSubscriptionSettings.Create().WithMessageTimeoutOf(TimeSpan.FromDays(25 * 365)).Build());
@@ -73,18 +73,18 @@ namespace EventStore.Core.Tests.ClientAPI {
 	}
 
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class create_persistent_subscription_with_too_big_checkpoint_after : SpecificationWithMiniNode {
 		protected override Task When() => Task.CompletedTask;
 
-		[Test]
+		[Fact]
 		public void the_build_fails_with_argument_exception() {
 			Assert.Throws<ArgumentException>(() =>
 				PersistentSubscriptionSettings.Create().CheckPointAfter(TimeSpan.FromDays(25 * 365)).Build());
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class create_persistent_subscription_with_dont_timeout : SpecificationWithMiniNode {
 		private readonly string _stream = Guid.NewGuid().ToString();
 
@@ -95,19 +95,19 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		protected override Task When() => Task.CompletedTask;
 
-		[Test]
+		[Fact]
 		public void the_message_timeout_should_be_zero() {
-			Assert.That(_settings.MessageTimeout == TimeSpan.Zero);
+			Assert.True(_settings.MessageTimeout == TimeSpan.Zero);
 		}
 
-		[Test]
+		[Fact]
 		public async Task the_subscription_is_created_without_error() {
 			await _conn.CreatePersistentSubscriptionAsync(_stream, "dont-timeout", _settings,
 				DefaultData.AdminCredentials);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class create_duplicate_persistent_subscription_group : SpecificationWithMiniNode {
 		private readonly string _stream = Guid.NewGuid().ToString();
 
@@ -119,15 +119,15 @@ namespace EventStore.Core.Tests.ClientAPI {
 			return _conn.CreatePersistentSubscriptionAsync(_stream, "group32", _settings, DefaultData.AdminCredentials);
 		}
 
-		[Test]
-		public async Task the_completion_fails_with_invalid_operation_exception() {
-			await AssertEx.ThrowsAsync<InvalidOperationException>(
+		[Fact]
+		public void the_completion_fails_with_invalid_operation_exception() {
+			Assert.ThrowsAsync<InvalidOperationException>(
 				() => _conn.CreatePersistentSubscriptionAsync(_stream, "group32", _settings,
 					DefaultData.AdminCredentials));
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class
 		can_create_duplicate_persistent_subscription_group_name_on_different_streams : SpecificationWithMiniNode {
 		private readonly string _stream = Guid.NewGuid().ToString();
@@ -140,7 +140,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			return _conn.CreatePersistentSubscriptionAsync(_stream, "group3211", _settings, DefaultData.AdminCredentials);
 		}
 
-		[Test]
+		[Fact]
 		public async Task the_completion_succeeds() {
 			await
 				_conn.CreatePersistentSubscriptionAsync("someother" + _stream, "group3211", _settings,
@@ -148,7 +148,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class create_persistent_subscription_group_without_permissions : SpecificationWithMiniNode {
 		private readonly string _stream = Guid.NewGuid().ToString();
 
@@ -158,15 +158,15 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		protected override Task When() => Task.CompletedTask;
 
-		[Test]
-		public async Task the_completion_succeeds() {
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() =>
+		[Fact]
+		public void the_completion_succeeds() {
+			Assert.ThrowsAsync<AccessDeniedException>(() =>
 				_conn.CreatePersistentSubscriptionAsync(_stream, "group57", _settings, null));
 		}
 	}
 
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class create_persistent_subscription_after_deleting_the_same : SpecificationWithMiniNode {
 		private readonly string _stream = Guid.NewGuid().ToString();
 
@@ -181,7 +181,7 @@ namespace EventStore.Core.Tests.ClientAPI {
             await _conn.DeletePersistentSubscriptionAsync(_stream, "existing", DefaultData.AdminCredentials);
 		}
 
-		[Test]
+		[Fact]
 		public async Task the_completion_succeeds() {
             await _conn.CreatePersistentSubscriptionAsync(_stream, "existing", _settings, DefaultData.AdminCredentials);
 		}
@@ -190,7 +190,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 //ALL
 /*
 
-    [TestFixture, Category("LongRunning")]
+    [Trait("Category", "LongRunning")]
     public class create_persistent_subscription_on_all : SpecificationWithMiniNode
     {
         private PersistentSubscriptionCreateResult _result;
@@ -203,15 +203,15 @@ namespace EventStore.Core.Tests.ClientAPI {
             _result = _conn.CreatePersistentSubscriptionForAllAsync("group", _settings, DefaultData.AdminCredentials).Result;
         }
 
-        [Test]
+        [Fact]
         public void the_completion_succeeds()
         {
-            Assert.AreEqual(PersistentSubscriptionCreateStatus.Success, _result.Status);
+            Assert.Equal(PersistentSubscriptionCreateStatus.Success, _result.Status);
         }
     }
 
 
-    [TestFixture, Category("LongRunning")]
+    [Trait("Category", "LongRunning")]
     public class create_duplicate_persistent_subscription_group_on_all : SpecificationWithMiniNode
     {
         private readonly PersistentSubscriptionSettings _settings = PersistentSubscriptionSettingsBuilder.Create()
@@ -222,7 +222,7 @@ namespace EventStore.Core.Tests.ClientAPI {
             _conn.CreatePersistentSubscriptionForAllAsync("group32", _settings, DefaultData.AdminCredentials).Wait();
         }
 
-        [Test]
+        [Fact]
         public void the_completion_fails_with_invalid_operation_exception()
         {
             try
@@ -232,14 +232,14 @@ namespace EventStore.Core.Tests.ClientAPI {
             }
             catch (Exception ex)
             {
-                Assert.IsInstanceOf(typeof(AggregateException), ex);
+                Assert.IsType(typeof(AggregateException), ex);
                 var inner = ex.InnerException;
-                Assert.IsInstanceOf(typeof(InvalidOperationException), inner);
+                Assert.IsType(typeof(InvalidOperationException), inner);
             }
         }
     }
 
-    [TestFixture, Category("LongRunning")]
+    [Trait("Category", "LongRunning")]
     public class create_persistent_subscription_group_on_all_without_permissions : SpecificationWithMiniNode
     {
         private readonly PersistentSubscriptionSettings _settings = PersistentSubscriptionSettingsBuilder.Create()
@@ -249,7 +249,7 @@ namespace EventStore.Core.Tests.ClientAPI {
         {
         }
 
-        [Test]
+        [Fact]
         public void the_completion_succeeds()
         {
             try
@@ -259,9 +259,9 @@ namespace EventStore.Core.Tests.ClientAPI {
             }
             catch (Exception ex)
             {
-                Assert.IsInstanceOf(typeof(AggregateException), ex);
+                Assert.IsType(typeof(AggregateException), ex);
                 var inner = ex.InnerException;
-                Assert.IsInstanceOf(typeof(AccessDeniedException), inner);
+                Assert.IsType(typeof(AccessDeniedException), inner);
             }
         }
     }

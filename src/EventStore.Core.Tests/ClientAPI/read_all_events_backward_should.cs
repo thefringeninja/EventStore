@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.Core.Services;
 using EventStore.Core.Tests.ClientAPI.Helpers;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
-	[TestFixture, Category("ClientAPI"), Category("LongRunning")]
+	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
 	public class read_all_events_backward_should : SpecificationWithMiniNode {
 		private EventData[] _testEvents;
 
@@ -21,29 +21,29 @@ namespace EventStore.Core.Tests.ClientAPI {
             await _conn.AppendToStreamAsync("stream", ExpectedVersion.NoStream, _testEvents);
 		}
 
-		[Test, Category("LongRunning")]
+		[Fact, Trait("Category", "LongRunning")]
 		public async Task return_empty_slice_if_asked_to_read_from_start() {
 			var read = await _conn.ReadAllEventsBackwardAsync(Position.Start, 1, false);
-			Assert.That(read.IsEndOfStream, Is.True);
-			Assert.That(read.Events.Length, Is.EqualTo(0));
+			Assert.True(read.IsEndOfStream);
+			Assert.Empty(read.Events);
 		}
 
-		[Test, Category("LongRunning")]
+		[Fact, Trait("Category", "LongRunning")]
 		public async Task return_partial_slice_if_not_enough_events() {
 			var read = await _conn.ReadAllEventsBackwardAsync(Position.End, 30, false);
-			Assert.That(read.Events.Length, Is.LessThan(30));
-			Assert.That(EventDataComparer.Equal(_testEvents.Reverse().ToArray(),
+			Assert.True(read.Events.Length < 30);
+			Assert.True(EventDataComparer.Equal(_testEvents.Reverse().ToArray(),
 				read.Events.Take(_testEvents.Length).Select(x => x.Event).ToArray()));
 		}
 
-		[Test, Category("LongRunning")]
+		[Fact, Trait("Category", "LongRunning")]
 		public async Task return_events_in_reversed_order_compared_to_written() {
 			var read = await _conn.ReadAllEventsBackwardAsync(Position.End, _testEvents.Length, false);
-			Assert.That(EventDataComparer.Equal(_testEvents.Reverse().ToArray(),
+			Assert.True(EventDataComparer.Equal(_testEvents.Reverse().ToArray(),
 				read.Events.Select(x => x.Event).ToArray()));
 		}
 
-		[Test, Category("LongRunning")]
+		[Fact, Trait("Category", "LongRunning")]
 		public async Task be_able_to_read_all_one_by_one_until_end_of_stream() {
 			var all = new List<RecordedEvent>();
 			var position = Position.End;
@@ -54,11 +54,11 @@ namespace EventStore.Core.Tests.ClientAPI {
 				position = slice.NextPosition;
 			}
 
-			Assert.That(
+			Assert.True(
 				EventDataComparer.Equal(_testEvents.Reverse().ToArray(), all.Take(_testEvents.Length).ToArray()));
 		}
 
-		[Test, Category("LongRunning")]
+		[Fact, Trait("Category", "LongRunning")]
 		public async Task be_able_to_read_events_slice_at_time() {
 			var all = new List<RecordedEvent>();
 			var position = Position.End;
@@ -69,14 +69,14 @@ namespace EventStore.Core.Tests.ClientAPI {
 				position = slice.NextPosition;
 			}
 
-			Assert.That(
+			Assert.True(
 				EventDataComparer.Equal(_testEvents.Reverse().ToArray(), all.Take(_testEvents.Length).ToArray()));
 		}
 
-		[Test]
-		[Category("Network")]
-		public async Task throw_when_got_int_max_value_as_maxcount() {
-			await AssertEx.ThrowsAsync<ArgumentException>(
+		[Fact]
+		[Trait("Category", "Network")]
+		public Task throw_when_got_int_max_value_as_maxcount() {
+			return Assert.ThrowsAsync<ArgumentException>(
 				() => _conn.ReadAllEventsBackwardAsync(Position.Start, int.MaxValue, resolveLinkTos: false));
 		}
 	}

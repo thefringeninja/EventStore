@@ -1,7 +1,6 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Storage.DeletingStream {
-	[TestFixture]
 	public class when_deleting_stream_spanning_through_multiple_chunks_read_index_should : ReadIndexTestScenario {
 		protected override void WriteTestScenario() {
 			WriteSingleEvent("ES", 0, new string('.', 3000));
@@ -15,19 +14,19 @@ namespace EventStore.Core.Tests.Services.Storage.DeletingStream {
 			WriteDelete("ES");
 		}
 
-		[Test]
+		[Fact]
 		public void indicate_that_stream_is_deleted() {
-			Assert.That(ReadIndex.IsStreamDeleted("ES"));
+			Assert.True(ReadIndex.IsStreamDeleted("ES"));
 		}
 
-		[Test]
+		[Fact]
 		public void indicate_that_nonexisting_stream_with_same_hash_is_not_deleted() {
-			Assert.That(ReadIndex.IsStreamDeleted("ZZ"), Is.False);
+			Assert.False(ReadIndex.IsStreamDeleted("ZZ"));
 		}
 
-		[Test]
+		[Fact]
 		public void indicate_that_nonexisting_stream_with_different_hash_is_not_deleted() {
-			Assert.That(ReadIndex.IsStreamDeleted("XXX"), Is.False);
+			Assert.False(ReadIndex.IsStreamDeleted("XXX"));
 		}
 	}
 }

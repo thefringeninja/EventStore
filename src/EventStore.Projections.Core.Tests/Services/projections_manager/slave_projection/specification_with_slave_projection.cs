@@ -9,7 +9,7 @@ using EventStore.Projections.Core.Messages.ParallelQueryProcessingMessages;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager.slave_projection {
 	public abstract class specification_with_slave_projection : TestFixtureWithProjectionCoreAndManagementServices {
@@ -64,24 +64,22 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.slave_p
 		}
 	}
 
-	[TestFixture]
 	public class when_creating_a_slave_projection : specification_with_slave_projection {
 		protected override IEnumerable<WhenStep> When() {
 			foreach (var m in base.When()) yield return m;
 			yield return new CoreProjectionManagementMessage.Start(_coreProjectionCorrelationId, Guid.NewGuid());
 		}
 
-		[Test]
+		[Fact]
 		public void replies_with_slave_projection_reader_id_on_started_message() {
 			var readerAssigned =
 				HandledMessages.OfType<CoreProjectionManagementMessage.SlaveProjectionReaderAssigned>().LastOrDefault();
 
-			Assert.IsNotNull(readerAssigned);
-			Assert.AreNotEqual(Guid.Empty, readerAssigned.SubscriptionId);
+			Assert.NotNull(readerAssigned);
+			Assert.NotEqual(Guid.Empty, readerAssigned.SubscriptionId);
 		}
 	}
 
-	[TestFixture]
 	public class when_processing_a_stream : specification_with_slave_projection {
 		private Guid _subscriptionId;
 
@@ -95,7 +93,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.slave_p
 			yield return new CoreProjectionManagementMessage.Start(_coreProjectionCorrelationId, Guid.NewGuid());
 			var readerAssigned =
 				HandledMessages.OfType<CoreProjectionManagementMessage.SlaveProjectionReaderAssigned>().LastOrDefault();
-			Assert.IsNotNull(readerAssigned);
+			Assert.NotNull(readerAssigned);
 			_subscriptionId = readerAssigned.SubscriptionId;
 			yield return
 				new ReaderSubscriptionManagement.SpoolStreamReadingCore(_subscriptionId,
@@ -104,17 +102,16 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.slave_p
 					10000);
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_partition_result_message() {
 			var results =
 				HandledMessages.OfType<PartitionProcessingResultOutput>().ToArray();
-			Assert.AreEqual(1, results.Length);
+			Assert.Equal(1, results.Length);
 			var result = results[0];
-			Assert.AreEqual("{\"data\":1}", result.Result);
+			Assert.Equal("{\"data\":1}", result.Result);
 		}
 	}
 
-	[TestFixture]
 	public class when_processing_a_non_existing_stream : specification_with_slave_projection {
 		private Guid _subscriptionId;
 
@@ -128,7 +125,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.slave_p
 			yield return new CoreProjectionManagementMessage.Start(_coreProjectionCorrelationId, Guid.NewGuid());
 			var readerAssigned =
 				HandledMessages.OfType<CoreProjectionManagementMessage.SlaveProjectionReaderAssigned>().LastOrDefault();
-			Assert.IsNotNull(readerAssigned);
+			Assert.NotNull(readerAssigned);
 			_subscriptionId = readerAssigned.SubscriptionId;
 			yield return
 				new ReaderSubscriptionManagement.SpoolStreamReadingCore(_subscriptionId,
@@ -137,17 +134,16 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.slave_p
 					10000);
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_partition_result_message() {
 			var results =
 				HandledMessages.OfType<PartitionProcessingResultOutput>().ToArray();
-			Assert.AreEqual(1, results.Length);
+			Assert.Equal(1, results.Length);
 			var result = results[0];
-			Assert.IsNull(result.Result);
+			Assert.Null(result.Result);
 		}
 	}
 
-	[TestFixture]
 	public class when_processing_multiple_streams : specification_with_slave_projection {
 		private Guid _subscriptionId;
 
@@ -163,7 +159,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.slave_p
 			yield return new CoreProjectionManagementMessage.Start(_coreProjectionCorrelationId, Guid.NewGuid());
 			var readerAssigned =
 				HandledMessages.OfType<CoreProjectionManagementMessage.SlaveProjectionReaderAssigned>().LastOrDefault();
-			Assert.IsNotNull(readerAssigned);
+			Assert.NotNull(readerAssigned);
 			_subscriptionId = readerAssigned.SubscriptionId;
 			yield return
 				new ReaderSubscriptionManagement.SpoolStreamReadingCore(_subscriptionId,
@@ -182,14 +178,14 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.slave_p
 					10000);
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_partition_result_message() {
 			var results =
 				HandledMessages.OfType<PartitionProcessingResultOutput>().ToArray();
-			Assert.AreEqual(3, results.Length);
-			Assert.AreEqual("{\"data\":1}", results[0].Result);
-			Assert.AreEqual("{\"data\":2}", results[1].Result);
-			Assert.IsNull(results[2].Result);
+			Assert.Equal(3, results.Length);
+			Assert.Equal("{\"data\":1}", results[0].Result);
+			Assert.Equal("{\"data\":2}", results[1].Result);
+			Assert.Null(results[2].Result);
 		}
 	}
 }

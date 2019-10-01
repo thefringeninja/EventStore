@@ -2,11 +2,11 @@
 using EventStore.Projections.Core.Messages.ParallelQueryProcessingMessages;
 using EventStore.Projections.Core.Messages.Persisted.Responses.Slave;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.slave_projection_response_writer {
-	[TestFixture]
-	class when_handling_partition_processing_result_message : specification_with_slave_projection_response_writer {
+	public class
+		when_handling_partition_processing_result_message : specification_with_slave_projection_response_writer {
 		private Guid _workerId;
 		private Guid _masterProjectionId;
 		private Guid _subscriptionId;
@@ -37,14 +37,14 @@ namespace EventStore.Projections.Core.Tests.Services.slave_projection_response_w
 					_result));
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_partition_processing_result_response() {
 			var body = AssertParsedSingleResponse<PartitionProcessingResultResponse>("$result", _masterProjectionId);
-			Assert.AreEqual(_subscriptionId.ToString("N"), body.SubscriptionId);
-			Assert.AreEqual(_partition, body.Partition);
-			Assert.AreEqual(_causedBy.ToString("N"), body.CausedBy);
-			Assert.AreEqual(_position, body.Position);
-			Assert.AreEqual(_result, body.Result);
+			Assert.Equal(_subscriptionId.ToString("N"), body.SubscriptionId);
+			Assert.Equal(_partition, body.Partition);
+			Assert.Equal(_causedBy.ToString("N"), body.CausedBy);
+			Assert.Equal(_position, body.Position);
+			Assert.Equal(_result, body.Result);
 		}
 	}
 }

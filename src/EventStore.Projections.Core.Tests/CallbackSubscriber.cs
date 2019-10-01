@@ -4,7 +4,7 @@ using EventStore.Core.Messaging;
 
 namespace EventStore.Projections.Core.Tests {
 	public static class CallbackSubscriber {
-		class Impl<T> : IHandle<T> where T : Message {
+		public class Impl<T> : IHandle<T> where T : Message {
 			private readonly Action<T> _callback;
 
 			public Impl(Action<T> callback) {

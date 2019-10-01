@@ -2,12 +2,11 @@
 using EventStore.ClientAPI;
 using EventStore.ClientAPI.Exceptions;
 using EventStore.ClientAPI.SystemData;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI.Security {
-	[TestFixture, Category("ClientAPI"), Category("LongRunning"), Category("Network")]
+	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning"), Trait("Category", "Network")]
 	public class all_stream_with_no_acl_security : AuthenticationTestBase {
-		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 
@@ -15,40 +14,40 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 				new UserCredentials("adm", "admpa$$"));
 		}
 
-		[Test]
+		[Fact]
 		public async Task write_to_all_is_never_allowed() {
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$all", null, null));
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$all", "user1", "pa$$1"));
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$all", "adm", "admpa$$"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => WriteStream("$all", null, null));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => WriteStream("$all", "user1", "pa$$1"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => WriteStream("$all", "adm", "admpa$$"));
 		}
 
-		[Test]
+		[Fact]
 		public async Task delete_of_all_is_never_allowed() {
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => DeleteStream("$all", null, null));
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => DeleteStream("$all", "user1", "pa$$1"));
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => DeleteStream("$all", "adm", "admpa$$"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => DeleteStream("$all", null, null));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => DeleteStream("$all", "user1", "pa$$1"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => DeleteStream("$all", "adm", "admpa$$"));
 		}
 
 
-		[Test]
+		[Fact]
 		public async Task reading_and_subscribing_is_not_allowed_when_no_credentials_are_passed() {
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadEvent("$all", null, null));
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamForward("$all", null, null));
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamBackward("$all", null, null));
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadMeta("$all", null, null));
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => SubscribeToStream("$all", null, null));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => ReadEvent("$all", null, null));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => ReadStreamForward("$all", null, null));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => ReadStreamBackward("$all", null, null));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => ReadMeta("$all", null, null));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => SubscribeToStream("$all", null, null));
 		}
 
-		[Test]
+		[Fact]
 		public async Task reading_and_subscribing_is_not_allowed_for_usual_user() {
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadEvent("$all", "user1", "pa$$1"));
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamForward("$all", "user1", "pa$$1"));
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamBackward("$all", "user1", "pa$$1"));
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadMeta("$all", "user1", "pa$$1"));
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => SubscribeToStream("$all", "user1", "pa$$1"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => ReadEvent("$all", "user1", "pa$$1"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => ReadStreamForward("$all", "user1", "pa$$1"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => ReadStreamBackward("$all", "user1", "pa$$1"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => ReadMeta("$all", "user1", "pa$$1"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => SubscribeToStream("$all", "user1", "pa$$1"));
 		}
 
-		[Test]
+		[Fact]
 		public async Task reading_and_subscribing_is_allowed_for_admin_user() {
 			await ReadEvent("$all", "adm", "admpa$$");
 			await ReadStreamForward("$all", "adm", "admpa$$");
@@ -58,17 +57,17 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 
-		[Test]
-		public async Task meta_write_is_not_allowed_when_no_credentials_are_passed() {
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteMeta("$all", null, null, null));
+		[Fact]
+		public Task meta_write_is_not_allowed_when_no_credentials_are_passed() {
+			return Assert.ThrowsAsync<AccessDeniedException>(() => WriteMeta("$all", null, null, null));
 		}
 
-		[Test]
-		public async Task meta_write_is_not_allowed_for_usual_user() {
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteMeta("$all", "user1", "pa$$1", null));
+		[Fact]
+		public Task meta_write_is_not_allowed_for_usual_user() {
+			return Assert.ThrowsAsync<AccessDeniedException>(() => WriteMeta("$all", "user1", "pa$$1", null));
 		}
 
-		[Test]
+		[Fact]
 		public async Task meta_write_is_allowed_for_admin_user() {
 			await WriteMeta("$all", "adm", "admpa$$", null);
 		}

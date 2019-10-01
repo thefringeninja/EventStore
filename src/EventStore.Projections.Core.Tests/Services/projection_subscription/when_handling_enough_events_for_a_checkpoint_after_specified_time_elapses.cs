@@ -1,11 +1,10 @@
 ﻿using System;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Tests.Services.TimeService;
 
 namespace EventStore.Projections.Core.Tests.Services.projection_subscription {
-	[TestFixture]
 	public class
 		when_handling_enough_events_for_a_checkpoint_after_specified_time_elapses :
 			TestFixtureWithProjectionSubscription {
@@ -28,13 +27,12 @@ namespace EventStore.Projections.Core.Tests.Services.projection_subscription {
 					"bad-event-type", false, new byte[0], new byte[0]));
 		}
 
-		[Test]
+		[Fact]
 		public void checkpoint_is_suggested() {
-			Assert.AreEqual(1, _checkpointHandler.HandledMessages.Count);
+			Assert.Equal(1, _checkpointHandler.HandledMessages.Count);
 		}
 	}
 
-	[TestFixture]
 	public class
 		when_handling_enough_events_for_a_checkpoint_after_specified_time_elapses_and_not_passing_filter :
 			TestFixtureWithProjectionSubscription {
@@ -66,9 +64,9 @@ namespace EventStore.Projections.Core.Tests.Services.projection_subscription {
 					"bad-event-type", false, new byte[0], new byte[0]));
 		}
 
-		[Test]
+		[Fact]
 		public void checkpoint_is_suggested() {
-			Assert.AreEqual(1, _checkpointHandler.HandledMessages.Count);
+			Assert.Equal(1, _checkpointHandler.HandledMessages.Count);
 		}
 	}
 }

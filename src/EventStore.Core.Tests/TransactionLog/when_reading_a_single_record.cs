@@ -6,10 +6,9 @@ using EventStore.Core.TransactionLog.Checkpoint;
 using EventStore.Core.TransactionLog.Chunks;
 using EventStore.Core.TransactionLog.FileNamingStrategy;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog {
-	[TestFixture]
 	public class when_reading_a_single_record : SpecificationWithDirectoryPerTestFixture {
 		private const int RecordsCount = 8;
 
@@ -59,22 +58,22 @@ namespace EventStore.Core.Tests.TransactionLog {
 			return new TFChunkReader(_db, _db.Config.WriterCheckpoint, from);
 		}
 
-		[Test]
+		[Fact]
 		public void all_records_were_written() {
 			var pos = 0;
 			for (int i = 0; i < RecordsCount; ++i) {
 				if (i % 3 == 0)
 					pos = 0;
 
-				Assert.IsTrue(_results[i].Success);
-				Assert.AreEqual(pos, _results[i].OldPosition);
+				Assert.True(_results[i].Success);
+				Assert.Equal(pos, _results[i].OldPosition);
 
 				pos += _records[i].GetSizeWithLengthPrefixAndSuffix();
-				Assert.AreEqual(pos, _results[i].NewPosition);
+				Assert.Equal(pos, _results[i].NewPosition);
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void all_records_can_be_read() {
 			var reader = GetTFChunkReader(0);
 
@@ -83,8 +82,8 @@ namespace EventStore.Core.Tests.TransactionLog {
 				var rec = _records[i];
 				res = reader.TryReadAt(rec.LogPosition);
 
-				Assert.IsTrue(res.Success);
-				Assert.AreEqual(rec, res.LogRecord);
+				Assert.True(res.Success);
+				Assert.Equal(rec, res.LogRecord);
 			}
 		}
 	}

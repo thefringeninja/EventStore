@@ -4,11 +4,10 @@ using System.Linq;
 using EventStore.Core.Data;
 using EventStore.Core.TransactionLog;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 using ReadStreamResult = EventStore.Core.Services.Storage.ReaderIndex.ReadStreamResult;
 
 namespace EventStore.Core.Tests.Services.Storage.Scavenge {
-	[TestFixture]
 	public class when_scavenging_tfchunk_with_version0_log_records_and_deleted_records : ReadIndexTestScenario {
 		private const string _eventStreamId = "ES";
 		private const string _deletedEventStreamId = "Deleted-ES";
@@ -41,18 +40,18 @@ namespace EventStore.Core.Tests.Services.Storage.Scavenge {
 			Scavenge(completeLast: false, mergeChunks: true);
 		}
 
-		[Test]
+		[Fact]
 		public void should_be_able_to_read_the_all_stream() {
 			var events = ReadIndex.ReadAllEventsForward(new TFPos(0, 0), 100).Records.Select(r => r.Event).ToArray();
-			Assert.AreEqual(5, events.Count());
-			Assert.AreEqual(_event1.EventId, events[0].EventId);
-			Assert.AreEqual(_event2.EventId, events[1].EventId);
-			Assert.AreEqual(_deleted.EventId, events[2].EventId);
-			Assert.AreEqual(_event3.EventId, events[3].EventId);
-			Assert.AreEqual(_event4.EventId, events[4].EventId);
+			Assert.Equal(5, events.Count());
+			Assert.Equal(_event1.EventId, events[0].EventId);
+			Assert.Equal(_event2.EventId, events[1].EventId);
+			Assert.Equal(_deleted.EventId, events[2].EventId);
+			Assert.Equal(_event3.EventId, events[3].EventId);
+			Assert.Equal(_event4.EventId, events[4].EventId);
 		}
 
-		[Test]
+		[Fact]
 		public void should_have_updated_deleted_stream_event_number() {
 			var chunk = Db.Manager.GetChunk(0);
 			var chunkRecords = new List<LogRecord>();
@@ -66,10 +65,10 @@ namespace EventStore.Core.Tests.Services.Storage.Scavenge {
 			                                                              && ((PrepareLogRecord)x).EventStreamId ==
 			                                                              _deletedEventStreamId);
 
-			Assert.AreEqual(EventNumber.DeletedStream - 1, deletedRecord.ExpectedVersion);
+			Assert.Equal(EventNumber.DeletedStream - 1, deletedRecord.ExpectedVersion);
 		}
 
-		[Test]
+		[Fact]
 		public void the_log_records_are_still_version_0() {
 			var chunk = Db.Manager.GetChunk(0);
 			var chunkRecords = new List<LogRecord>();
@@ -79,24 +78,24 @@ namespace EventStore.Core.Tests.Services.Storage.Scavenge {
 				result = chunk.TryReadClosestForward(result.NextPosition);
 			}
 
-			Assert.IsTrue(chunkRecords.All(x => x.Version == LogRecordVersion.LogRecordV0));
-			Assert.AreEqual(10, chunkRecords.Count);
+			Assert.True(chunkRecords.All(x => x.Version == LogRecordVersion.LogRecordV0));
+			Assert.Equal(10, chunkRecords.Count);
 		}
 
-		[Test]
+		[Fact]
 		public void should_be_able_to_read_the_stream() {
 			var events = ReadIndex.ReadStreamEventsForward(_eventStreamId, 0, 10);
-			Assert.AreEqual(4, events.Records.Length);
-			Assert.AreEqual(_event1.EventId, events.Records[0].EventId);
-			Assert.AreEqual(_event2.EventId, events.Records[1].EventId);
-			Assert.AreEqual(_event3.EventId, events.Records[2].EventId);
-			Assert.AreEqual(_event4.EventId, events.Records[3].EventId);
+			Assert.Equal(4, events.Records.Length);
+			Assert.Equal(_event1.EventId, events.Records[0].EventId);
+			Assert.Equal(_event2.EventId, events.Records[1].EventId);
+			Assert.Equal(_event3.EventId, events.Records[2].EventId);
+			Assert.Equal(_event4.EventId, events.Records[3].EventId);
 		}
 
-		[Test]
+		[Fact]
 		public void the_deleted_stream_should_be_deleted() {
 			var lastNumber = ReadIndex.GetStreamLastEventNumber(_deletedEventStreamId);
-			Assert.AreEqual(EventNumber.DeletedStream, lastNumber);
+			Assert.Equal(EventNumber.DeletedStream, lastNumber);
 		}
 	}
 }

@@ -5,14 +5,12 @@ using EventStore.Core.Tests.TransactionLog.Validation;
 using EventStore.Core.TransactionLog.Checkpoint;
 using EventStore.Core.TransactionLog.Chunks;
 using EventStore.Core.TransactionLog.FileNamingStrategy;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog.Truncation {
-	[TestFixture]
 	public class when_truncating_into_the_middle_of_multichunk : SpecificationWithDirectoryPerTestFixture {
 		private TFChunkDbConfig _config;
 
-		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 
@@ -29,48 +27,47 @@ namespace EventStore.Core.Tests.TransactionLog.Truncation {
 			truncator.TruncateDb(_config.TruncateCheckpoint.ReadNonFlushed());
 		}
 
-		[OneTimeTearDown]
 		public override Task TestFixtureTearDown() {
 			using (var db = new TFChunkDb(_config)) {
-				Assert.DoesNotThrow(() => db.Open(verifyHash: false));
+				db.Open(verifyHash: false);
 			}
 
-			Assert.IsTrue(File.Exists(GetFilePathFor("chunk-000000.000002")));
-			Assert.IsTrue(File.Exists(GetFilePathFor("chunk-000003.000000")));
-			Assert.AreEqual(2, Directory.GetFiles(PathName, "*").Length);
+			Assert.True(File.Exists(GetFilePathFor("chunk-000000.000002")));
+			Assert.True(File.Exists(GetFilePathFor("chunk-000003.000000")));
+			Assert.Equal(2, Directory.GetFiles(PathName, "*").Length);
 
 			return base.TestFixtureTearDown();
 		}
 
-		[Test]
+		[Fact]
 		public void writer_checkpoint_should_be_set_to_start_of_new_chunk() {
-			Assert.AreEqual(3000, _config.WriterCheckpoint.Read());
-			Assert.AreEqual(3000, _config.WriterCheckpoint.ReadNonFlushed());
+			Assert.Equal(3000, _config.WriterCheckpoint.Read());
+			Assert.Equal(3000, _config.WriterCheckpoint.ReadNonFlushed());
 		}
 
-		[Test]
+		[Fact]
 		public void chaser_checkpoint_should_be_adjusted_if_less_than_actual_truncate_checkpoint() {
-			Assert.AreEqual(3000, _config.ChaserCheckpoint.Read());
-			Assert.AreEqual(3000, _config.ChaserCheckpoint.ReadNonFlushed());
+			Assert.Equal(3000, _config.ChaserCheckpoint.Read());
+			Assert.Equal(3000, _config.ChaserCheckpoint.ReadNonFlushed());
 		}
 
-		[Test]
+		[Fact]
 		public void epoch_checkpoint_should_be_reset_if_less_than_actual_truncate_checkpoint() {
-			Assert.AreEqual(-1, _config.EpochCheckpoint.Read());
-			Assert.AreEqual(-1, _config.EpochCheckpoint.ReadNonFlushed());
+			Assert.Equal(-1, _config.EpochCheckpoint.Read());
+			Assert.Equal(-1, _config.EpochCheckpoint.ReadNonFlushed());
 		}
 
-		[Test]
+		[Fact]
 		public void truncate_checkpoint_should_be_reset_after_truncation() {
-			Assert.AreEqual(-1, _config.TruncateCheckpoint.Read());
-			Assert.AreEqual(-1, _config.TruncateCheckpoint.ReadNonFlushed());
+			Assert.Equal(-1, _config.TruncateCheckpoint.Read());
+			Assert.Equal(-1, _config.TruncateCheckpoint.ReadNonFlushed());
 		}
 
-		[Test]
+		[Fact]
 		public void all_excessive_chunks_should_be_deleted() {
-			Assert.IsTrue(File.Exists(GetFilePathFor("chunk-000000.000001")));
-			Assert.IsTrue(File.Exists(GetFilePathFor("chunk-000000.000002")));
-			Assert.AreEqual(2, Directory.GetFiles(PathName, "*").Length);
+			Assert.True(File.Exists(GetFilePathFor("chunk-000000.000001")));
+			Assert.True(File.Exists(GetFilePathFor("chunk-000000.000002")));
+			Assert.Equal(2, Directory.GetFiles(PathName, "*").Length);
 		}
 	}
 }

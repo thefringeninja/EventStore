@@ -1,9 +1,8 @@
 ﻿using EventStore.Core.Services.Storage.ReaderIndex;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Storage.CheckCommitStartingAt {
-	[TestFixture]
 	public class
 		when_writing_few_prepares_with_same_expected_version_and_committing_one_of_them : ReadIndexTestScenario {
 		private PrepareLogRecord _prepare0;
@@ -17,24 +16,24 @@ namespace EventStore.Core.Tests.Services.Storage.CheckCommitStartingAt {
 			WriteCommit(_prepare1.LogPosition, "ES", eventNumber: 0);
 		}
 
-		[Test]
+		[Fact]
 		public void other_prepares_cannot_be_committed() {
 			var res = ReadIndex.IndexWriter.CheckCommitStartingAt(_prepare0.LogPosition,
 				WriterCheckpoint.ReadNonFlushed());
 
-			Assert.AreEqual(CommitDecision.WrongExpectedVersion, res.Decision);
-			Assert.AreEqual("ES", res.EventStreamId);
-			Assert.AreEqual(0, res.CurrentVersion);
-			Assert.AreEqual(-1, res.StartEventNumber);
-			Assert.AreEqual(-1, res.EndEventNumber);
+			Assert.Equal(CommitDecision.WrongExpectedVersion, res.Decision);
+			Assert.Equal("ES", res.EventStreamId);
+			Assert.Equal(0, res.CurrentVersion);
+			Assert.Equal(-1, res.StartEventNumber);
+			Assert.Equal(-1, res.EndEventNumber);
 
 			res = ReadIndex.IndexWriter.CheckCommitStartingAt(_prepare2.LogPosition, WriterCheckpoint.ReadNonFlushed());
 
-			Assert.AreEqual(CommitDecision.WrongExpectedVersion, res.Decision);
-			Assert.AreEqual("ES", res.EventStreamId);
-			Assert.AreEqual(0, res.CurrentVersion);
-			Assert.AreEqual(-1, res.StartEventNumber);
-			Assert.AreEqual(-1, res.EndEventNumber);
+			Assert.Equal(CommitDecision.WrongExpectedVersion, res.Decision);
+			Assert.Equal("ES", res.EventStreamId);
+			Assert.Equal(0, res.CurrentVersion);
+			Assert.Equal(-1, res.StartEventNumber);
+			Assert.Equal(-1, res.EndEventNumber);
 		}
 	}
 }

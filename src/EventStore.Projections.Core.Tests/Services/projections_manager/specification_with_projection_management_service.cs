@@ -11,7 +11,7 @@ using EventStore.Core.Util;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Messages.ParallelQueryProcessingMessages;
 using EventStore.Projections.Core.Services.Management;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Services;
 
@@ -40,10 +40,9 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 			return new ManualQueue(_bus, _timeProvider);
 		}
 
-		[SetUp]
-		public void Setup() {
+		public specification_with_projection_management_service() {
 			//TODO: this became an integration test - proper ProjectionCoreService and ProjectionManager testing is required as well
-			_bus.Subscribe(_consumer);
+			_bus.Subscribe(Consumer);
 
 			var queues = GivenCoreQueues();
 			_managerMessageDispatcher = new ProjectionManagerMessageDispatcher(queues);
@@ -92,7 +91,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 			_bus.Subscribe<ProjectionManagementMessage.ReaderReady>(_manager);
 			_bus.Subscribe(
 				CallbackSubscriber.Create<ProjectionManagementMessage.Starting>(
-					starting => _queue.Publish(new ProjectionManagementMessage.ReaderReady())));
+					starting => Queue.Publish(new ProjectionManagementMessage.ReaderReady())));
 			_bus.Subscribe<PartitionProcessingResultBase>(_managerMessageDispatcher);
 			_bus.Subscribe<CoreProjectionManagementControlMessage>(_managerMessageDispatcher);
 			_bus.Subscribe<PartitionProcessingResultOutputBase>(_managerMessageDispatcher);

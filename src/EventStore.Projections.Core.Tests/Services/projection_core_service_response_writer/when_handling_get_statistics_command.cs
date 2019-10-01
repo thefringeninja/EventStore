@@ -2,11 +2,10 @@
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Messages.Persisted.Responses;
 using EventStore.Projections.Core.Services;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projection_core_service_response_writer {
-	[TestFixture]
-	class when_handling_get_statistics_command : specification_with_projection_core_service_response_writer {
+	public class when_handling_get_statistics_command : specification_with_projection_core_service_response_writer {
 		private string _name;
 		private ProjectionMode? _mode;
 		private bool _includeDeleted;
@@ -23,12 +22,12 @@ namespace EventStore.Projections.Core.Tests.Services.projection_core_service_res
 					_includeDeleted));
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_get_statistics_command() {
 			var command = AssertParsedSingleCommand<GetStatisticsCommand>("$get-statistics");
-			Assert.AreEqual(_name, command.Name);
-			Assert.AreEqual(_mode, command.Mode);
-			Assert.AreEqual(_includeDeleted, command.IncludeDeleted);
+			Assert.Equal(_name, command.Name);
+			Assert.Equal(_mode, command.Mode);
+			Assert.Equal(_includeDeleted, command.IncludeDeleted);
 		}
 	}
 }

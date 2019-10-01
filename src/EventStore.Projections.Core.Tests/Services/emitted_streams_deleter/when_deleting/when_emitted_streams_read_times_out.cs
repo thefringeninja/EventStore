@@ -11,11 +11,10 @@ using EventStore.Core.Services.TimerService;
 using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.emitted_streams_deleter.when_deleting {
-	[TestFixture]
 	public class when_emitted_streams_read_times_out : with_emitted_stream_deleter,
 		IHandle<TimerMessage.Schedule> {
 		protected Action _onDeleteStreamCompleted;
@@ -55,14 +54,14 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_streams_deleter.whe
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void should_have_deleted_the_tracked_emitted_stream() {
 			if (!_mre.Wait(10000)) {
-				Assert.Fail("Timed out waiting for event to be deleted");
+				throw new Exception("Timed out waiting for event to be deleted");
 			}
 
-			Assert.AreEqual(_testStreamName, _deleteMessages[0].EventStreamId);
-			Assert.AreEqual(_checkpointName, _deleteMessages[1].EventStreamId);
+			Assert.Equal(_testStreamName, _deleteMessages[0].EventStreamId);
+			Assert.Equal(_checkpointName, _deleteMessages[1].EventStreamId);
 		}
 	}
 }

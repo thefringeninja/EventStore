@@ -1,15 +1,13 @@
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.position_tagging.stream_position_tagger {
-	[TestFixture]
 	public class when_updating_stream_postion_tracker_from_a_tag {
 		private StreamPositionTagger _tagger;
 		private CheckpointTag _tag;
 		private PositionTracker _positionTracker;
 
-		[SetUp]
-		public void When() {
+		public when_updating_stream_postion_tracker_from_a_tag() {
 			// given
 			var tagger = new StreamPositionTagger(0, "stream1");
 			var tracker = new PositionTracker(tagger);
@@ -24,9 +22,9 @@ namespace EventStore.Projections.Core.Tests.Services.position_tagging.stream_pos
 			_positionTracker.UpdateByCheckpointTagInitial(_tag);
 		}
 
-		[Test]
+		[Fact]
 		public void stream_position_is_updated() {
-			Assert.AreEqual(1, _positionTracker.LastTag.Streams["stream1"]);
+			Assert.Equal(1, _positionTracker.LastTag.Streams["stream1"]);
 		}
 	}
 }

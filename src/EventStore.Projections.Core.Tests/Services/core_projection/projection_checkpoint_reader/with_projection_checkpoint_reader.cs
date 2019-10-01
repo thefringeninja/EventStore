@@ -7,7 +7,7 @@ using EventStore.Core.Messaging;
 using EventStore.Core.Tests.Helpers.IODispatcherTests;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.projection_checkpoint_reader {
 	public abstract class with_projection_checkpoint_reader : IHandle<ClientMessage.ReadStreamEventsBackward> {
@@ -19,8 +19,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.projection_
 		protected ProjectionVersion _projectionVersion;
 		protected CoreProjectionCheckpointReader _reader;
 
-		[OneTimeSetUp]
-		public void TestFixtureSetUp() {
+		public with_projection_checkpoint_reader() {
 			_ioDispatcher = new IODispatcher(_bus, new PublishEnvelope(_bus));
 			IODispatcherTestHelpers.SubscribeIODispatcher(_ioDispatcher, _bus);
 			_bus.Subscribe<ClientMessage.ReadStreamEventsBackward>(this);

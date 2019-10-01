@@ -9,12 +9,14 @@ using EventStore.Core.Services.UserManagement;
 using EventStore.Core.Services.TimerService;
 using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Core.Tests.Helpers.IODispatcherTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Helpers.IODispatcherTests.ReadEventsTests {
 	public abstract class with_read_io_dispatcher : IHandle<ClientMessage.ReadStreamEventsForward>,
 		IHandle<ClientMessage.ReadStreamEventsBackward>,
-		IHandle<TimerMessage.Schedule> {
+		IHandle<TimerMessage.Schedule>,
+		IDisposable
+	{
 		protected IODispatcher _ioDispatcher;
 		protected readonly IPrincipal _principal = SystemAccount.Principal;
 		protected readonly InMemoryBus _bus = InMemoryBus.CreateTest();
@@ -29,10 +31,10 @@ namespace EventStore.Core.Tests.Helpers.IODispatcherTests.ReadEventsTests {
 		protected readonly int _maxCount = 1;
 		protected readonly int _fromEventNumber = 10;
 		protected readonly string _eventStreamId = "test";
+		private readonly IQueuedHandler _queue;
 
-		[OneTimeSetUp]
-		public virtual void TestFixtureSetUp() {
-			var _queue = QueuedHandler.CreateQueuedHandler(_bus, "TestQueuedHandler");
+		public with_read_io_dispatcher() {
+			_queue = QueuedHandler.CreateQueuedHandler(_bus, "TestQueuedHandler");
 			_ioDispatcher = new IODispatcher(_bus, new PublishEnvelope(_queue));
 			IODispatcherTestHelpers.SubscribeIODispatcher(_ioDispatcher, _bus);
 			_bus.Subscribe<ClientMessage.ReadStreamEventsForward>(this);
@@ -40,6 +42,8 @@ namespace EventStore.Core.Tests.Helpers.IODispatcherTests.ReadEventsTests {
 			_bus.Subscribe<TimerMessage.Schedule>(this);
 			_queue.Start();
 		}
+
+		public void Dispose() => _queue.Stop();
 
 		public virtual void Handle(ClientMessage.ReadStreamEventsForward message) {
 			_readForward = message;

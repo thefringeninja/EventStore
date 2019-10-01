@@ -7,10 +7,9 @@ using EventStore.Core.Messaging;
 using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager {
-	[TestFixture]
 	public class
 		when_deleting_a_persistent_projection_and_keep_emitted_streams_stream :
 			TestFixtureWithProjectionCoreAndManagementServices {
@@ -41,19 +40,19 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 					ProjectionManagementMessage.RunAs.System, false, false, false);
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void a_projection_deleted_event_is_written() {
-			Assert.AreEqual(
+			Assert.Equal(
 				true,
-				_consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Any(x =>
+				Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Any(x =>
 					x.Events[0].EventType == ProjectionEventTypes.ProjectionDeleted &&
 					Helper.UTF8NoBom.GetString(x.Events[0].Data) == _projectionName));
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void should_not_have_attempted_to_delete_the_emitted_streams_stream() {
-			Assert.IsFalse(
-				_consumer.HandledMessages.OfType<ClientMessage.DeleteStream>()
+			Assert.False(
+				Consumer.HandledMessages.OfType<ClientMessage.DeleteStream>()
 					.Any(x => x.EventStreamId == _projectionEmittedStreamsStream));
 		}
 	}

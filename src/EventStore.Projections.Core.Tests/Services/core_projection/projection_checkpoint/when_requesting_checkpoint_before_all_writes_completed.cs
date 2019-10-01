@@ -4,10 +4,9 @@ using EventStore.Core.Messages;
 using EventStore.Core.Tests.Bus.Helpers;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.projection_checkpoint {
-	[TestFixture]
 	public class when_requesting_checkpoint_before_all_writes_completed : TestFixtureWithExistingEvents {
 		private ProjectionCheckpoint _checkpoint;
 		private TestCheckpointManagerMessageHandler _readyHandler;
@@ -17,8 +16,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.projection_
 			NoOtherStreams();
 		}
 
-		[SetUp]
-		public void setup() {
+		public when_requesting_checkpoint_before_all_writes_completed() {
 			_readyHandler = new TestCheckpointManagerMessageHandler();
 			_checkpoint = new ProjectionCheckpoint(
 				_bus, _ioDispatcher, new ProjectionVersion(1, 0, 0), null, _readyHandler,
@@ -52,21 +50,21 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.projection_
 			_checkpoint.Prepare(CheckpointTag.FromPosition(0, 200, 150));
 		}
 
-		[Test]
+		[Fact]
 		public void not_ready_for_checkpoint_immediately() {
-			Assert.AreEqual(0,
-				_consumer.HandledMessages.OfType<CoreProjectionProcessingMessage.ReadyForCheckpoint>().Count());
+			Assert.Equal(0,
+				Consumer.HandledMessages.OfType<CoreProjectionProcessingMessage.ReadyForCheckpoint>().Count());
 		}
 
-		[Test]
+		[Fact]
 		public void ready_for_checkpoint_after_all_writes_complete() {
-			var writes = _consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().ToArray();
+			var writes = Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().ToArray();
 			writes[0].Envelope.ReplyWith(new ClientMessage.WriteEventsCompleted(writes[0].CorrelationId, 0, 0, -1, -1));
 			writes[1].Envelope.ReplyWith(new ClientMessage.WriteEventsCompleted(writes[1].CorrelationId, 0, 0, -1, -1));
-			writes = _consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().ToArray();
+			writes = Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().ToArray();
 			writes[2].Envelope.ReplyWith(new ClientMessage.WriteEventsCompleted(writes[2].CorrelationId, 0, 0, -1, -1));
 
-			Assert.AreEqual(1,
+			Assert.Equal(1,
 				_readyHandler.HandledMessages.OfType<CoreProjectionProcessingMessage.ReadyForCheckpoint>().Count());
 		}
 	}

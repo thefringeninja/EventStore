@@ -8,12 +8,11 @@ using EventStore.Core.Data;
 using EventStore.Core.Messages;
 using EventStore.Core.Messaging;
 using EventStore.Core.Services.VNode;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Bus {
-	[TestFixture]
 	public class FSMSpeedTest {
-		[Test, Category("LongRunning"), Explicit]
+		[Explicit, Trait("Category", "LongRunning")]
 		public void FSMSpeedTest1() {
 			var fsm = CreateFSM();
 			var msg = new StorageMessage.WriteCommit(Guid.NewGuid(), new NoopEnvelope(), 0);
@@ -30,7 +29,7 @@ namespace EventStore.Core.Tests.Bus {
 			Console.WriteLine("Elapsed: {0} ({1} per item).", sw.Elapsed, sw.ElapsedMilliseconds / (float)iterations);
 		}
 
-		[Test, Category("LongRunning"), Explicit]
+		[Explicit, Trait("Category", "LongRunning")]
 		public void FSMSpeedTest2() {
 			var bus = new InMemoryBus("a", true);
 			bus.Subscribe(new AdHocHandler<StorageMessage.WriteCommit>(x => { }));

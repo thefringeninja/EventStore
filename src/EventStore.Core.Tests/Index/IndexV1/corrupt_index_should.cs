@@ -3,11 +3,11 @@ using System.IO;
 using EventStore.Common.Log;
 using EventStore.Core.Exceptions;
 using EventStore.Core.Index;
-using NUnit.Framework;
+using Xunit;
 using System.Collections.Generic;
 
 namespace EventStore.Core.Tests.Index.IndexV1 {
-	public class corrupt_index_should : SpecificationWithDirectoryPerTestFixture {
+	public class corrupt_index_should : SpecificationWithDirectory {
 		private const int numIndexEntries = 256;
 		private const int depth = 16;
 
@@ -162,14 +162,14 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 			else return stream;
 		}
 
-		[TestCase(PTableVersions.IndexV1, false)]
-		[TestCase(PTableVersions.IndexV1, true)]
-		[TestCase(PTableVersions.IndexV2, false)]
-		[TestCase(PTableVersions.IndexV2, true)]
-		[TestCase(PTableVersions.IndexV3, false)]
-		[TestCase(PTableVersions.IndexV3, true)]
-		[TestCase(PTableVersions.IndexV4, false)]
-		[TestCase(PTableVersions.IndexV4, true)]
+		[InlineData(PTableVersions.IndexV1, false)]
+		[InlineData(PTableVersions.IndexV1, true)]
+		[InlineData(PTableVersions.IndexV2, false)]
+		[InlineData(PTableVersions.IndexV2, true)]
+		[InlineData(PTableVersions.IndexV3, false)]
+		[InlineData(PTableVersions.IndexV3, true)]
+		[InlineData(PTableVersions.IndexV4, false)]
+		[InlineData(PTableVersions.IndexV4, true)]
 		public void throw_exception_if_index_entries_not_multiple_of_index_entry_size(byte version,
 			bool skipIndexVerify) {
 			string ptableFileName = ConstructPTable(version);
@@ -177,14 +177,14 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 			Assert.Throws<CorruptIndexException>(() => PTable.FromFile(ptableFileName, depth, skipIndexVerify));
 		}
 
-		[TestCase(PTableVersions.IndexV1, false)]
-		[TestCase(PTableVersions.IndexV1, true)]
-		[TestCase(PTableVersions.IndexV2, false)]
-		[TestCase(PTableVersions.IndexV2, true)]
-		[TestCase(PTableVersions.IndexV3, false)]
-		[TestCase(PTableVersions.IndexV3, true)]
-		[TestCase(PTableVersions.IndexV4, false)]
-		[TestCase(PTableVersions.IndexV4, true)]
+		[InlineData(PTableVersions.IndexV1, false)]
+		[InlineData(PTableVersions.IndexV1, true)]
+		[InlineData(PTableVersions.IndexV2, false)]
+		[InlineData(PTableVersions.IndexV2, true)]
+		[InlineData(PTableVersions.IndexV3, false)]
+		[InlineData(PTableVersions.IndexV3, true)]
+		[InlineData(PTableVersions.IndexV4, false)]
+		[InlineData(PTableVersions.IndexV4, true)]
 		public void throw_exception_if_midpoints_index_entries_not_in_descending_order(byte version,
 			bool skipIndexVerify) {
 			string ptableFileName = ConstructPTable(version);
@@ -193,8 +193,8 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 		}
 
 
-		[TestCase(PTableVersions.IndexV4, false)]
-		[TestCase(PTableVersions.IndexV4, true)]
+		[InlineData(PTableVersions.IndexV4, false)]
+		[InlineData(PTableVersions.IndexV4, true)]
 		public void throw_exception_if_midpoints_item_indexes_not_in_ascending_order(byte version,
 			bool skipIndexVerify) {
 			string ptableFileName = ConstructPTable(version);
@@ -202,10 +202,10 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 			Assert.Throws<CorruptIndexException>(() => PTable.FromFile(ptableFileName, depth, skipIndexVerify));
 		}
 
-		[TestCase(PTableVersions.IndexV1, true)]
-		[TestCase(PTableVersions.IndexV2, true)]
-		[TestCase(PTableVersions.IndexV3, true)]
-		[TestCase(PTableVersions.IndexV4, true)]
+		[InlineData(PTableVersions.IndexV1, true)]
+		[InlineData(PTableVersions.IndexV2, true)]
+		[InlineData(PTableVersions.IndexV3, true)]
+		[InlineData(PTableVersions.IndexV4, true)]
 		public void throw_exception_if_index_entries_not_descending_during_ptable_get_range(byte version,
 			bool skipIndexVerify) {
 			string ptableFileName = ConstructPTable(version);
@@ -217,10 +217,10 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 			pTable.Dispose();
 		}
 
-		[TestCase(PTableVersions.IndexV1, true)]
-		[TestCase(PTableVersions.IndexV2, true)]
-		[TestCase(PTableVersions.IndexV3, true)]
-		[TestCase(PTableVersions.IndexV4, true)]
+		[InlineData(PTableVersions.IndexV1, true)]
+		[InlineData(PTableVersions.IndexV2, true)]
+		[InlineData(PTableVersions.IndexV3, true)]
+		[InlineData(PTableVersions.IndexV4, true)]
 		public void throw_exception_if_index_entries_not_descending_during_ptable_get_range_2(byte version,
 			bool skipIndexVerify) {
 			string ptableFileName = ConstructPTable(version);
@@ -232,10 +232,10 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 			pTable.Dispose();
 		}
 
-		[TestCase(PTableVersions.IndexV1, true)]
-		[TestCase(PTableVersions.IndexV2, true)]
-		[TestCase(PTableVersions.IndexV3, true)]
-		[TestCase(PTableVersions.IndexV4, true)]
+		[InlineData(PTableVersions.IndexV1, true)]
+		[InlineData(PTableVersions.IndexV2, true)]
+		[InlineData(PTableVersions.IndexV3, true)]
+		[InlineData(PTableVersions.IndexV4, true)]
 		public void throw_exception_if_index_entries_not_descending_during_ptable_get_latest_entry(byte version,
 			bool skipIndexVerify) {
 			string ptableFileName = ConstructPTable(version);
@@ -248,10 +248,10 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 			pTable.Dispose();
 		}
 
-		[TestCase(PTableVersions.IndexV1, true)]
-		[TestCase(PTableVersions.IndexV2, true)]
-		[TestCase(PTableVersions.IndexV3, true)]
-		[TestCase(PTableVersions.IndexV4, true)]
+		[InlineData(PTableVersions.IndexV1, true)]
+		[InlineData(PTableVersions.IndexV2, true)]
+		[InlineData(PTableVersions.IndexV3, true)]
+		[InlineData(PTableVersions.IndexV4, true)]
 		public void throw_exception_if_index_entries_not_descending_during_ptable_get_latest_entry_2(byte version,
 			bool skipIndexVerify) {
 			string ptableFileName = ConstructPTable(version);
@@ -264,10 +264,10 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 			pTable.Dispose();
 		}
 
-		[TestCase(PTableVersions.IndexV1, true)]
-		[TestCase(PTableVersions.IndexV2, true)]
-		[TestCase(PTableVersions.IndexV3, true)]
-		[TestCase(PTableVersions.IndexV4, true)]
+		[InlineData(PTableVersions.IndexV1, true)]
+		[InlineData(PTableVersions.IndexV2, true)]
+		[InlineData(PTableVersions.IndexV3, true)]
+		[InlineData(PTableVersions.IndexV4, true)]
 		public void throw_exception_if_index_entries_not_descending_during_ptable_get_oldest_entry(byte version,
 			bool skipIndexVerify) {
 			string ptableFileName = ConstructPTable(version);
@@ -280,10 +280,10 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 			pTable.Dispose();
 		}
 
-		[TestCase(PTableVersions.IndexV1, true)]
-		[TestCase(PTableVersions.IndexV2, true)]
-		[TestCase(PTableVersions.IndexV3, true)]
-		[TestCase(PTableVersions.IndexV4, true)]
+		[InlineData(PTableVersions.IndexV1, true)]
+		[InlineData(PTableVersions.IndexV2, true)]
+		[InlineData(PTableVersions.IndexV3, true)]
+		[InlineData(PTableVersions.IndexV4, true)]
 		public void throw_exception_if_index_entries_not_descending_during_ptable_get_oldest_entry_2(byte version,
 			bool skipIndexVerify) {
 			string ptableFileName = ConstructPTable(version);
@@ -296,10 +296,10 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 			pTable.Dispose();
 		}
 
-		[TestCase(PTableVersions.IndexV1, true)]
-		[TestCase(PTableVersions.IndexV2, true)]
-		[TestCase(PTableVersions.IndexV3, true)]
-		[TestCase(PTableVersions.IndexV4, true)]
+		[InlineData(PTableVersions.IndexV1, true)]
+		[InlineData(PTableVersions.IndexV2, true)]
+		[InlineData(PTableVersions.IndexV3, true)]
+		[InlineData(PTableVersions.IndexV4, true)]
 		public void throw_exception_if_index_entries_not_descending_during_ptable_get_one_value(byte version,
 			bool skipIndexVerify) {
 			string ptableFileName = ConstructPTable(version);
@@ -312,10 +312,10 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 			pTable.Dispose();
 		}
 
-		[TestCase(PTableVersions.IndexV1, true)]
-		[TestCase(PTableVersions.IndexV2, true)]
-		[TestCase(PTableVersions.IndexV3, true)]
-		[TestCase(PTableVersions.IndexV4, true)]
+		[InlineData(PTableVersions.IndexV1, true)]
+		[InlineData(PTableVersions.IndexV2, true)]
+		[InlineData(PTableVersions.IndexV3, true)]
+		[InlineData(PTableVersions.IndexV4, true)]
 		public void throw_exception_if_index_entries_not_descending_during_ptable_get_one_value_2(byte version,
 			bool skipIndexVerify) {
 			string ptableFileName = ConstructPTable(version);
@@ -328,40 +328,40 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 			pTable.Dispose();
 		}
 
-		[TestCase(PTableVersions.IndexV4, false)]
-		[TestCase(PTableVersions.IndexV4, true)]
+		[InlineData(PTableVersions.IndexV4, false)]
+		[InlineData(PTableVersions.IndexV4, true)]
 		public void throw_exception_on_invalid_ptable_filenumber_in_footer(byte version, bool skipIndexVerify) {
 			string ptableFileName = ConstructPTable(version);
 			CorruptPTableFile(ptableFileName, version, "footerFileType");
 			Assert.Throws<CorruptIndexException>(() => PTable.FromFile(ptableFileName, depth, skipIndexVerify));
 		}
 
-		[TestCase(PTableVersions.IndexV4, false)]
-		[TestCase(PTableVersions.IndexV4, true)]
+		[InlineData(PTableVersions.IndexV4, false)]
+		[InlineData(PTableVersions.IndexV4, true)]
 		public void throw_exception_on_header_footer_version_mismatch(byte version, bool skipIndexVerify) {
 			string ptableFileName = ConstructPTable(version);
 			CorruptPTableFile(ptableFileName, version, "footerVersion");
 			Assert.Throws<CorruptIndexException>(() => PTable.FromFile(ptableFileName, depth, skipIndexVerify));
 		}
 
-		[TestCase(PTableVersions.IndexV4, false)]
-		[TestCase(PTableVersions.IndexV4, true)]
+		[InlineData(PTableVersions.IndexV4, false)]
+		[InlineData(PTableVersions.IndexV4, true)]
 		public void throw_exception_if_negative_index_entries_size(byte version, bool skipIndexVerify) {
 			string ptableFileName = ConstructPTable(version);
 			CorruptPTableFile(ptableFileName, version, "negativeIndexEntriesSize");
 			Assert.Throws<CorruptIndexException>(() => PTable.FromFile(ptableFileName, depth, skipIndexVerify));
 		}
 
-		[TestCase(PTableVersions.IndexV4, false)]
-		[TestCase(PTableVersions.IndexV4, true)]
+		[InlineData(PTableVersions.IndexV4, false)]
+		[InlineData(PTableVersions.IndexV4, true)]
 		public void throw_exception_if_less_than_2_midpoints_cached(byte version, bool skipIndexVerify) {
 			string ptableFileName = ConstructPTable(version);
 			CorruptPTableFile(ptableFileName, version, "lessThan2Midpoints");
 			Assert.Throws<CorruptIndexException>(() => PTable.FromFile(ptableFileName, depth, skipIndexVerify));
 		}
 
-		[TestCase(PTableVersions.IndexV4, false)]
-		[TestCase(PTableVersions.IndexV4, true)]
+		[InlineData(PTableVersions.IndexV4, false)]
+		[InlineData(PTableVersions.IndexV4, true)]
 		public void throw_exception_if_more_midpoints_than_index_entries(byte version, bool skipIndexVerify) {
 			string ptableFileName = ConstructPTable(version);
 			CorruptPTableFile(ptableFileName, version, "moreMidpointsThanIndexEntries");

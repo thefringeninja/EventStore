@@ -11,7 +11,7 @@ using EventStore.Projections.Core.Messages.ParallelQueryProcessingMessages;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Management;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection {
 	public abstract class TestFixtureWithCoreProjection : TestFixtureWithExistingEvents {
@@ -35,8 +35,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 			_projectionName = "projection";
 		}
 
-		[SetUp]
-		public void setup() {
+		public TestFixtureWithCoreProjection() {
 			_subscribeProjectionHandler = new TestHandler<ReaderSubscriptionManagement.Subscribe>();
 			_writeEventHandler = new TestHandler<ClientMessage.WriteEvents>();
 			_bus.Subscribe(_subscribeProjectionHandler);

@@ -1,19 +1,17 @@
 using System;
 using System.IO;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests {
-	public class SpecificationWithFilePerTestFixture {
+	public class SpecificationWithFilePerTestFixture : IDisposable {
 		protected string Filename;
-
-		[OneTimeSetUp]
-		public virtual void TestFixtureSetUp() {
+		
+		public SpecificationWithFilePerTestFixture() {
 			var typeName = GetType().Name.Length > 30 ? GetType().Name.Substring(0, 30) : GetType().Name;
 			Filename = Path.Combine(Path.GetTempPath(), string.Format("{0}-{1}", Guid.NewGuid(), typeName));
 		}
 
-		[OneTimeTearDown]
-		public virtual void TestFixtureTearDown() {
+		public virtual void Dispose() {
 			if (File.Exists(Filename))
 				File.Delete(Filename);
 		}

@@ -1,10 +1,10 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using EventStore.Core.Tests;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.ClientAPI.when_handling_deleted.with_from_category_foreach_projection.
 	recovery {
-	[TestFixture]
 	public class when_running_parallel_query : specification_with_standard_projections_runnning {
 		protected override int GivenWorkerThreadCount() {
 			return 2;
@@ -32,7 +32,7 @@ fromCategory('stream').foreachStream().when({
 			WaitIdle();
 		}
 
-		[Test, Category("Network")]
+		[DebugFact, Trait("Category", "Network")]
 		public async Task produces_correct_result() {
 			await AssertStreamTail("$projections-query-stream-1-result", "Result:{\"a\":2}");
 			await AssertStreamTail("$projections-query-stream-2-result", "Result:{\"a\":3}");

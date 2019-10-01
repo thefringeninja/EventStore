@@ -8,11 +8,10 @@ using EventStore.Core.Messages;
 using EventStore.Core.Services;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Projections.Core.Services.Processing.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_manager.multi_stream {
-	[TestFixture]
 	public class when_prerecording_event_order : TestFixtureWithMultiStreamCheckpointManager {
 		private ResolvedEvent _event1;
 		private ResolvedEvent _event2;
@@ -41,7 +40,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 			_manager.Initialize();
 			_checkpointReader.BeginLoadState();
 			var checkpointLoaded =
-				_consumer.HandledMessages.OfType<CoreProjectionProcessingMessage.CheckpointLoaded>().First();
+				Consumer.HandledMessages.OfType<CoreProjectionProcessingMessage.CheckpointLoaded>().First();
 			_checkpointWriter.StartFrom(checkpointLoaded.CheckpointTag, checkpointLoaded.CheckpointEventNumber);
 			_manager.BeginLoadPrerecordedEvents(checkpointLoaded.CheckpointTag);
 
@@ -55,16 +54,16 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 				committed: noop);
 		}
 
-		[Test]
+		[Fact]
 		public void writes_correct_link_tos() {
 			var writeEvents =
-				_consumer.HandledMessages.OfType<ClientMessage.WriteEvents>()
+				Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>()
 					.SelectMany(v => v.Events)
 					.Where(v => v.EventType == SystemEventTypes.LinkTo)
 					.ToArray();
-			Assert.AreEqual(2, writeEvents.Length);
-			Assert.AreEqual("1@pa", Helper.UTF8NoBom.GetString(writeEvents[0].Data));
-			Assert.AreEqual("1@pb", Helper.UTF8NoBom.GetString(writeEvents[1].Data));
+			Assert.Equal(2, writeEvents.Length);
+			Assert.Equal("1@pa", Helper.UTF8NoBom.GetString(writeEvents[0].Data));
+			Assert.Equal("1@pb", Helper.UTF8NoBom.GetString(writeEvents[1].Data));
 		}
 	}
 }

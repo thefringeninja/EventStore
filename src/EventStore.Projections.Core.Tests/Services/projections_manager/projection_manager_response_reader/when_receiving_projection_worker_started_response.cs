@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager.projection_manager_response_reader {
-	[TestFixture]
 	public class when_receiving_projection_worker_started_response
 		: specification_with_projection_manager_response_reader_started {
 		private Guid _workerId;
@@ -17,12 +16,12 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.project
                     }", null, true);
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_projection_worker_started_message() {
 			var response = HandledMessages.OfType<CoreProjectionStatusMessage.ProjectionWorkerStarted>()
 				.LastOrDefault();
-			Assert.IsNotNull(response);
-			Assert.AreEqual(_workerId, response.WorkerId);
+			Assert.NotNull(response);
+			Assert.Equal(_workerId, response.WorkerId);
 		}
 	}
 }

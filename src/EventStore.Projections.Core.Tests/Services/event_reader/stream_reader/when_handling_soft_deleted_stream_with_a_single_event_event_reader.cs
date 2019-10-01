@@ -5,13 +5,12 @@ using EventStore.Core.Services.TimerService;
 using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 using System.Linq;
 using EventStore.Projections.Core.Messages;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader {
-	[TestFixture]
 	public class when_handling_soft_deleted_stream_with_a_single_event_event_reader : TestFixtureWithExistingEvents {
 		private StreamEventReader _streamEventReader;
 		private Guid _distibutionPointCorrelationId;
@@ -31,9 +30,8 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader 
 			_secondEventId = Guid.NewGuid();
 		}
 
-		[SetUp]
-		public new void When() {
-			var correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Last()
+		public when_handling_soft_deleted_stream_with_a_single_event_event_reader() {
+			var correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Last()
 				.CorrelationId;
 			_streamEventReader.Handle(
 				new ClientMessage.ReadStreamEventsForwardCompleted(
@@ -55,18 +53,16 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader 
 					}, null, false, "", 12, 11, true, 200));
 		}
 
-		[Test]
+		[Fact]
 		public void should_handle_the_2_events() {
-			Assert.AreEqual(2,
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
+			Assert.Equal(2,
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
 
-			var first = _consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().First();
-			Assert.AreEqual(first.Data.EventId, _firstEventId,
-				String.Format("Expected the first event to be {0}, but got {1}", _firstEventId, first.Data.EventId));
-			var second = _consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Skip(1)
+			var first = Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().First();
+			Assert.Equal(first.Data.EventId, _firstEventId);
+			var second = Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Skip(1)
 				.First();
-			Assert.AreEqual(second.Data.EventId, _secondEventId,
-				String.Format("Expected the second event to be {0}, but got {1}", _secondEventId, second.Data.EventId));
+			Assert.Equal(second.Data.EventId, _secondEventId);
 		}
 	}
 }

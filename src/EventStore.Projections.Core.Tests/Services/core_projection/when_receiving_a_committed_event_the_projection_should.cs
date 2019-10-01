@@ -4,11 +4,10 @@ using EventStore.Core.Data;
 using EventStore.Core.Util;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Projections.Core.Services.Processing.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection {
-	[TestFixture]
 	public class when_receiving_a_committed_event_the_projection_should : TestFixtureWithCoreProjectionStarted {
 		private Guid _eventId;
 
@@ -28,27 +27,27 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 						"handle_this_type", false, "data", "metadata"), _subscriptionId, 0));
 		}
 
-		[Test]
+		[Fact]
 		public void update_state_snapshot_at_correct_position() {
-			Assert.AreEqual(1, _writeEventHandler.HandledMessages.OfEventType("Result").Count);
+			Assert.Equal(1, _writeEventHandler.HandledMessages.OfEventType("Result").Count);
 
 			var metedata =
 				_writeEventHandler.HandledMessages.OfEventType("Result")[0].Metadata
 					.ParseCheckpointTagVersionExtraJson(default(ProjectionVersion));
 
-			Assert.AreEqual(120, metedata.Tag.CommitPosition);
-			Assert.AreEqual(110, metedata.Tag.PreparePosition);
+			Assert.Equal(120, metedata.Tag.CommitPosition);
+			Assert.Equal(110, metedata.Tag.PreparePosition);
 		}
 
-		[Test]
+		[Fact]
 		public void pass_event_to_state_handler() {
-			Assert.AreEqual(1, _stateHandler._eventsProcessed);
-			Assert.AreEqual("/event_category/1", _stateHandler._lastProcessedStreamId);
-			Assert.AreEqual("handle_this_type", _stateHandler._lastProcessedEventType);
-			Assert.AreEqual(_eventId, _stateHandler._lastProcessedEventId);
+			Assert.Equal(1, _stateHandler._eventsProcessed);
+			Assert.Equal("/event_category/1", _stateHandler._lastProcessedStreamId);
+			Assert.Equal("handle_this_type", _stateHandler._lastProcessedEventType);
+			Assert.Equal(_eventId, _stateHandler._lastProcessedEventId);
 			//TODO: support sequence numbers here
-			Assert.AreEqual("metadata", _stateHandler._lastProcessedMetadata);
-			Assert.AreEqual("data", _stateHandler._lastProcessedData);
+			Assert.Equal("metadata", _stateHandler._lastProcessedMetadata);
+			Assert.Equal("data", _stateHandler._lastProcessedData);
 		}
 	}
 }

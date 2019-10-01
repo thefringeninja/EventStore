@@ -8,7 +8,7 @@ using EventStore.Core.Services.Transport.Http.Authentication;
 using EventStore.Core.Services.Transport.Http.Messages;
 using EventStore.Core.Tests.Authentication;
 using EventStore.Transport.Http.EntityManagement;
-using NUnit.Framework;
+using Xunit;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -36,32 +36,29 @@ namespace EventStore.Core.Tests.Services.Transport.Http.Authentication {
 					() => { });
 		}
 
-		[TestFixture]
 		public class
 			when_handling_a_request_without_an_authorization_header : TestFixtureWithBasicHttpAuthenticationProvider {
 			private bool _authenticateResult;
 
-			[SetUp]
-			public void SetUp() {
+			public when_handling_a_request_without_an_authorization_header() {
 				SetUpProvider();
 				_entity = CreateTestEntityWithoutCredentials();
 				_authenticateResult = _provider.Authenticate(new IncomingHttpRequestMessage(null, _entity, _bus));
 			}
 
-			[Test]
+			[Fact]
 			public void returns_false() {
-				Assert.IsFalse(_authenticateResult);
+				Assert.False(_authenticateResult);
 			}
 
-			[Test]
+			[Fact]
 			public void does_not_publish_authenticated_http_request_message() {
 				var authenticatedHttpRequestMessages =
-					_consumer.HandledMessages.OfType<AuthenticatedHttpRequestMessage>().ToList();
-				Assert.AreEqual(0, authenticatedHttpRequestMessages.Count);
+					Consumer.HandledMessages.OfType<AuthenticatedHttpRequestMessage>().ToList();
+				Assert.Equal(0, authenticatedHttpRequestMessages.Count);
 			}
 		}
 
-		[TestFixture]
 		public class
 			when_handling_a_request_with_correct_user_name_and_password :
 				TestFixtureWithBasicHttpAuthenticationProvider {
@@ -72,30 +69,28 @@ namespace EventStore.Core.Tests.Services.Transport.Http.Authentication {
 				ExistingEvent("$user-user", "$user", null, "{LoginName:'user', Salt:'drowssap',Hash:'password'}");
 			}
 
-			[SetUp]
-			public void SetUp() {
+			public when_handling_a_request_with_correct_user_name_and_password() {
 				SetUpProvider();
 				_entity = CreateTestEntityWithCredentials("user", "password");
 				_authenticateResult = _provider.Authenticate(new IncomingHttpRequestMessage(null, _entity, _bus));
 			}
 
-			[Test]
+			[Fact]
 			public void returns_true() {
-				Assert.IsTrue(_authenticateResult);
+				Assert.True(_authenticateResult);
 			}
 
-			[Test]
+			[Fact]
 			public void publishes_authenticated_http_request_message_with_user() {
 				var authenticatedHttpRequestMessages =
-					_consumer.HandledMessages.OfType<AuthenticatedHttpRequestMessage>().ToList();
-				Assert.AreEqual(1, authenticatedHttpRequestMessages.Count);
+					Consumer.HandledMessages.OfType<AuthenticatedHttpRequestMessage>().ToList();
+				Assert.Equal(1, authenticatedHttpRequestMessages.Count);
 				var message = authenticatedHttpRequestMessages[0];
-				Assert.AreEqual("user", message.Entity.User.Identity.Name);
-				Assert.IsTrue(message.Entity.User.Identity.IsAuthenticated);
+				Assert.Equal("user", message.Entity.User.Identity.Name);
+				Assert.True(message.Entity.User.Identity.IsAuthenticated);
 			}
 		}
 
-		[TestFixture]
 		public class
 			when_handling_multiple_requests_with_the_same_correct_user_name_and_password :
 				TestFixtureWithBasicHttpAuthenticationProvider {
@@ -106,42 +101,40 @@ namespace EventStore.Core.Tests.Services.Transport.Http.Authentication {
 				ExistingEvent("$user-user", "$user", null, "{LoginName:'user', Salt:'drowssap',Hash:'password'}");
 			}
 
-			[SetUp]
-			public void SetUp() {
+			public when_handling_multiple_requests_with_the_same_correct_user_name_and_password() {
 				SetUpProvider();
 
 				var entity = CreateTestEntityWithCredentials("user", "password");
 				_provider.Authenticate(new IncomingHttpRequestMessage(null, entity, _bus));
 
-				_consumer.HandledMessages.Clear();
+				Consumer.HandledMessages.Clear();
 
 				_entity = CreateTestEntityWithCredentials("user", "password");
 				_authenticateResult = _provider.Authenticate(new IncomingHttpRequestMessage(null, _entity, _bus));
 			}
 
-			[Test]
+			[Fact]
 			public void returns_true() {
-				Assert.IsTrue(_authenticateResult);
+				Assert.True(_authenticateResult);
 			}
 
-			[Test]
+			[Fact]
 			public void publishes_authenticated_http_request_message_with_user() {
 				var authenticatedHttpRequestMessages =
-					_consumer.HandledMessages.OfType<AuthenticatedHttpRequestMessage>().ToList();
-				Assert.AreEqual(1, authenticatedHttpRequestMessages.Count);
+					Consumer.HandledMessages.OfType<AuthenticatedHttpRequestMessage>().ToList();
+				Assert.Equal(1, authenticatedHttpRequestMessages.Count);
 				var message = authenticatedHttpRequestMessages[0];
-				Assert.AreEqual("user", message.Entity.User.Identity.Name);
-				Assert.IsTrue(message.Entity.User.Identity.IsAuthenticated);
+				Assert.Equal("user", message.Entity.User.Identity.Name);
+				Assert.True(message.Entity.User.Identity.IsAuthenticated);
 			}
 
-			[Test]
+			[Fact]
 			public void does_not_publish_any_read_requests() {
-				Assert.AreEqual(0, _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsBackward>().Count());
-				Assert.AreEqual(0, _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Count());
+				Assert.Equal(0, Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsBackward>().Count());
+				Assert.Equal(0, Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Count());
 			}
 		}
 
-		[TestFixture]
 		public class
 			when_handling_a_request_with_incorrect_user_name_and_password :
 				TestFixtureWithBasicHttpAuthenticationProvider {
@@ -152,23 +145,22 @@ namespace EventStore.Core.Tests.Services.Transport.Http.Authentication {
 				ExistingEvent("$user-user", "$user", null, "{LoginName:'user', Salt:'drowssap',Hash:'password'}");
 			}
 
-			[SetUp]
-			public void SetUp() {
+			public when_handling_a_request_with_incorrect_user_name_and_password() {
 				SetUpProvider();
 				_entity = CreateTestEntityWithCredentials("user", "password1");
 				_authenticateResult = _provider.Authenticate(new IncomingHttpRequestMessage(null, _entity, _bus));
 			}
 
-			[Test]
+			[Fact]
 			public void returns_true() {
-				Assert.IsTrue(_authenticateResult);
+				Assert.True(_authenticateResult);
 			}
 
-			[Test]
+			[Fact]
 			public void publishes_authenticated_http_request_message_with_user() {
 				var authenticatedHttpRequestMessages =
-					_consumer.HandledMessages.OfType<AuthenticatedHttpRequestMessage>().ToList();
-				Assert.AreEqual(0, authenticatedHttpRequestMessages.Count);
+					Consumer.HandledMessages.OfType<AuthenticatedHttpRequestMessage>().ToList();
+				Assert.Equal(0, authenticatedHttpRequestMessages.Count);
 			}
 		}
 

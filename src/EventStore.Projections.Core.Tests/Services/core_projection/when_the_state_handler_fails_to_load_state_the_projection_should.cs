@@ -2,12 +2,11 @@ using System;
 using System.Linq;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Projections.Core.Services.Processing.ResolvedEvent;
 using EventStore.Projections.Core.Services;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection {
-	[TestFixture]
 	public class
 		when_the_state_handler_fails_to_load_state_the_projection_should : TestFixtureWithCoreProjectionStarted {
 		protected override void Given() {
@@ -34,14 +33,14 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 						"metadata"), _subscriptionId, 0));
 		}
 
-		[Test]
+		[Fact]
 		public void should_publish_faulted_message() {
-			Assert.AreEqual(1, _consumer.HandledMessages.OfType<CoreProjectionStatusMessage.Faulted>().Count());
+			Assert.Equal(1, Consumer.HandledMessages.OfType<CoreProjectionStatusMessage.Faulted>().Count());
 		}
 
-		[Test]
+		[Fact]
 		public void not_emit_a_state_updated_event() {
-			Assert.AreEqual(0, _writeEventHandler.HandledMessages.OfEventType("StateUpdate").Count());
+			Assert.Equal(0, _writeEventHandler.HandledMessages.OfEventType("StateUpdate").Count());
 		}
 	}
 }

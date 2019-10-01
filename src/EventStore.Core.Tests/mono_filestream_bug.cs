@@ -1,23 +1,21 @@
 using System;
 using System.IO;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests {
-	[TestFixture]
 	public class mono_uritemplate_bug {
-		[Test]
+		[Fact]
 		public void when_validating_a_uri_template_with_url_encoded_chars() {
 			var template = new UriTemplate("/streams/$all?embed={embed}");
 			var uri = new Uri("http://127.0.0.1/streams/$all");
 			var baseaddress = new Uri("http://127.0.0.1");
-			Assert.IsTrue(template.Match(baseaddress, uri) != null);
+			Assert.True(template.Match(baseaddress, uri) != null);
 		}
 	}
 
 
-	[TestFixture, Ignore("Known bug in Mono, waiting for fix.")]
 	public class mono_filestream_bug {
-		[Test]
+		[Fact(Skip="Known bug in Mono, waiting for fix.")]
 		public void show_time() {
 			const int pos = 1;
 			const int bufferSize = 128;
@@ -31,19 +29,19 @@ namespace EventStore.Core.Tests {
 			using (var file = new FileStream(filename, FileMode.Open, FileAccess.ReadWrite, FileShare.Read,
 				bufferSize, FileOptions.SequentialScan)) {
 				file.Read(new byte[pos], 0, pos); // THIS READ IS CRITICAL, WITHOUT IT EVERYTHING WORKS
-				Assert.AreEqual(pos,
+				Assert.Equal(pos,
 					file.Position); // !!! here it says position is correct, but writes at different position !!!
 				// file.Position = pos; // !!! this fixes test !!!
 				file.Write(bytes, 0, bytes.Length);
 
-				//Assert.AreEqual(pos + bytes.Length, file.Length); -- fails
+				//Assert.Equal(pos + bytes.Length, file.Length); -- fails
 			}
 
 			using (var filestream = File.Open(filename, FileMode.Open, FileAccess.Read)) {
 				var bb = new byte[bytes.Length];
 				filestream.Position = pos;
 				filestream.Read(bb, 0, bb.Length);
-				Assert.AreEqual(bytes, bb);
+				Assert.Equal(bytes, bb);
 			}
 		}
 	}

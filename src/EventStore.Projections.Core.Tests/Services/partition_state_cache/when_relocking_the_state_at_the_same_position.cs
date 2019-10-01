@@ -1,15 +1,13 @@
 using System;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.partition_state_cache {
-	[TestFixture]
 	public class when_relocking_the_state_at_the_same_position {
 		private PartitionStateCache _cache;
 		private CheckpointTag _cachedAtCheckpointTag;
 
-		[SetUp]
-		public void given() {
+		public when_relocking_the_state_at_the_same_position() {
 			//given
 			_cache = new PartitionStateCache();
 			_cachedAtCheckpointTag = CheckpointTag.FromPosition(0, 1000, 900);
@@ -17,17 +15,17 @@ namespace EventStore.Projections.Core.Tests.Services.partition_state_cache {
 				_cachedAtCheckpointTag);
 		}
 
-		[Test]
+		[Fact]
 		public void thorws_invalid_operation_exception_if_not_allowed() {
 			Assert.Throws<InvalidOperationException>(() => {
 				_cache.TryGetAndLockPartitionState("partition", CheckpointTag.FromPosition(0, 1000, 900));
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void the_state_can_be_retrieved() {
 			var state = _cache.TryGetPartitionState("partition");
-			Assert.AreEqual("data", state.State);
+			Assert.Equal("data", state.State);
 		}
 	}
 }

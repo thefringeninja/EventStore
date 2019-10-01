@@ -1,9 +1,8 @@
 using System.IO;
 using EventStore.Core.Data;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog.Truncation {
-	[TestFixture]
 	public class when_truncating_into_the_middle_of_scavenged_chunk_with_index_in_memory : TruncateScenario {
 		private string chunk0;
 		private string chunk1;
@@ -38,40 +37,40 @@ namespace EventStore.Core.Tests.TransactionLog.Truncation {
 			chunk2 = GetChunkName(2);
 			chunk3 = GetChunkName(3);
 
-			Assert.IsTrue(File.Exists(chunk0));
-			Assert.IsTrue(File.Exists(chunk1));
-			Assert.IsTrue(File.Exists(chunk2));
-			Assert.IsTrue(File.Exists(chunk3));
+			Assert.True(File.Exists(chunk0));
+			Assert.True(File.Exists(chunk1));
+			Assert.True(File.Exists(chunk2));
+			Assert.True(File.Exists(chunk3));
 		}
 
 		private string GetChunkName(int chunkNumber) {
 			var allVersions = Db.Config.FileNamingStrategy.GetAllVersionsFor(chunkNumber);
-			Assert.AreEqual(1, allVersions.Length);
+			Assert.Equal(1, allVersions.Length);
 			return allVersions[0];
 		}
 
-		[Test]
+		[Fact]
 		public void checksums_should_be_equal_to_beginning_of_intersected_scavenged_chunk() {
-			Assert.AreEqual(chunkEdge.TransactionPosition, WriterCheckpoint.Read());
-			Assert.AreEqual(chunkEdge.TransactionPosition, ChaserCheckpoint.Read());
+			Assert.Equal(chunkEdge.TransactionPosition, WriterCheckpoint.Read());
+			Assert.Equal(chunkEdge.TransactionPosition, ChaserCheckpoint.Read());
 		}
 
-		[Test]
+		[Fact]
 		public void truncated_chunks_should_be_deleted() {
-			Assert.IsFalse(File.Exists(chunk2));
-			Assert.IsFalse(File.Exists(chunk3));
+			Assert.False(File.Exists(chunk2));
+			Assert.False(File.Exists(chunk3));
 		}
 
-		[Test]
+		[Fact]
 		public void intersecting_chunk_should_be_deleted() {
-			Assert.IsFalse(File.Exists(chunk1));
+			Assert.False(File.Exists(chunk1));
 		}
 
-		[Test]
+		[Fact]
 		public void untouched_chunk_should_survive() {
 			var chunks = Db.Config.FileNamingStrategy.GetAllPresentFiles();
-			Assert.AreEqual(1, chunks.Length);
-			Assert.AreEqual(chunk0, GetChunkName(0));
+			Assert.Equal(1, chunks.Length);
+			Assert.Equal(chunk0, GetChunkName(0));
 		}
 	}
 }

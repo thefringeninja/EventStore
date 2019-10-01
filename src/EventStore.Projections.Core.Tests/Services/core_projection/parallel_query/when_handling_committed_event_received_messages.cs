@@ -3,12 +3,11 @@ using System.Linq;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Projections.Core.Services.Processing.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.parallel_query {
-	[TestFixture]
-	class when_handling_committed_event_received_messages : specification_with_parallel_query {
+	public class when_handling_committed_event_received_messages : specification_with_parallel_query {
 		protected override void Given() {
 			base.Given();
 			_eventId = Guid.NewGuid();
@@ -30,10 +29,10 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.parallel_qu
 						"test-stream2", ""), tag1, _subscriptionId, 1));
 		}
 
-		[Test]
+		[Fact]
 		public void spools_slave_stream_processing() {
 			var spooled = HandledMessages.OfType<ReaderSubscriptionManagement.SpoolStreamReading>().ToArray();
-			Assert.AreEqual(2, spooled.Length);
+			Assert.Equal(2, spooled.Length);
 		}
 	}
 }

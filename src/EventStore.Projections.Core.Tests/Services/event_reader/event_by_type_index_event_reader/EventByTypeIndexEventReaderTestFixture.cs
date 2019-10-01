@@ -9,7 +9,7 @@ using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 public class EventByTypeIndexEventReaderTestFixture : TestFixtureWithExistingEvents {
 	public Guid CompleteForwardStreamRead(string streamId, Guid corrId, params ResolvedEvent[] events) {
 		var lastEventNumber = events != null && events.Length > 0 ? events.Last().Event.EventNumber : 0;
-		var message = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+		var message = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 			.Last(x => x.EventStreamId == streamId);
 		message.Envelope.ReplyWith(
 			new ClientMessage.ReadStreamEventsForwardCompleted(
@@ -19,7 +19,7 @@ public class EventByTypeIndexEventReaderTestFixture : TestFixtureWithExistingEve
 	}
 
 	public Guid CompleteForwardAllStreamRead(Guid corrId, params ResolvedEvent[] events) {
-		var message = _consumer.HandledMessages.OfType<ClientMessage.ReadAllEventsForward>().Last();
+		var message = Consumer.HandledMessages.OfType<ClientMessage.ReadAllEventsForward>().Last();
 		message.Envelope.ReplyWith(
 			new ClientMessage.ReadAllEventsForwardCompleted(
 				corrId == Guid.Empty ? message.CorrelationId : corrId, ReadAllResult.Success,
@@ -29,7 +29,7 @@ public class EventByTypeIndexEventReaderTestFixture : TestFixtureWithExistingEve
 
 	public Guid CompleteBackwardStreamRead(string streamId, Guid corrId, params ResolvedEvent[] events) {
 		var lastEventNumber = events != null && events.Length > 0 ? events.Last().Event.EventNumber : 0;
-		var message = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsBackward>()
+		var message = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsBackward>()
 			.Last(x => x.EventStreamId == streamId);
 		message.Envelope.ReplyWith(
 			new ClientMessage.ReadStreamEventsBackwardCompleted(
@@ -39,7 +39,7 @@ public class EventByTypeIndexEventReaderTestFixture : TestFixtureWithExistingEve
 	}
 
 	public Guid TimeoutRead(string streamId, Guid corrId) {
-		var timeoutMessage = _consumer.HandledMessages
+		var timeoutMessage = Consumer.HandledMessages
 			.OfType<EventStore.Core.Services.TimerService.TimerMessage.Schedule>().Last(x =>
 				((ProjectionManagementMessage.Internal.ReadTimeout)x.ReplyMessage).StreamId == streamId);
 		var correlationId = ((ProjectionManagementMessage.Internal.ReadTimeout)timeoutMessage.ReplyMessage)

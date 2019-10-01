@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using EventStore.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.emitted_streams_deleter.when_deleting {
-	[TestFixture]
 	public class when_delete_stream_succeeds : with_emitted_stream_deleter {
 		protected Action _onDeleteStreamCompleted;
 		private readonly ManualResetEventSlim _mre = new ManualResetEventSlim();
@@ -24,14 +23,14 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_streams_deleter.whe
 				message.CorrelationId, OperationResult.Success, String.Empty));
 		}
 
-		[Test]
+		[Fact]
 		public void should_have_deleted_the_tracked_emitted_stream() {
 			if (!_mre.Wait(10000)) {
-				Assert.Fail("Timed out waiting for event to be deleted");
+				throw new Exception("Timed out waiting for event to be deleted");
 			}
 
-			Assert.AreEqual(_testStreamName, _deleteMessages[0].EventStreamId);
-			Assert.AreEqual(_checkpointName, _deleteMessages[1].EventStreamId);
+			Assert.Equal(_testStreamName, _deleteMessages[0].EventStreamId);
+			Assert.Equal(_checkpointName, _deleteMessages[1].EventStreamId);
 		}
 	}
 }

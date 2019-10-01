@@ -1,9 +1,8 @@
 ﻿using System.IO;
 using EventStore.Core.Data;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog.Truncation {
-	[TestFixture]
 	public class when_truncating_few_chunks_with_index_on_disk : TruncateScenario {
 		private EventRecord _event4;
 
@@ -32,39 +31,39 @@ namespace EventStore.Core.Tests.TransactionLog.Truncation {
 			_chunk2 = GetChunkName(2);
 			_chunk3 = GetChunkName(3);
 
-			Assert.IsTrue(File.Exists(_chunk0));
-			Assert.IsTrue(File.Exists(_chunk1));
-			Assert.IsTrue(File.Exists(_chunk2));
-			Assert.IsTrue(File.Exists(_chunk3));
+			Assert.True(File.Exists(_chunk0));
+			Assert.True(File.Exists(_chunk1));
+			Assert.True(File.Exists(_chunk2));
+			Assert.True(File.Exists(_chunk3));
 		}
 
 		private string GetChunkName(int chunkNumber) {
 			var allVersions = Db.Config.FileNamingStrategy.GetAllVersionsFor(chunkNumber);
-			Assert.AreEqual(1, allVersions.Length);
+			Assert.Equal(1, allVersions.Length);
 			return allVersions[0];
 		}
 
-		[Test]
+		[Fact]
 		public void checksums_should_be_equal_to_ack_checksum() {
-			Assert.AreEqual(TruncateCheckpoint, WriterCheckpoint.Read());
-			Assert.AreEqual(TruncateCheckpoint, ChaserCheckpoint.Read());
+			Assert.Equal(TruncateCheckpoint, WriterCheckpoint.Read());
+			Assert.Equal(TruncateCheckpoint, ChaserCheckpoint.Read());
 		}
 
-		[Test]
+		[Fact]
 		public void truncated_chunks_should_be_deleted() {
-			Assert.IsFalse(File.Exists(_chunk2));
-			Assert.IsFalse(File.Exists(_chunk3));
+			Assert.False(File.Exists(_chunk2));
+			Assert.False(File.Exists(_chunk3));
 		}
 
-		[Test]
+		[Fact]
 		public void not_truncated_chunks_should_survive() {
 			var chunks = Db.Config.FileNamingStrategy.GetAllPresentFiles();
-			Assert.AreEqual(2, chunks.Length);
-			Assert.AreEqual(_chunk0, GetChunkName(0));
-			Assert.AreEqual(_chunk1, GetChunkName(1));
+			Assert.Equal(2, chunks.Length);
+			Assert.Equal(_chunk0, GetChunkName(0));
+			Assert.Equal(_chunk1, GetChunkName(1));
 		}
 
-		[Test]
+		[Fact]
 		public void read_all_returns_only_survived_events() {
 		}
 	}

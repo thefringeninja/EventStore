@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.Transport.Http;
 using Newtonsoft.Json.Linq;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Services;
 using HttpStatusCode = System.Net.HttpStatusCode;
 using EventStore.Core.Tests.Http.Users.users;
@@ -54,7 +54,7 @@ namespace EventStore.Core.Tests.Http.Streams {
 			}
 		}
 
-		[TestFixture, Category("LongRunning")]
+		[Trait("Category", "LongRunning")]
 		public class
 			should_create_stream_with_no_stream_exp_ver_on_first_write_if_does_not_exist :
 				ExpectedVersionSpecification {
@@ -68,18 +68,18 @@ namespace EventStore.Core.Tests.Http.Streams {
 				_read = await GetTestStream();
 			}
 
-			[Test]
+			[Fact]
 			public void should_return_created_status_code() {
-				Assert.AreEqual(HttpStatusCode.Created, _response.StatusCode);
+				Assert.Equal(HttpStatusCode.Created, _response.StatusCode);
 			}
 
-			[Test]
+			[Fact]
 			public void should_create_stream() {
-				Assert.AreEqual(1, _read.Count);
+				Assert.Equal(1, _read.Count);
 			}
 		}
 
-		[TestFixture, Category("LongRunning")]
+		[Trait("Category", "LongRunning")]
 		public class should_fail_appending_with_no_stream_exp_ver_to_existing_stream : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
 			private List<JToken> _read;
@@ -93,25 +93,25 @@ namespace EventStore.Core.Tests.Http.Streams {
 				_read = await GetTestStream();
 			}
 
-			[Test]
+			[Fact]
 			public void should_return_bad_request_with_wrong_expected_version() {
-				Assert.AreEqual(HttpStatusCode.BadRequest, _response.StatusCode);
-				// Assert.AreEqual(WrongExpectedVersionDesc, _response.StatusDescription);
+				Assert.Equal(HttpStatusCode.BadRequest, _response.StatusCode);
+				// Assert.Equal(WrongExpectedVersionDesc, _response.StatusDescription);
 			}
 
-			[Test]
+			[Fact]
 			public void should_return_the_current_version_in_the_header() {
-				Assert.AreEqual("0",
+				Assert.Equal("0",
 					new StringValues(_response.Headers.GetValues(SystemHeaders.CurrentVersion).ToArray()));
 			}
 
-			[Test]
+			[Fact]
 			public void should_not_append_to_stream() {
-				Assert.AreEqual(1, _read.Count);
+				Assert.Equal(1, _read.Count);
 			}
 		}
 
-		[TestFixture, Category("LongRunning")]
+		[Trait("Category", "LongRunning")]
 		public class
 			should_create_stream_with_any_exp_ver_on_first_write_if_does_not_exist : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
@@ -124,18 +124,18 @@ namespace EventStore.Core.Tests.Http.Streams {
 				_read = await GetTestStream();
 			}
 
-			[Test]
+			[Fact]
 			public void should_return_created_status_code() {
-				Assert.AreEqual(HttpStatusCode.Created, _response.StatusCode);
+				Assert.Equal(HttpStatusCode.Created, _response.StatusCode);
 			}
 
-			[Test]
+			[Fact]
 			public void should_create_stream() {
-				Assert.AreEqual(1, _read.Count);
+				Assert.Equal(1, _read.Count);
 			}
 		}
 
-		[TestFixture, Category("LongRunning")]
+		[Trait("Category", "LongRunning")]
 		public class should_append_with_any_exp_ver_to_existing_stream : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
 			private List<JToken> _read;
@@ -151,18 +151,18 @@ namespace EventStore.Core.Tests.Http.Streams {
 				_read = await GetTestStream();
 			}
 
-			[Test]
+			[Fact]
 			public void should_return_created_status_code() {
-				Assert.AreEqual(HttpStatusCode.Created, _response.StatusCode);
+				Assert.Equal(HttpStatusCode.Created, _response.StatusCode);
 			}
 
-			[Test]
+			[Fact]
 			public void should_append_event_to_stream() {
-				Assert.AreEqual(4, _read.Count);
+				Assert.Equal(4, _read.Count);
 			}
 		}
 
-		[TestFixture, Category("LongRunning")]
+		[Trait("Category", "LongRunning")]
 		public class should_fail_appending_with_any_exp_ver_to_deleted_stream : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
 
@@ -174,14 +174,14 @@ namespace EventStore.Core.Tests.Http.Streams {
 				_response = await PostEventWithExpectedVersion(ExpectedVersion.Any);
 			}
 
-			[Test]
+			[Fact]
 			public void should_return_gone_status_code() {
-				Assert.AreEqual(HttpStatusCode.Gone, _response.StatusCode);
-				// Assert.AreEqual(DeletedStreamDesc, _response.StatusDescription);
+				Assert.Equal(HttpStatusCode.Gone, _response.StatusCode);
+				// Assert.Equal(DeletedStreamDesc, _response.StatusDescription);
 			}
 		}
 
-		[TestFixture, Category("LongRunning")]
+		[Trait("Category", "LongRunning")]
 		public class should_append_with_correct_exp_ver_to_existing_stream : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
 			private List<JToken> _read;
@@ -197,18 +197,18 @@ namespace EventStore.Core.Tests.Http.Streams {
 				_read = await GetTestStream();
 			}
 
-			[Test]
+			[Fact]
 			public void should_return_created_status_code() {
-				Assert.AreEqual(HttpStatusCode.Created, _response.StatusCode);
+				Assert.Equal(HttpStatusCode.Created, _response.StatusCode);
 			}
 
-			[Test]
+			[Fact]
 			public void should_append_event_to_stream() {
-				Assert.AreEqual(4, _read.Count);
+				Assert.Equal(4, _read.Count);
 			}
 		}
 
-		[TestFixture, Category("LongRunning")]
+		[Trait("Category", "LongRunning")]
 		public class should_fail_appending_with_wrong_exp_ver_to_existing_stream : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
 			private List<JToken> _read;
@@ -224,25 +224,25 @@ namespace EventStore.Core.Tests.Http.Streams {
 				_read = await GetTestStream();
 			}
 
-			[Test]
+			[Fact]
 			public void should_return_bad_request_with_wrong_expected_version() {
-				Assert.AreEqual(HttpStatusCode.BadRequest, _response.StatusCode);
-				//// Assert.AreEqual(WrongExpectedVersionDesc, _response.StatusDescription);
+				Assert.Equal(HttpStatusCode.BadRequest, _response.StatusCode);
+				//// Assert.Equal(WrongExpectedVersionDesc, _response.StatusDescription);
 			}
 
-			[Test]
+			[Fact]
 			public void should_return_the_current_version_in_the_header() {
-				Assert.AreEqual("1",
+				Assert.Equal("1",
 					new StringValues(_response.Headers.GetValues(SystemHeaders.CurrentVersion).ToArray()));
 			}
 
-			[Test]
+			[Fact]
 			public void should_not_append_event() {
-				Assert.AreEqual(2, _read.Count);
+				Assert.Equal(2, _read.Count);
 			}
 		}
 
-		[TestFixture, Category("LongRunning")]
+		[Trait("Category", "LongRunning")]
 		public class should_fail_appending_with_wrong_exp_ver_to_new_stream : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
 			private List<JToken> _read;
@@ -254,25 +254,25 @@ namespace EventStore.Core.Tests.Http.Streams {
 				_read = await GetTestStream();
 			}
 
-			[Test]
+			[Fact]
 			public void should_return_bad_request_with_wrong_expected_version() {
-				Assert.AreEqual(HttpStatusCode.BadRequest, _response.StatusCode);
-				// Assert.AreEqual(WrongExpectedVersionDesc, _response.StatusDescription);
+				Assert.Equal(HttpStatusCode.BadRequest, _response.StatusCode);
+				// Assert.Equal(WrongExpectedVersionDesc, _response.StatusDescription);
 			}
 
-			[Test]
+			[Fact]
 			public void should_return_the_current_version_in_the_header() {
-				Assert.AreEqual("-1",
+				Assert.Equal("-1",
 					new StringValues(_response.Headers.GetValues(SystemHeaders.CurrentVersion).ToArray()));
 			}
 
-			[Test]
+			[Fact]
 			public void should_not_append_to_stream() {
-				Assert.AreEqual(0, _read.Count);
+				Assert.Equal(0, _read.Count);
 			}
 		}
 
-		[TestFixture, Category("LongRunning")]
+		[Trait("Category", "LongRunning")]
 		public class should_fail_appending_with_correct_exp_ver_to_deleted_stream : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
 
@@ -284,14 +284,14 @@ namespace EventStore.Core.Tests.Http.Streams {
 				_response = await PostEventWithExpectedVersion(ExpectedVersion.NoStream);
 			}
 
-			[Test]
+			[Fact]
 			public void should_return_gone_status_code() {
-				Assert.AreEqual(HttpStatusCode.Gone, _response.StatusCode);
-				// Assert.AreEqual(DeletedStreamDesc, _response.StatusDescription);
+				Assert.Equal(HttpStatusCode.Gone, _response.StatusCode);
+				// Assert.Equal(DeletedStreamDesc, _response.StatusDescription);
 			}
 		}
 
-		[TestFixture, Category("LongRunning")]
+		[Trait("Category", "LongRunning")]
 		public class should_fail_appending_with_invalid_exp_ver_to_deleted_stream : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
 
@@ -303,14 +303,14 @@ namespace EventStore.Core.Tests.Http.Streams {
 				_response = await PostEventWithExpectedVersion(5);
 			}
 
-			[Test]
+			[Fact]
 			public void should_return_gone_status_code() {
-				Assert.AreEqual(HttpStatusCode.Gone, _response.StatusCode);
-				// Assert.AreEqual(DeletedStreamDesc, _response.StatusDescription);
+				Assert.Equal(HttpStatusCode.Gone, _response.StatusCode);
+				// Assert.Equal(DeletedStreamDesc, _response.StatusDescription);
 			}
 		}
 
-		[TestFixture, Category("LongRunning")]
+		[Trait("Category", "LongRunning")]
 		public class should_append_with_stream_exists_exp_ver_to_existing_stream : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
 			private List<JToken> _read;
@@ -324,18 +324,18 @@ namespace EventStore.Core.Tests.Http.Streams {
 				_read = await GetTestStream();
 			}
 
-			[Test]
+			[Fact]
 			public void should_return_created_status_code() {
-				Assert.AreEqual(HttpStatusCode.Created, _response.StatusCode);
+				Assert.Equal(HttpStatusCode.Created, _response.StatusCode);
 			}
 
-			[Test]
+			[Fact]
 			public void should_append_event_to_stream() {
-				Assert.AreEqual(2, _read.Count);
+				Assert.Equal(2, _read.Count);
 			}
 		}
 
-		[TestFixture, Category("LongRunning")]
+		[Trait("Category", "LongRunning")]
 		public class
 			should_append_with_stream_exists_exp_ver_to_stream_with_multiple_events : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
@@ -352,18 +352,18 @@ namespace EventStore.Core.Tests.Http.Streams {
 				_read = await GetTestStream();
 			}
 
-			[Test]
+			[Fact]
 			public void should_return_created_status_code() {
-				Assert.AreEqual(HttpStatusCode.Created, _response.StatusCode);
+				Assert.Equal(HttpStatusCode.Created, _response.StatusCode);
 			}
 
-			[Test]
+			[Fact]
 			public void should_append_event_to_stream() {
-				Assert.AreEqual(3, _read.Count);
+				Assert.Equal(3, _read.Count);
 			}
 		}
 
-		[TestFixture, Category("LongRunning")]
+		[Trait("Category", "LongRunning")]
 		public class should_append_with_stream_exists_exp_ver_if_metadata_stream_exists : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
 			private List<JToken> _read;
@@ -385,18 +385,18 @@ namespace EventStore.Core.Tests.Http.Streams {
 				_read = await GetTestStream();
 			}
 
-			[Test]
+			[Fact]
 			public void should_return_created_status_code() {
-				Assert.AreEqual(HttpStatusCode.Created, _response.StatusCode);
+				Assert.Equal(HttpStatusCode.Created, _response.StatusCode);
 			}
 
-			[Test]
+			[Fact]
 			public void should_append_event_to_stream() {
-				Assert.AreEqual(1, _read.Count);
+				Assert.Equal(1, _read.Count);
 			}
 		}
 
-		[TestFixture, Category("LongRunning")]
+		[Trait("Category", "LongRunning")]
 		public class
 			should_fail_appending_with_stream_exists_exp_ver_and_stream_does_not_exist : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
@@ -409,26 +409,26 @@ namespace EventStore.Core.Tests.Http.Streams {
 				_read = await GetTestStream();
 			}
 
-			[Test]
+			[Fact]
 			public void should_return_bad_request_with_wrong_expected_version() {
-				Assert.AreEqual(HttpStatusCode.BadRequest, _response.StatusCode);
-				// Assert.AreEqual(WrongExpectedVersionDesc, _response.StatusDescription);
+				Assert.Equal(HttpStatusCode.BadRequest, _response.StatusCode);
+				// Assert.Equal(WrongExpectedVersionDesc, _response.StatusDescription);
 			}
 
 
-			[Test]
+			[Fact]
 			public void should_return_the_current_version_in_the_header() {
-				Assert.AreEqual("-1",
+				Assert.Equal("-1",
 					new StringValues(_response.Headers.GetValues(SystemHeaders.CurrentVersion).ToArray()));
 			}
 
-			[Test]
+			[Fact]
 			public void should_not_append_event_to_stream() {
-				Assert.AreEqual(0, _read.Count);
+				Assert.Equal(0, _read.Count);
 			}
 		}
 
-		[TestFixture, Category("LongRunning")]
+		[Trait("Category", "LongRunning")]
 		public class
 			should_fail_appending_with_stream_exists_exp_ver_to_hard_deleted_stream : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
@@ -441,14 +441,14 @@ namespace EventStore.Core.Tests.Http.Streams {
 				_response = await PostEventWithExpectedVersion(ExpectedVersion.StreamExists);
 			}
 
-			[Test]
+			[Fact]
 			public void should_return_gone_status_code() {
-				Assert.AreEqual(HttpStatusCode.Gone, _response.StatusCode);
-				// Assert.AreEqual(DeletedStreamDesc, _response.StatusDescription);
+				Assert.Equal(HttpStatusCode.Gone, _response.StatusCode);
+				// Assert.Equal(DeletedStreamDesc, _response.StatusDescription);
 			}
 		}
 
-		[TestFixture, Category("LongRunning")]
+		[Trait("Category", "LongRunning")]
 		public class
 			should_fail_appending_with_stream_exists_exp_ver_to_soft_deleted_stream : ExpectedVersionSpecification {
 			private HttpResponseMessage _response;
@@ -461,10 +461,10 @@ namespace EventStore.Core.Tests.Http.Streams {
 				_response = await PostEventWithExpectedVersion(ExpectedVersion.StreamExists);
 			}
 
-			[Test]
+			[Fact]
 			public void should_return_gone_status_code() {
-				Assert.AreEqual(HttpStatusCode.Gone, _response.StatusCode);
-				// Assert.AreEqual(DeletedStreamDesc, _response.StatusDescription);
+				Assert.Equal(HttpStatusCode.Gone, _response.StatusCode);
+				// Assert.Equal(DeletedStreamDesc, _response.StatusDescription);
 			}
 		}
 	}

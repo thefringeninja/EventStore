@@ -4,10 +4,9 @@ using EventStore.Core.Messages;
 using EventStore.Core.Tests.Bus.Helpers;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.projection_checkpoint {
-	[TestFixture]
 	public class when_requesting_checkpoint_after_all_writes_completed : TestFixtureWithExistingEvents {
 		private ProjectionCheckpoint _checkpoint;
 		private TestCheckpointManagerMessageHandler _readyHandler;
@@ -17,8 +16,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.projection_
 			NoOtherStreams();
 		}
 
-		[SetUp]
-		public void setup() {
+		public when_requesting_checkpoint_after_all_writes_completed() {
 			_readyHandler = new TestCheckpointManagerMessageHandler();
 			_checkpoint = new ProjectionCheckpoint(
 				_bus, _ioDispatcher, new ProjectionVersion(1, 0, 0), null, _readyHandler,
@@ -42,16 +40,16 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.projection_
 							"stream1", Guid.NewGuid(), "type", true, "data", null,
 							CheckpointTag.FromPosition(0, 140, 130), null))
 				});
-			var writes = _consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().ToArray();
+			var writes = Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().ToArray();
 			writes[0].Envelope.ReplyWith(new ClientMessage.WriteEventsCompleted(writes[0].CorrelationId, 0, 0, -1, -1));
 			writes[1].Envelope.ReplyWith(new ClientMessage.WriteEventsCompleted(writes[1].CorrelationId, 0, 0, -1, -1));
 			_checkpoint.Prepare(CheckpointTag.FromPosition(0, 200, 150));
 			//TODO: test whether checkpoint does not allow positions before last emitted event caused by position
 		}
 
-		[Test]
+		[Fact]
 		public void ready_for_checkpoint_immediately() {
-			Assert.AreEqual(
+			Assert.Equal(
 				1, _readyHandler.HandledMessages.OfType<CoreProjectionProcessingMessage.ReadyForCheckpoint>().Count());
 		}
 	}

@@ -1,32 +1,31 @@
 using EventStore.ClientAPI.Common;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.event_filter {
-	[TestFixture]
 	public class include_everything_event_filter : TestFixtureWithEventFilter {
 		protected override void Given() {
 			_builder.FromAll();
 			_builder.AllEvents();
 		}
 
-		[Test]
+		[Fact]
 		public void can_be_built() {
-			Assert.IsNotNull(_ef);
+			Assert.NotNull(_ef);
 		}
 
-		[Test]
+		[Fact]
 		public void does_not_pass_categorized_event() {
-			Assert.IsFalse(_ef.Passes(true, "$ce-stream", "event"));
+			Assert.False(_ef.Passes(true, "$ce-stream", "event"));
 		}
 
-		[Test]
+		[Fact]
 		public void passes_uncategorized_event() {
-			Assert.IsTrue(_ef.Passes(false, "stream", "event"));
+			Assert.True(_ef.Passes(false, "stream", "event"));
 		}
 
-		[Test]
+		[Fact]
 		public void passes_stream_deleted_event() {
-			Assert.IsTrue(_ef.Passes(false, "stream", SystemEventTypes.StreamMetadata, isStreamDeletedEvent: true));
+			Assert.True(_ef.Passes(false, "stream", SystemEventTypes.StreamMetadata, isStreamDeletedEvent: true));
 		}
 	}
 }

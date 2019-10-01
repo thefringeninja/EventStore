@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Core.Services;
 using System;
@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace EventStore.Core.Tests.Services.Storage.DeletingStream {
-	[TestFixture]
 	public class when_hard_deleting_stream_with_log_version_0 : ReadIndexTestScenario {
 		protected override void WriteTestScenario() {
 			WriteSingleEvent("ES1", 0, new string('.', 3000));
@@ -33,7 +32,7 @@ namespace EventStore.Core.Tests.Services.Storage.DeletingStream {
 			Writer.Write(commit, out pos);
 		}
 
-		[Test]
+		[Fact]
 		public void should_change_expected_version_to_deleted_event_number_when_reading() {
 			var chunk = Db.Manager.GetChunk(0);
 			var chunkRecords = new List<LogRecord>();
@@ -43,9 +42,9 @@ namespace EventStore.Core.Tests.Services.Storage.DeletingStream {
 				result = chunk.TryReadClosestForward(result.NextPosition);
 			}
 
-			Assert.That(chunkRecords.Any(x =>
+			Assert.True(chunkRecords.Any(x =>
 				x.RecordType == LogRecordType.Commit && ((CommitLogRecord)x).FirstEventNumber == long.MaxValue));
-			Assert.That(chunkRecords.Any(x =>
+			Assert.True(chunkRecords.Any(x =>
 				x.RecordType == LogRecordType.Prepare && ((PrepareLogRecord)x).ExpectedVersion == long.MaxValue - 1));
 		}
 	}

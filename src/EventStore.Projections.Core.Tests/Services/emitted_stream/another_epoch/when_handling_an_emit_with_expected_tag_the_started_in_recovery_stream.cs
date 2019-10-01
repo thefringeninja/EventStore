@@ -4,10 +4,9 @@ using EventStore.Core.Messages;
 using EventStore.Core.Services;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.emitted_stream.another_epoch {
-	[TestFixture]
 	public class
 		when_handling_an_emit_with_expected_tag_the_started_in_recovery_stream : TestFixtureWithExistingEvents {
 		private EmittedStream _stream;
@@ -19,8 +18,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream.another_epoc
 			NoOtherStreams();
 		}
 
-		[SetUp]
-		public void setup() {
+		public when_handling_an_emit_with_expected_tag_the_started_in_recovery_stream() {
 			_readyHandler = new TestCheckpointManagerMessageHandler();
 			_stream = new EmittedStream(
 				"test_stream",
@@ -32,7 +30,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream.another_epoc
 			_stream.Start();
 		}
 
-		[Test]
+		[Fact]
 		public void requests_restart_if_different_smaller_tag() {
 			_stream.EmitEvents(
 				new[] {
@@ -40,15 +38,15 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream.another_epoc
 						"test_stream", Guid.NewGuid(), "type", true, "data", null,
 						CheckpointTag.FromPosition(0, 100, 50), CheckpointTag.FromPosition(0, 40, 20))
 				});
-			Assert.AreEqual(
+			Assert.Equal(
 				0,
-				_consumer.HandledMessages.OfType<ClientMessage.WriteEvents>()
+				Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>()
 					.ExceptOfEventType(SystemEventTypes.StreamMetadata)
 					.Count());
-			Assert.AreEqual(1, _readyHandler.HandledRestartRequestedMessages.Count());
+			Assert.Equal(1, _readyHandler.HandledRestartRequestedMessages.Count());
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_all_events_even_with_smaller_tag() {
 			_stream.EmitEvents(
 				new[] {
@@ -56,14 +54,14 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream.another_epoc
 						"test_stream", Guid.NewGuid(), "type", true, "data", null,
 						CheckpointTag.FromPosition(0, 40, 20), null)
 				});
-			Assert.AreEqual(
+			Assert.Equal(
 				1,
-				_consumer.HandledMessages.OfType<ClientMessage.WriteEvents>()
+				Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>()
 					.ExceptOfEventType(SystemEventTypes.StreamMetadata)
 					.Count());
 		}
 
-		[Test]
+		[Fact]
 		public void requests_restart_even_if_expected_tag_is_the_same_but_epoch() {
 			_stream.EmitEvents(
 				new[] {
@@ -71,15 +69,15 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream.another_epoc
 						"test_stream", Guid.NewGuid(), "type", true, "data", null,
 						CheckpointTag.FromPosition(0, 200, 150), CheckpointTag.FromPosition(0, 100, 50))
 				});
-			Assert.AreEqual(
+			Assert.Equal(
 				0,
-				_consumer.HandledMessages.OfType<ClientMessage.WriteEvents>()
+				Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>()
 					.ExceptOfEventType(SystemEventTypes.StreamMetadata)
 					.Count());
-			Assert.AreEqual(1, _readyHandler.HandledRestartRequestedMessages.Count());
+			Assert.Equal(1, _readyHandler.HandledRestartRequestedMessages.Count());
 		}
 
-		[Test]
+		[Fact]
 		public void metadata_include_correct_version() {
 			_stream.EmitEvents(
 				new[] {
@@ -88,11 +86,11 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream.another_epoc
 						CheckpointTag.FromPosition(0, 200, 150), null)
 				});
 			var metaData =
-				_consumer.HandledMessages.OfType<ClientMessage.WriteEvents>()
+				Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>()
 					.OfEventType("type")
 					.Single()
 					.Metadata.ParseCheckpointTagVersionExtraJson(default(ProjectionVersion));
-			Assert.AreEqual(new ProjectionVersion(1, 2, 2), metaData.Version);
+			Assert.Equal(new ProjectionVersion(1, 2, 2), metaData.Version);
 		}
 	}
 }

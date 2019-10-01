@@ -3,10 +3,9 @@ using EventStore.Common.Utils;
 using EventStore.Core.Data;
 using EventStore.Core.Services;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Storage.DeletingStream {
-	[TestFixture]
 	public class when_reading_deleted_stream_written_with_old_log_record_version : ReadIndexTestScenario {
 		private Guid _id1;
 		private Guid _id2;
@@ -48,14 +47,14 @@ namespace EventStore.Core.Tests.Services.Storage.DeletingStream {
 					LogRecordVersion.LogRecordV0), out pos8);
 		}
 
-		[Test]
+		[Fact]
 		public void the_stream_is_deleted() {
-			Assert.That(ReadIndex.IsStreamDeleted("ES"));
+			Assert.True(ReadIndex.IsStreamDeleted("ES"));
 		}
 
-		[Test]
+		[Fact]
 		public void the_last_event_number_is_deleted_stream() {
-			Assert.AreEqual(EventNumber.DeletedStream, ReadIndex.GetStreamLastEventNumber("ES"));
+			Assert.Equal(EventNumber.DeletedStream, ReadIndex.GetStreamLastEventNumber("ES"));
 		}
 	}
 }

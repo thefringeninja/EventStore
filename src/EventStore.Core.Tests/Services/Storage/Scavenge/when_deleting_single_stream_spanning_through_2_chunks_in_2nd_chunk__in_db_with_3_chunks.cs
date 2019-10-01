@@ -2,10 +2,9 @@
 using System.Linq;
 using EventStore.Core.Data;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Storage.Scavenge {
-	[TestFixture]
 	public class
 		when_deleting_single_stream_spanning_through_2_chunks_in_2nd_chunk_in_db_with_3_chunks : ReadIndexTestScenario {
 		private EventRecord _event7;
@@ -31,59 +30,59 @@ namespace EventStore.Core.Tests.Services.Storage.Scavenge {
 			Scavenge(completeLast: false, mergeChunks: false);
 		}
 
-		[Test]
+		[Fact]
 		public void read_all_forward_does_not_return_scavenged_deleted_stream_events_and_return_remaining() {
 			var events = ReadIndex.ReadAllEventsForward(new TFPos(0, 0), 100).Records.Select(r => r.Event).ToArray();
-			Assert.AreEqual(2, events.Length);
-			Assert.AreEqual(_event7, events[0]);
-			Assert.AreEqual(_event9, events[1]);
+			Assert.Equal(2, events.Length);
+			Assert.Equal(_event7, events[0]);
+			Assert.Equal(_event9, events[1]);
 		}
 
-		[Test]
+		[Fact]
 		public void read_all_backward_does_not_return_scavenged_deleted_stream_events_and_return_remaining() {
 			var events = ReadIndex.ReadAllEventsBackward(GetBackwardReadPos(), 100).Records.Select(r => r.Event)
 				.ToArray();
-			Assert.AreEqual(2, events.Length);
-			Assert.AreEqual(_event7, events[1]);
-			Assert.AreEqual(_event9, events[0]);
+			Assert.Equal(2, events.Length);
+			Assert.Equal(_event7, events[1]);
+			Assert.Equal(_event9, events[0]);
 		}
 
-		[Test]
+		[Fact]
 		public void read_all_backward_from_beginning_of_second_chunk_returns_no_records() {
 			var pos = new TFPos(10000, 10000);
 			var events = ReadIndex.ReadAllEventsBackward(pos, 100).Records.Select(r => r.Event).ToArray();
-			Assert.AreEqual(0, events.Length);
+			Assert.Equal(0, events.Length);
 		}
 
-		[Test]
+		[Fact]
 		public void
 			read_all_forward_from_beginning_of_2nd_chunk_with_max_2_record_returns_delete_record_and_record_from_3rd_chunk() {
 			var events = ReadIndex.ReadAllEventsForward(new TFPos(10000, 10000), 2).Records.Select(r => r.Event)
 				.ToArray();
-			Assert.AreEqual(2, events.Length);
-			Assert.AreEqual(_event7, events[0]);
-			Assert.AreEqual(_event9, events[1]);
+			Assert.Equal(2, events.Length);
+			Assert.Equal(_event7, events[0]);
+			Assert.Equal(_event9, events[1]);
 		}
 
-		[Test]
+		[Fact]
 		public void read_all_forward_with_max_5_records_returns_2_records_from_2nd_chunk() {
 			var events = ReadIndex.ReadAllEventsForward(new TFPos(0, 0), 5).Records.Select(r => r.Event).ToArray();
-			Assert.AreEqual(2, events.Length);
-			Assert.AreEqual(_event7, events[0]);
-			Assert.AreEqual(_event9, events[1]);
+			Assert.Equal(2, events.Length);
+			Assert.Equal(_event7, events[0]);
+			Assert.Equal(_event9, events[1]);
 		}
 
-		[Test]
+		[Fact]
 		public void is_stream_deleted_returns_true() {
-			Assert.That(ReadIndex.IsStreamDeleted("ES"));
+			Assert.True(ReadIndex.IsStreamDeleted("ES"));
 		}
 
-		[Test]
+		[Fact]
 		public void last_event_number_returns_stream_deleted() {
-			Assert.AreEqual(EventNumber.DeletedStream, ReadIndex.GetStreamLastEventNumber("ES"));
+			Assert.Equal(EventNumber.DeletedStream, ReadIndex.GetStreamLastEventNumber("ES"));
 		}
 
-		[Test]
+		[Fact]
 		public void last_physical_record_from_scavenged_stream_should_remain() {
 			// cannot use readIndex here as it doesn't return deleteTombstone
 
@@ -91,14 +90,14 @@ namespace EventStore.Core.Tests.Services.Storage.Scavenge {
 			var chunkPos = (int)(_event7prepare.LogPosition % Db.Config.ChunkSize);
 			var res = chunk.TryReadAt(chunkPos);
 
-			Assert.IsTrue(res.Success);
-			Assert.AreEqual(_event7prepare, res.LogRecord);
+			Assert.True(res.Success);
+			Assert.Equal(_event7prepare, res.LogRecord);
 
 			chunkPos = (int)(_event7commit.LogPosition % Db.Config.ChunkSize);
 			res = chunk.TryReadAt(chunkPos);
 
-			Assert.IsTrue(res.Success);
-			Assert.AreEqual(_event7commit, res.LogRecord);
+			Assert.True(res.Success);
+			Assert.Equal(_event7commit, res.LogRecord);
 		}
 	}
 }

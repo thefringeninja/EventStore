@@ -3,12 +3,11 @@ using System.Linq;
 using EventStore.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Projections.Core.Messages;
 using EventStore.Core.Services.TimerService;
 
 namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
-	[TestFixture]
 	public class when_a_read_times_out_in_recovery : TestFixtureWithExistingEvents {
 		private const string TestStreamId = "test_stream";
 		private EmittedStream _stream;
@@ -20,8 +19,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 			ReadsBackwardQueuesUp();
 		}
 
-		[SetUp]
-		public void setup() {
+		public when_a_read_times_out_in_recovery() {
 			_readyHandler = new TestCheckpointManagerMessageHandler();
 			_stream = new EmittedStream(
 				TestStreamId,
@@ -40,25 +38,25 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 		}
 
 
-		[Test]
+		[Fact]
 		public void should_have_attempted_a_single_read() {
-			var readEventsBackwards = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsBackward>()
+			var readEventsBackwards = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsBackward>()
 				.Where(x => x.EventStreamId == TestStreamId);
-			Assert.AreEqual(1, readEventsBackwards.Count());
+			Assert.Equal(1, readEventsBackwards.Count());
 		}
 
-		[Test]
+		[Fact]
 		public void should_retry_the_read_upon_the_read_timing_out() {
 			var scheduledReadTimeout =
-				_consumer.HandledMessages.OfType<TimerMessage.Schedule>().First().ReplyMessage as
+				Consumer.HandledMessages.OfType<TimerMessage.Schedule>().First().ReplyMessage as
 					ProjectionManagementMessage.Internal.ReadTimeout;
 			_stream.Handle(scheduledReadTimeout);
 
-			var readEventsBackwards = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsBackward>()
+			var readEventsBackwards = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsBackward>()
 				.Where(x => x.EventStreamId == TestStreamId);
 
-			Assert.AreEqual(2, readEventsBackwards.Count());
-			Assert.AreEqual(readEventsBackwards.First().FromEventNumber, readEventsBackwards.Last().FromEventNumber);
+			Assert.Equal(2, readEventsBackwards.Count());
+			Assert.Equal(readEventsBackwards.First().FromEventNumber, readEventsBackwards.Last().FromEventNumber);
 		}
 	}
 }

@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using EventStore.Common.Log;
 using EventStore.Core.Index;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Index.IndexV4 {
-	public class ptable_midpoint_calculations_should : SpecificationWithDirectory {
+	public class ptable_midpoint_calculations_should {
 		protected byte _ptableVersion = PTableVersions.IndexV4;
 		private static readonly ILogger Log = LogManager.GetLoggerFor<ptable_midpoint_calculations_should>();
 
@@ -37,7 +37,7 @@ namespace EventStore.Core.Tests.Index.IndexV4 {
 							numIndexEntries, depth, requiredMidpoints.Count, calculatedMidpoints.Count);
 					}
 
-					Assert.AreEqual(requiredMidpoints.Count, calculatedMidpoints.Count);
+					Assert.Equal(requiredMidpoints.Count, calculatedMidpoints.Count);
 
 					for (var i = 0; i < requiredMidpoints.Count; i++) {
 						if (requiredMidpoints[i] != calculatedMidpoints[i]) {
@@ -46,18 +46,18 @@ namespace EventStore.Core.Tests.Index.IndexV4 {
 								i, numIndexEntries, depth, requiredMidpoints[i], calculatedMidpoints[i]);
 						}
 
-						Assert.AreEqual(requiredMidpoints[i], calculatedMidpoints[i]);
+						Assert.Equal(requiredMidpoints[i], calculatedMidpoints[i]);
 					}
 				}
 			}
 		}
 
-		[Test, Category("LongRunning"), Ignore("Long running")]
+		[Fact (Skip = "Long running"), Trait("Category", "LongRunning")]
 		public void construct_same_midpoint_indexes_for_any_combination_of_params_large() {
 			construct_same_midpoint_indexes_for_any_combination_of_params(4096);
 		}
 
-		[Test]
+		[Fact]
 		public void construct_same_midpoint_indexes_for_any_combination_of_params_small() {
 			construct_same_midpoint_indexes_for_any_combination_of_params(200);
 		}

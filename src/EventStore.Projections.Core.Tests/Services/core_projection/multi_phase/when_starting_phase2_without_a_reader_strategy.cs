@@ -1,11 +1,10 @@
 ﻿using System.Linq;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.multi_phase {
-	[TestFixture]
-	class when_starting_phase2_without_a_reader_strategy : specification_with_multi_phase_core_projection {
+    public class when_starting_phase2_without_a_reader_strategy : specification_with_multi_phase_core_projection {
 		protected override FakeReaderStrategy GivenPhase2ReaderStrategy() {
 			return null;
 		}
@@ -15,19 +14,19 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.multi_phase
 			Phase1.Complete();
 		}
 
-		[Test]
+		[Fact]
 		public void initializes_phase2() {
-			Assert.IsTrue(Phase2.InitializedFromCheckpoint);
+			Assert.True(Phase2.InitializedFromCheckpoint);
 		}
 
-		[Test]
+		[Fact]
 		public void updates_checkpoint_tag_phase() {
-			Assert.AreEqual(1, _coreProjection.LastProcessedEventPosition.Phase);
+			Assert.Equal(1, _coreProjection.LastProcessedEventPosition.Phase);
 		}
 
-		[Test]
+		[Fact]
 		public void starts_processing_phase2() {
-			Assert.AreEqual(1, Phase2.ProcessEventInvoked);
+			Assert.Equal(1, Phase2.ProcessEventInvoked);
 		}
 	}
 }

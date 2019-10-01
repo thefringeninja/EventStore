@@ -1,11 +1,10 @@
 using System;
 using System.Linq;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Projections.Core.Services;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection {
-	[TestFixture]
 	public class when_loading_an_existing_projection : TestFixtureWithCoreProjectionLoaded {
 		private string _testProjectionState = @"{""test"":1}";
 
@@ -28,19 +27,19 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 		}
 
 
-		[Test]
+		[Fact]
 		public void should_not_subscribe() {
-			Assert.AreEqual(0, _subscribeProjectionHandler.HandledMessages.Count);
+			Assert.Equal(0, _subscribeProjectionHandler.HandledMessages.Count);
 		}
 
-		[Test]
+		[Fact]
 		public void should_not_load_projection_state_handler() {
-			Assert.AreEqual(0, _stateHandler._loadCalled);
+			Assert.Equal(0, _stateHandler._loadCalled);
 		}
 
-		[Test]
+		[Fact]
 		public void should_not_publish_started_message() {
-			Assert.AreEqual(0, _consumer.HandledMessages.OfType<CoreProjectionStatusMessage.Started>().Count());
+			Assert.Equal(0, Consumer.HandledMessages.OfType<CoreProjectionStatusMessage.Started>().Count());
 		}
 	}
 }

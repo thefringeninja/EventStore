@@ -7,17 +7,16 @@ using EventStore.Core.TransactionLog.Chunks;
 using EventStore.Core.TransactionLog.Chunks.TFChunk;
 using EventStore.Core.TransactionLog.FileNamingStrategy;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog {
-	[TestFixture]
 	public class
 		when_writing_an_existing_chunked_transaction_file_with_not_enough_space_in_chunk : SpecificationWithDirectory {
 		private readonly Guid _correlationId = Guid.NewGuid();
 		private readonly Guid _eventId = Guid.NewGuid();
 		private InMemoryCheckpoint _checkpoint;
 
-		[Test]
+		[Fact]
 		public void a_record_is_not_written_at_first_but_written_on_second_try() {
 			var filename1 = GetFilePathFor("chunk-000000.000000");
 			var filename2 = GetFilePathFor("chunk-000001.000000");
@@ -45,7 +44,7 @@ namespace EventStore.Core.Tests.TransactionLog {
 				eventType: "type",
 				data: new byte[] {1, 2, 3, 4, 5},
 				metadata: new byte[8000]);
-			Assert.IsTrue(tf.Write(record1, out pos)); // almost fill up first chunk
+			Assert.True(tf.Write(record1, out pos)); // almost fill up first chunk
 
 			var record2 = new PrepareLogRecord(logPosition: pos,
 				correlationId: _correlationId,
@@ -59,7 +58,7 @@ namespace EventStore.Core.Tests.TransactionLog {
 				eventType: "type",
 				data: new byte[] {1, 2, 3, 4, 5},
 				metadata: new byte[8000]);
-			Assert.IsFalse(tf.Write(record2, out pos)); // chunk has too small space
+			Assert.False(tf.Write(record2, out pos)); // chunk has too small space
 
 			var record3 = new PrepareLogRecord(logPosition: pos,
 				correlationId: _correlationId,
@@ -73,16 +72,16 @@ namespace EventStore.Core.Tests.TransactionLog {
 				eventType: "type",
 				data: new byte[] {1, 2, 3, 4, 5},
 				metadata: new byte[2000]);
-			Assert.IsTrue(tf.Write(record3, out pos));
+			Assert.True(tf.Write(record3, out pos));
 			tf.Close();
 			db.Dispose();
 
-			Assert.AreEqual(record3.GetSizeWithLengthPrefixAndSuffix() + 10000, _checkpoint.Read());
+			Assert.Equal(record3.GetSizeWithLengthPrefixAndSuffix() + 10000, _checkpoint.Read());
 			using (var filestream = File.Open(filename2, FileMode.Open, FileAccess.Read)) {
 				filestream.Seek(ChunkHeader.Size + sizeof(int), SeekOrigin.Begin);
 				var reader = new BinaryReader(filestream);
 				var read = LogRecord.ReadFrom(reader);
-				Assert.AreEqual(record3, read);
+				Assert.Equal(record3, read);
 			}
 		}
 	}

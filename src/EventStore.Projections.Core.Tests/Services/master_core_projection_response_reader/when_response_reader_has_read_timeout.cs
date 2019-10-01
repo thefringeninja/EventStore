@@ -4,19 +4,16 @@ using EventStore.Core.Helpers;
 using EventStore.Core.Messages;
 using EventStore.Core.Services.TimerService;
 using EventStore.Projections.Core.Messages.ParallelQueryProcessingMessages;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.master_core_projection_response_reader {
-	[TestFixture]
 	public class when_response_reader_has_read_timeout : with_master_core_response_reader,
 		IHandle<PartitionProcessingResult>,
 		IHandle<TimerMessage.Schedule> {
 		private bool _hasTimedOut;
 		public ManualResetEventSlim _mre = new ManualResetEventSlim();
 
-		[OneTimeSetUp]
-		protected override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public when_response_reader_has_read_timeout() {
 			_bus.Subscribe<PartitionProcessingResult>(this);
 			_bus.Subscribe<TimerMessage.Schedule>(this);
 
@@ -40,9 +37,9 @@ namespace EventStore.Projections.Core.Tests.Services.master_core_projection_resp
 			_mre.Set();
 		}
 
-		[Test]
+		[Fact]
 		public void should_publish_command() {
-			Assert.IsTrue(_mre.Wait(10000));
+			Assert.True(_mre.Wait(10000));
 		}
 	}
 }

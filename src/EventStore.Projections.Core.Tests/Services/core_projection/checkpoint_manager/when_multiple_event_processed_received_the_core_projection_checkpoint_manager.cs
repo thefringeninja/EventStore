@@ -4,10 +4,9 @@ using System.Linq;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_manager {
-	[TestFixture]
 	public class when_multiple_event_processed_received_the_core_projection_checkpoint_manager :
 		TestFixtureWithCoreProjectionCheckpointManager {
 		private Exception _exception;
@@ -24,7 +23,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 			try {
 				_checkpointReader.BeginLoadState();
 				var checkpointLoaded =
-					_consumer.HandledMessages.OfType<CoreProjectionProcessingMessage.CheckpointLoaded>().First();
+					Consumer.HandledMessages.OfType<CoreProjectionProcessingMessage.CheckpointLoaded>().First();
 				_checkpointWriter.StartFrom(checkpointLoaded.CheckpointTag, checkpointLoaded.CheckpointEventNumber);
 				_manager.BeginLoadPrerecordedEvents(checkpointLoaded.CheckpointTag);
 
@@ -38,28 +37,28 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void messages_are_handled() {
-			Assert.IsNull(_exception);
+			Assert.Null(_exception);
 		}
 
-		[Test]
+		[Fact]
 		public void accepts_stopping() {
 			_manager.Stopping();
 		}
 
-		[Test]
+		[Fact]
 		public void accepts_stopped() {
 			_manager.Stopped();
 		}
 
-		[Test]
+		[Fact]
 		public void accepts_event_processed() {
 //            _manager.StateUpdated("", @"{""state"":""state""}");
 			_manager.EventProcessed(CheckpointTag.FromStreamPosition(0, "stream", 13), 77.7f);
 		}
 
-		[Test]
+		[Fact]
 		public void event_processed_at_the_start_position_throws_invalid_operation_exception() {
 //            _manager.StateUpdated("", @"{""state"":""state""}");
 			Assert.Throws<InvalidOperationException>(() => {
@@ -67,12 +66,12 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void accepts_checkpoint_suggested() {
 			_manager.CheckpointSuggested(CheckpointTag.FromStreamPosition(0, "stream", 13), 77.7f);
 		}
 
-		[Test]
+		[Fact]
 		public void checkpoint_suggested_at_the_start_position_throws_invalid_operation_exception() {
 			Assert.Throws<InvalidOperationException>(() => {
 				_manager.CheckpointSuggested(CheckpointTag.FromStreamPosition(0, "stream", 10), 77.7f);

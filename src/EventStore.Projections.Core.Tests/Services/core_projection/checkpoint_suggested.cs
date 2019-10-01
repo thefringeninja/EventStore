@@ -4,12 +4,11 @@ using System.Linq;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Projections.Core.Services;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection {
 	public static class checkpoint_suggested {
-		[TestFixture]
 		public class when_the_checkpoint_is_suggested : TestFixtureWithCoreProjectionStarted {
 			protected override void Given() {
 				_checkpointHandledThreshold = 10;
@@ -35,17 +34,16 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 							new Dictionary<string, long> {{"non-existing", -1}}), 55.5f, 0));
 			}
 
-			[Test]
+			[Fact]
 			public void a_projection_checkpoint_event_is_published() {
 				// projection checkpoint is written even though no events are passing the projection event filter
-				Assert.AreEqual(
+				Assert.Equal(
 					1,
 					_writeEventHandler.HandledMessages.Count(v =>
 						v.Events.Any(e => e.EventType == ProjectionEventTypes.ProjectionCheckpoint)));
 			}
 		}
 
-		[TestFixture]
 		public class when_the_second_checkpoint_is_suggested : TestFixtureWithCoreProjectionStarted {
 			protected override void Given() {
 				_checkpointHandledThreshold = 10;
@@ -81,17 +79,16 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 							new Dictionary<string, long> {{"non-existing", -1}}), 55.6f, 1));
 			}
 
-			[Test]
+			[Fact]
 			public void a_projection_checkpoint_event_is_published() {
 				// projection checkpoint is written even though no events are passing the projection event filter
-				Assert.AreEqual(
+				Assert.Equal(
 					1,
 					_writeEventHandler.HandledMessages.Count(v =>
 						v.Events.Any(e => e.EventType == ProjectionEventTypes.ProjectionCheckpoint)));
 			}
 		}
 
-		[TestFixture]
 		public class when_the_second_checkpoint_is_suggested_and_write_succeeds : TestFixtureWithCoreProjectionStarted {
 			protected override void Given() {
 				_checkpointHandledThreshold = 10;
@@ -122,10 +119,10 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 							new Dictionary<string, long> {{"non-existing", -1}}), 55.6f, 1));
 			}
 
-			[Test]
+			[Fact]
 			public void a_projection_checkpoint_event_is_published() {
 				// projection checkpoint is written even though no events are passing the projection event filter
-				Assert.AreEqual(
+				Assert.Equal(
 					2,
 					_writeEventHandler.HandledMessages.Count(v =>
 						v.Events.Any(e => e.EventType == ProjectionEventTypes.ProjectionCheckpoint)));

@@ -4,10 +4,9 @@ using System.Threading;
 using EventStore.Core.Bus;
 using EventStore.Core.Messages;
 using EventStore.Core.Messaging;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Bus {
-	[TestFixture]
 	public abstract class when_using_single_consumer_queue {
 		readonly Func<int, ISingleConsumerMessageQueue> _factory;
 		readonly int _numberOfProducers;
@@ -18,7 +17,7 @@ namespace EventStore.Core.Tests.Bus {
 			_numberOfProducers = numberOfProducers;
 		}
 
-		[Test]
+		[Fact]
 		public void messages_should_be_dispatched_in_fifo_way() {
 			const int messagesToSendPerThread = 1 << 16;
 			var queue = _factory(messagesToSendPerThread);
@@ -64,7 +63,7 @@ namespace EventStore.Core.Tests.Bus {
 						var producerIndex = index >> 1;
 						var messageIndex = index & 1;
 
-						Assert.AreNotEqual(producerCount[producerIndex], messageIndex);
+						Assert.NotEqual(producerCount[producerIndex], messageIndex);
 						producerCount[producerIndex] = messageIndex;
 					}
 
@@ -76,13 +75,11 @@ namespace EventStore.Core.Tests.Bus {
 		}
 	}
 
-	[TestFixture]
 	class when_using_single_consumer_queue_multiple_producers : when_using_single_consumer_queue {
 		public when_using_single_consumer_queue_multiple_producers() : base(size => new MPSCMessageQueue(size), 2) {
 		}
 	}
 
-	[TestFixture]
 	class when_using_single_consumer_queue_single_producers : when_using_single_consumer_queue {
 		public when_using_single_consumer_queue_single_producers() : base(size => new SPSCMessageQueue(size), 1) {
 		}

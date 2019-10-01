@@ -1,11 +1,10 @@
 ﻿using EventStore.Core.Messaging;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Messages.Persisted.Responses;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projection_core_service_response_writer {
-	[TestFixture]
-	class
+	public class
 		when_handling_set_runas_command : specification_with_projection_core_service_response_writer {
 		private string _name;
 		private ProjectionManagementMessage.RunAs _runAs;
@@ -22,12 +21,12 @@ namespace EventStore.Projections.Core.Tests.Services.projection_core_service_res
 				new ProjectionManagementMessage.Command.SetRunAs(new NoopEnvelope(), _name, _runAs, _setRemove));
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_set_runas_command() {
 			var command = AssertParsedSingleCommand<SetRunAsCommand>("$set-runas");
-			Assert.AreEqual(_name, command.Name);
-			Assert.AreEqual(_runAs, (ProjectionManagementMessage.RunAs)command.RunAs);
-			Assert.AreEqual(_setRemove, command.SetRemove);
+			Assert.Equal(_name, command.Name);
+			Assert.Equal(_runAs, (ProjectionManagementMessage.RunAs)command.RunAs);
+			Assert.Equal(_setRemove, command.SetRemove);
 		}
 	}
 }

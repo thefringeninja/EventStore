@@ -10,12 +10,11 @@ using EventStore.Core.Tests.ClientAPI.Helpers;
 using EventStore.Core.Services;
 using EventStore.Core.Services.UserManagement;
 using EventStore.ClientAPI;
-using NUnit.Framework;
+using Xunit;
 using ILogger = EventStore.Common.Log.ILogger;
 using System.Threading.Tasks;
 
 namespace EventStore.Core.Tests.Services.Storage.Scavenge {
-	[TestFixture]
 	public class when_running_scavenge_from_storage_scavenger : SpecificationWithDirectoryPerTestFixture {
 		private static readonly ILogger Log = LogManager.GetLoggerFor<when_running_scavenge_from_storage_scavenger>();
 		private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(60);
@@ -39,9 +38,11 @@ namespace EventStore.Core.Tests.Services.Storage.Scavenge {
 			}
 		}
 
-		[TearDown]
-		public async Task TearDown() {
-			await _node.Shutdown();
+		public override async Task TestFixtureTearDown() {
+			await base.TestFixtureTearDown();
+			if (_node != null) {
+				await _node.Shutdown();
+			}
 		}
 
 		public async Task When() {
@@ -61,32 +62,32 @@ namespace EventStore.Core.Tests.Services.Storage.Scavenge {
 				);
 
 				if (!countdown.Wait(Timeout)) {
-					Assert.Fail("Timeout expired while waiting for events.");
+					throw new Exception("Timeout expired while waiting for events.");
 				}
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void should_create_scavenge_started_event_on_index_stream() {
 			var scavengeStartedEvent =
 				_result.FirstOrDefault(x => x.Event.EventType == SystemEventTypes.ScavengeStarted);
-			Assert.IsNotNull(scavengeStartedEvent);
+			Assert.NotNull(scavengeStartedEvent);
 		}
 
-		[Test]
+		[Fact]
 		public void should_create_scavenge_completed_event_on_index_stream() {
 			var scavengeCompletedEvent =
 				_result.FirstOrDefault(x => x.Event.EventType == SystemEventTypes.ScavengeCompleted);
-			Assert.IsNotNull(scavengeCompletedEvent);
+			Assert.NotNull(scavengeCompletedEvent);
 		}
 
-		[Test]
+		[Fact]
 		public void should_link_started_and_completed_events_to_the_same_stream() {
 			var scavengeStartedEvent =
 				_result.FirstOrDefault(x => x.Event.EventType == SystemEventTypes.ScavengeStarted);
 			var scavengeCompletedEvent =
 				_result.FirstOrDefault(x => x.Event.EventType == SystemEventTypes.ScavengeCompleted);
-			Assert.AreEqual(scavengeStartedEvent.Event.EventStreamId, scavengeCompletedEvent.Event.EventStreamId);
+			Assert.Equal(scavengeStartedEvent.Event.EventStreamId, scavengeCompletedEvent.Event.EventStreamId);
 		}
 	}
 }

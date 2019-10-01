@@ -3,19 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using EventStore.ClientAPI;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests {
-	[TestFixture]
 	public class copying_metadata {
-		[Test]
+		[Fact]
 		public void copies_empty_metadata() {
 			var empty = StreamMetadata.Build().Build();
 			var copied = empty.Copy().Build();
-			Assert.AreEqual(empty.AsJsonString(), copied.AsJsonString());
+			Assert.Equal(empty.AsJsonString(), copied.AsJsonString());
 		}
 
-		[Test]
+		[Fact]
 		public void copies_all_values() {
 			var source = StreamMetadata.Build()
 				.SetCacheControl(TimeSpan.FromDays(1))
@@ -30,10 +29,10 @@ namespace EventStore.Core.Tests {
 				.SetTruncateBefore(4)
 				.Build();
 			var copied = source.Copy().Build();
-			Assert.AreEqual(source.AsJsonString(), copied.AsJsonString());
+			Assert.Equal(source.AsJsonString(), copied.AsJsonString());
 		}
 
-		[Test]
+		[Fact]
 		public void can_mutate_copy() {
 			var source = StreamMetadata.Build()
 				.SetCacheControl(TimeSpan.FromDays(1))
@@ -68,7 +67,7 @@ namespace EventStore.Core.Tests {
 				.SetCustomProperty("Test2", "Value2")
 				.Build();
 
-			Assert.AreEqual(expected.AsJsonString(), copied.AsJsonString());
+			Assert.Equal(expected.AsJsonString(), copied.AsJsonString());
 		}
 	}
 }

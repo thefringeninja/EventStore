@@ -8,11 +8,10 @@ using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_reader {
-	[TestFixture]
 	public class when_read_timeout_occurs : TestFixtureWithExistingEvents {
 		private MultiStreamEventReader _eventReader;
 		private Guid _distibutionPointCorrelationId;
@@ -26,8 +25,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 		private string[] _abStreams;
 		private Dictionary<string, long> _ab12Tag;
 
-		[SetUp]
-		public new void When() {
+		public when_read_timeout_occurs() {
 			_ab12Tag = new Dictionary<string, long> {{"a", 1}, {"b", 2}};
 			_abStreams = new[] {"a", "b"};
 
@@ -36,7 +34,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 				_ioDispatcher, _bus, _distibutionPointCorrelationId, null, 0, _abStreams, _ab12Tag, false,
 				new RealTimeProvider());
 			_eventReader.Resume();
-			_streamReadACorrelationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			_streamReadACorrelationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Last(x => x.EventStreamId == "a").CorrelationId;
 			_eventReader.Handle(
 				new ProjectionManagementMessage.Internal.ReadTimeout(_streamReadACorrelationId, "a"));
@@ -57,7 +55,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 								PrepareFlags.SingleWrite | PrepareFlags.TransactionBegin | PrepareFlags.TransactionEnd,
 								"event_type2", new byte[] {3}, new byte[] {4}))
 					}, null, false, "", 3, 2, true, 200));
-			_streamReadBCorrelationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			_streamReadBCorrelationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Last(x => x.EventStreamId == "b").CorrelationId;
 			_eventReader.Handle(
 				new ProjectionManagementMessage.Internal.ReadTimeout(_streamReadBCorrelationId, "b"));
@@ -80,25 +78,25 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 					}, null, false, "", 4, 3, true, 200));
 		}
 
-		[Test]
+		[Fact]
 		public void should_not_deliver_events() {
-			Assert.AreEqual(0,
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
+			Assert.Equal(0,
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
 		}
 
-		[Test]
+		[Fact]
 		public void should_attempt_another_read_for_the_timed_out_reads() {
-			var streamAReads = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			var streamAReads = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Where(x => x.EventStreamId == "a");
 
-			Assert.AreEqual(streamAReads.First().CorrelationId, _streamReadACorrelationId);
-			Assert.AreEqual(1, streamAReads.Skip(1).Count());
+			Assert.Equal(streamAReads.First().CorrelationId, _streamReadACorrelationId);
+			Assert.Equal(1, streamAReads.Skip(1).Count());
 
-			var streamBReads = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			var streamBReads = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Where(x => x.EventStreamId == "b");
 
-			Assert.AreEqual(streamBReads.First().CorrelationId, _streamReadBCorrelationId);
-			Assert.AreEqual(1, streamBReads.Skip(1).Count());
+			Assert.Equal(streamBReads.First().CorrelationId, _streamReadBCorrelationId);
+			Assert.Equal(1, streamBReads.Skip(1).Count());
 		}
 	}
 }

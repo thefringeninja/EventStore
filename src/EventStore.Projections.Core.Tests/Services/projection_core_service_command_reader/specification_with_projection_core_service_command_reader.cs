@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using EventStore.Core.Tests.Helpers;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using TestFixtureWithExistingEvents =
 	EventStore.Projections.Core.Tests.Services.core_projection.TestFixtureWithExistingEvents;
 
@@ -22,8 +22,7 @@ namespace EventStore.Projections.Core.Tests.Services.projection_core_service_com
 			_bus.Subscribe<ProjectionCoreServiceMessage.StopCore>(_commandReader);
 		}
 
-		[SetUp]
-		public new void SetUp() {
+		public specification_with_projection_core_service_command_reader() {
 			WhenLoop();
 		}
 

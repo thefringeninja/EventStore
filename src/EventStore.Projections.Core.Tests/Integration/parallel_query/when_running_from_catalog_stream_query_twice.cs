@@ -7,10 +7,9 @@ using EventStore.Core.Services;
 using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Management;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Integration.parallel_query {
-	[TestFixture]
 	public class when_running_from_catalog_stream_query_twice : specification_with_a_v8_query_posted {
 		protected override void GivenEvents() {
 			ExistingEvent("catalog", SystemEventTypes.StreamReference, "", "account-01");
@@ -56,34 +55,34 @@ fromStreamCatalog('catalog').foreachStream().when({
 						Envelope, _projectionName, ProjectionManagementMessage.RunAs.System));
 		}
 
-		[Test]
+		[Fact]
 		public void just() {
 			AssertLastEvent("$projections-query-account-01-result", "{\"c\":2}");
 //            AssertLastEvent("$projections-query-account-02-result", "{\"c\":0}");
 			AssertLastEvent("$projections-query-account-03-result", "{\"c\":3}");
 		}
 
-		[Test]
+		[Fact]
 		public void state_becomes_completed() {
 			_manager.Handle(
 				new ProjectionManagementMessage.Command.GetStatistics(
 					new PublishEnvelope(_bus), null, _projectionName, false));
 
-			Assert.AreEqual(1, _consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().Count());
-			Assert.AreEqual(
+			Assert.Equal(1, Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().Count());
+			Assert.Equal(
 				1,
-				_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
+				Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
 					.Single()
 					.Projections.Length);
-			Assert.AreEqual(
+			Assert.Equal(
 				_projectionName,
-				_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
+				Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
 					.Single()
 					.Projections.Single()
 					.Name);
-			Assert.AreEqual(
+			Assert.Equal(
 				ManagedProjectionState.Completed,
-				_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
+				Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
 					.Single()
 					.Projections.Single()
 					.MasterStatus);

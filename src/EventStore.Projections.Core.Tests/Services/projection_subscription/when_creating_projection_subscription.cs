@@ -3,12 +3,11 @@ using EventStore.Core.Services.TimerService;
 using EventStore.Core.Tests.Fakes;
 using EventStore.Core.Tests.Services.TimeService;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projection_subscription {
-	[TestFixture]
 	public class when_creating_projection_subscription {
-		[Test]
+		[Fact]
 		public void it_can_be_created() {
 			new ReaderSubscription(
 				"Test Subscription",
@@ -22,7 +21,7 @@ namespace EventStore.Projections.Core.Tests.Services.projection_subscription {
 				10000);
 		}
 
-		[Test]
+		[Fact]
 		public void null_publisher_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				new ReaderSubscription(
@@ -38,7 +37,7 @@ namespace EventStore.Projections.Core.Tests.Services.projection_subscription {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void null_checkpoint_strategy_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				new ReaderSubscription(
@@ -54,7 +53,7 @@ namespace EventStore.Projections.Core.Tests.Services.projection_subscription {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void null_time_provider_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				new ReaderSubscription(

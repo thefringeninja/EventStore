@@ -5,10 +5,9 @@ using EventStore.Core.Bus;
 using EventStore.Core.Helpers;
 using EventStore.Core.Services.TimerService;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.command_reader_response_reader_integration {
-	[TestFixture]
 	public class
 		when_command_reader_times_out_reading_projection_core_stream_on_startup :
 			specification_with_command_reader_and_response_reader {
@@ -40,9 +39,9 @@ namespace EventStore.Projections.Core.Tests.Services.command_reader_response_rea
 				new ProjectionManagementMessage.Starting(_epochId));
 		}
 
-		[Test]
+		[Fact]
 		public void should_send_reader_ready() {
-			Assert.AreEqual(1, _consumer.HandledMessages.OfType<ProjectionManagementMessage.ReaderReady>().Count());
+			Assert.Equal(1, Consumer.HandledMessages.OfType<ProjectionManagementMessage.ReaderReady>().Count());
 		}
 	}
 }

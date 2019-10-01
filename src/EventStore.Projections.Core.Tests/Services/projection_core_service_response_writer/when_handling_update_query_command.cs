@@ -1,11 +1,10 @@
 ﻿using EventStore.Core.Messaging;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Messages.Persisted.Responses;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projection_core_service_response_writer {
-	[TestFixture]
-	class
+	public class
 		when_handling_update_query_command : specification_with_projection_core_service_response_writer {
 		private string _name;
 		private ProjectionManagementMessage.RunAs _runAs;
@@ -32,14 +31,14 @@ namespace EventStore.Projections.Core.Tests.Services.projection_core_service_res
 					_emitEnabled));
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_update_query_command() {
 			var command = AssertParsedSingleCommand<UpdateQueryCommand>("$update-query");
-			Assert.AreEqual(_name, command.Name);
-			Assert.AreEqual(_runAs, (ProjectionManagementMessage.RunAs)command.RunAs);
-			Assert.AreEqual(_handlerType, command.HandlerType);
-			Assert.AreEqual(_query, command.Query);
-			Assert.AreEqual(_emitEnabled, command.EmitEnabled);
+			Assert.Equal(_name, command.Name);
+			Assert.Equal(_runAs, (ProjectionManagementMessage.RunAs)command.RunAs);
+			Assert.Equal(_handlerType, command.HandlerType);
+			Assert.Equal(_query, command.Query);
+			Assert.Equal(_emitEnabled, command.EmitEnabled);
 		}
 	}
 }

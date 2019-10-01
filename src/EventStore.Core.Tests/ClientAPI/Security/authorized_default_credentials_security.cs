@@ -1,15 +1,15 @@
 ﻿using System.Threading.Tasks;
 using EventStore.ClientAPI.Exceptions;
 using EventStore.ClientAPI.SystemData;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI.Security {
-	[TestFixture, Category("ClientAPI"), Category("LongRunning"), Category("Network")]
+	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning"), Trait("Category", "Network")]
 	public class authorized_default_credentials_security : AuthenticationTestBase {
 		public authorized_default_credentials_security() : base(new UserCredentials("user1", "pa$$1")) {
 		}
 
-		[Test]
+		[Fact]
 		public async Task all_operations_succeeds_when_passing_no_explicit_credentials() {
 			await ReadAllForward(null, null);
 			await ReadAllBackward(null, null);
@@ -32,52 +32,52 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 			await SubscribeToAll(null, null);
 		}
 
-		[Test]
+		[Fact]
 		public async Task all_operations_are_not_authenticated_when_overriden_with_not_existing_credentials() {
-			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => ReadAllForward("badlogin", "badpass"));
-			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => ReadAllBackward("badlogin", "badpass"));
+			await Assert.ThrowsAsync<NotAuthenticatedException>(() => ReadAllForward("badlogin", "badpass"));
+			await Assert.ThrowsAsync<NotAuthenticatedException>(() => ReadAllBackward("badlogin", "badpass"));
 
-			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => ReadEvent("read-stream", "badlogin", "badpass"));
-			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => ReadStreamForward("read-stream", "badlogin", "badpass"));
-			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => ReadStreamBackward("read-stream", "badlogin", "badpass"));
+			await Assert.ThrowsAsync<NotAuthenticatedException>(() => ReadEvent("read-stream", "badlogin", "badpass"));
+			await Assert.ThrowsAsync<NotAuthenticatedException>(() => ReadStreamForward("read-stream", "badlogin", "badpass"));
+			await Assert.ThrowsAsync<NotAuthenticatedException>(() => ReadStreamBackward("read-stream", "badlogin", "badpass"));
 
-			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => WriteStream("write-stream", "badlogin", "badpass"));
-			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => TransStart("write-stream", "badlogin", "badpass"));
+			await Assert.ThrowsAsync<NotAuthenticatedException>(() => WriteStream("write-stream", "badlogin", "badpass"));
+			await Assert.ThrowsAsync<NotAuthenticatedException>(() => TransStart("write-stream", "badlogin", "badpass"));
 
 			var transId = (await TransStart("write-stream", null, null)).TransactionId;
 			var trans = Connection.ContinueTransaction(transId, new UserCredentials("badlogin", "badpass"));
 			await trans.WriteAsync();
-			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => trans.CommitAsync());
+			await Assert.ThrowsAsync<NotAuthenticatedException>(() => trans.CommitAsync());
 
-			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => ReadMeta("metaread-stream", "badlogin", "badpass"));
-			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => WriteMeta("metawrite-stream", "badlogin", "badpass", "user1"));
+			await Assert.ThrowsAsync<NotAuthenticatedException>(() => ReadMeta("metaread-stream", "badlogin", "badpass"));
+			await Assert.ThrowsAsync<NotAuthenticatedException>(() => WriteMeta("metawrite-stream", "badlogin", "badpass", "user1"));
 
-			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => SubscribeToStream("read-stream", "badlogin", "badpass"));
-			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => SubscribeToAll("badlogin", "badpass"));
+			await Assert.ThrowsAsync<NotAuthenticatedException>(() => SubscribeToStream("read-stream", "badlogin", "badpass"));
+			await Assert.ThrowsAsync<NotAuthenticatedException>(() => SubscribeToAll("badlogin", "badpass"));
 		}
 
-		[Test]
+		[Fact]
 		public async Task all_operations_are_not_authorized_when_overriden_with_not_authorized_credentials() {
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadAllForward("user2", "pa$$2"));
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadAllBackward("user2", "pa$$2"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => ReadAllForward("user2", "pa$$2"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => ReadAllBackward("user2", "pa$$2"));
 
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadEvent("read-stream", "user2", "pa$$2"));
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamForward("read-stream", "user2", "pa$$2"));
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamBackward("read-stream", "user2", "pa$$2"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => ReadEvent("read-stream", "user2", "pa$$2"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => ReadStreamForward("read-stream", "user2", "pa$$2"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => ReadStreamBackward("read-stream", "user2", "pa$$2"));
 
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("write-stream", "user2", "pa$$2"));
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => TransStart("write-stream", "user2", "pa$$2"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => WriteStream("write-stream", "user2", "pa$$2"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => TransStart("write-stream", "user2", "pa$$2"));
 
 			var transId = (await TransStart("write-stream", null, null)).TransactionId;
 			var trans = Connection.ContinueTransaction(transId, new UserCredentials("user2", "pa$$2"));
 			await trans.WriteAsync();
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => trans.CommitAsync());
+			await Assert.ThrowsAsync<AccessDeniedException>(() => trans.CommitAsync());
 
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadMeta("metaread-stream", "user2", "pa$$2"));
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteMeta("metawrite-stream", "user2", "pa$$2", "user1"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => ReadMeta("metaread-stream", "user2", "pa$$2"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => WriteMeta("metawrite-stream", "user2", "pa$$2", "user1"));
 
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => SubscribeToStream("read-stream", "user2", "pa$$2"));
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => SubscribeToAll("user2", "pa$$2"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => SubscribeToStream("read-stream", "user2", "pa$$2"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => SubscribeToAll("user2", "pa$$2"));
 		}
 	}
 }

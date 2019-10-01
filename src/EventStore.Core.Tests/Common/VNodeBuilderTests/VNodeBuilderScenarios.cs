@@ -1,18 +1,16 @@
 using EventStore.Core.Cluster.Settings;
 using EventStore.Core.TransactionLog.Chunks;
-using NUnit.Framework;
+using Xunit;
 using System;
 using System.Threading.Tasks;
 
 namespace EventStore.Core.Tests.Common.VNodeBuilderTests {
-	[TestFixture]
-	public abstract class SingleNodeScenario {
+	public abstract class SingleNodeScenario : IAsyncLifetime {
 		protected VNodeBuilder _builder;
 		protected ClusterVNode _node;
 		protected ClusterVNodeSettings _settings;
 		protected TFChunkDbConfig _dbConfig;
 
-		[OneTimeSetUp]
 		public virtual void TestFixtureSetUp() {
 			_builder = TestVNodeBuilder.AsSingleNode()
 				.RunInMemory();
@@ -23,16 +21,24 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests {
 			_node.Start();
 		}
 
-		[OneTimeTearDown]
-		public virtual async Task TestFixtureTearDown() {
-			await _node.Stop();
+		public Task TestFixtureTearDown() {
+			return _node.Stop().WithTimeout(TimeSpan.FromSeconds(20));
 		}
 
 		public abstract void Given();
+
+		public Task InitializeAsync() {
+			TestFixtureSetUp();
+			return Task.CompletedTask;
+		}
+
+		public Task DisposeAsync() {
+			return TestFixtureTearDown();
+		}
 	}
 
-	[TestFixture, Category("LongRunning")]
-	public abstract class ClusterMemberScenario {
+	[Trait("Category", "LongRunning")]
+	public abstract class ClusterMemberScenario : IAsyncLifetime {
 		protected VNodeBuilder _builder;
 		protected ClusterVNode _node;
 		protected ClusterVNodeSettings _settings;
@@ -40,7 +46,6 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests {
 		protected int _clusterSize = 3;
 		protected int _quorumSize;
 
-		[OneTimeSetUp]
 		public virtual void TestFixtureSetUp() {
 			_builder = TestVNodeBuilder.AsClusterMember(_clusterSize)
 				.RunInMemory();
@@ -52,11 +57,19 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests {
 			_node.Start();
 		}
 
-		[OneTimeTearDown]
-		public virtual async Task TestFixtureTearDown() {
-			await _node.Stop();
+		public virtual Task TestFixtureTearDown() {
+			return _node.Stop();
 		}
 
 		public abstract void Given();
+
+		public Task InitializeAsync() {
+			TestFixtureSetUp();
+			return Task.CompletedTask;
+		}
+
+		public Task DisposeAsync() {
+			return TestFixtureTearDown();
+		}
 	}
 }

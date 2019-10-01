@@ -1,18 +1,16 @@
 using System;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
-	[TestFixture]
 	public class a_checkpoint_requested_on_a_non_started_stream : TestFixtureWithReadWriteDispatchers {
 		private EmittedStream _stream;
 
 		private TestCheckpointManagerMessageHandler _readyHandler;
 		private Exception _caughtException;
 
-		[SetUp]
-		public void setup() {
+		public a_checkpoint_requested_on_a_non_started_stream() {
 			_readyHandler = new TestCheckpointManagerMessageHandler();
 			;
 			_stream = new EmittedStream(
@@ -28,7 +26,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void throws_invalid_operation_exception() {
 			Assert.Throws<InvalidOperationException>(() => {
 				if (_caughtException != null) throw _caughtException;

@@ -3,11 +3,10 @@ using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.projections_manager;
 using EventStore.Projections.Core.v8;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.v8 {
 	public class when_running_a_faulting_v8_projection {
-		[TestFixture]
 		public class when_event_handler_throws : TestFixtureWithJsProjection {
 			protected override void Given() {
 				_projection = @"
@@ -21,7 +20,7 @@ namespace EventStore.Projections.Core.Tests.Services.v8 {
 				_state = @"{""count"": 0}";
 			}
 
-			[Test, Category("v8")]
+			[Fact, Trait("Category", "v8")]
 			public void process_event_throws_js1_exception() {
 				try {
 					string state;
@@ -31,13 +30,12 @@ namespace EventStore.Projections.Core.Tests.Services.v8 {
 						"metadata",
 						@"{""a"":""b""}", out state, out emittedEvents);
 				} catch (Exception ex) {
-					Assert.IsInstanceOf<Js1Exception>(ex);
-					Assert.AreEqual("failed", ex.Message);
+					Assert.IsType<Js1Exception>(ex);
+					Assert.Equal("failed", ex.Message);
 				}
 			}
 		}
 
-		[TestFixture]
 		public class when_state_transform_throws : TestFixtureWithJsProjection {
 			protected override void Given() {
 				_projection = @"
@@ -49,19 +47,19 @@ namespace EventStore.Projections.Core.Tests.Services.v8 {
 				_state = @"{""count"": 0}";
 			}
 
-			[Test, Category("v8")]
+			[Fact, Trait("Category", "v8")]
 			public void process_event_throws_js1_exception() {
 				try {
 					string state;
 					EmittedEventEnvelope[] emittedEvents;
-					Assert.DoesNotThrow(() => _stateHandler.ProcessEvent(
+					_stateHandler.ProcessEvent(
 						"", CheckpointTag.FromPosition(0, 10, 5), "stream1", "type1", "category", Guid.NewGuid(), 0,
 						"metadata",
-						@"{""a"":""b""}", out state, out emittedEvents));
+						@"{""a"":""b""}", out state, out emittedEvents);
 					_stateHandler.TransformStateToResult();
 				} catch (Exception ex) {
-					Assert.IsInstanceOf<Js1Exception>(ex);
-					Assert.AreEqual("failed", ex.Message);
+					Assert.IsType<Js1Exception>(ex);
+					Assert.Equal("failed", ex.Message);
 				}
 			}
 		}

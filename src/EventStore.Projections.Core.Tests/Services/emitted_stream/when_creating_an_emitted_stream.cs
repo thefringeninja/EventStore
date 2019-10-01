@@ -4,22 +4,20 @@ using EventStore.Core.Messaging;
 using EventStore.Core.Tests.Fakes;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
-	[TestFixture]
 	public class when_creating_an_emitted_stream {
 		private FakePublisher _fakePublisher;
 		private IODispatcher _ioDispatcher;
 
 
-		[SetUp]
-		public void setup() {
+		public when_creating_an_emitted_stream() {
 			_fakePublisher = new FakePublisher();
 			_ioDispatcher = new IODispatcher(_fakePublisher, new PublishEnvelope(_fakePublisher));
 		}
 
-		[Test]
+		[Fact]
 		public void null_stream_id_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				new EmittedStream(
@@ -33,7 +31,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void null_writer_configuration_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				new EmittedStream(
@@ -44,7 +42,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void empty_stream_id_throws_argument_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				new EmittedStream(
@@ -58,7 +56,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void null_from_throws_argument_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				new EmittedStream(
@@ -71,7 +69,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void null_publisher_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				new EmittedStream(
@@ -84,7 +82,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void null_io_dispatcher_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				new EmittedStream(
@@ -97,7 +95,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void null_ready_handler_throws_argumenbt_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				new EmittedStream(
@@ -110,7 +108,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void it_can_be_created() {
 			new EmittedStream(
 				"test",

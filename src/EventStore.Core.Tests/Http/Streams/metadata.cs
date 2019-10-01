@@ -5,13 +5,12 @@ using System.Threading.Tasks;
 using EventStore.Core.Tests.Helpers;
 using EventStore.Core.Tests.Http.Streams.basic;
 using Newtonsoft.Json.Linq;
-using NUnit.Framework;
+using Xunit;
 using System.Xml.Linq;
 using EventStore.Common.Utils;
 using EventStore.Core.Tests.Http.Users.users;
 
 namespace EventStore.Core.Tests.Http.Streams {
-	[TestFixture]
 	public class when_posting_metadata_as_json_to_non_existing_stream : with_admin_user {
 		private HttpResponseMessage _response;
 
@@ -24,24 +23,23 @@ namespace EventStore.Core.Tests.Http.Streams {
 			_response = await _client.SendAsync(req);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_created_status_code() {
-			Assert.AreEqual(HttpStatusCode.Created, _response.StatusCode);
+			Assert.Equal(HttpStatusCode.Created, _response.StatusCode);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_a_location_header() {
-			Assert.IsNotEmpty(_response.Headers.GetLocationAsString());
+			Assert.NotEmpty(_response.Headers.GetLocationAsString());
 		}
 
-		[Test]
+		[Fact]
 		public async Task returns_a_location_header_that_can_be_read_as_json() {
 			var json = await GetJson<JObject>(_response.Headers.GetLocationAsString());
 			HelperExtensions.AssertJson(new {A = "1"}, json);
 		}
 	}
 
-	[TestFixture]
 	public class when_posting_metadata_as_json_to_existing_stream : HttpBehaviorSpecificationWithSingleEvent {
 		protected override async Task Given() {
 			_response = await MakeArrayEventsPost(
@@ -56,24 +54,23 @@ namespace EventStore.Core.Tests.Http.Streams {
 			_response = await _client.SendAsync(req);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_created_status_code() {
-			Assert.AreEqual(HttpStatusCode.Created, _response.StatusCode);
+			Assert.Equal(HttpStatusCode.Created, _response.StatusCode);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_a_location_header() {
-			Assert.IsNotEmpty(_response.Headers.GetLocationAsString());
+			Assert.NotEmpty(_response.Headers.GetLocationAsString());
 		}
 
-		[Test]
+		[Fact]
 		public async Task returns_a_location_header_that_can_be_read_as_json() {
 			var json = await GetJson<JObject>(_response.Headers.GetLocationAsString());
 			HelperExtensions.AssertJson(new {A = "1"}, json);
 		}
 	}
 
-	[TestFixture]
 	public class
 		when_getting_metadata_for_an_existing_stream_without_an_accept_header :
 			HttpBehaviorSpecificationWithSingleEvent {
@@ -81,18 +78,17 @@ namespace EventStore.Core.Tests.Http.Streams {
 			return Get(TestStream + "/metadata", null, null, DefaultData.AdminNetworkCredentials, false);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_ok_status_code() {
-			Assert.AreEqual(HttpStatusCode.OK, _lastResponse.StatusCode);
+			Assert.Equal(HttpStatusCode.OK, _lastResponse.StatusCode);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_empty_body() {
-			Assert.AreEqual(Empty.Xml, _lastResponseBody);
+			Assert.Equal(Empty.Xml, _lastResponseBody);
 		}
 	}
 
-	[TestFixture]
 	public class
 		when_getting_metadata_for_an_existing_stream_and_no_metadata_exists : HttpBehaviorSpecificationWithSingleEvent {
 		protected override async Task Given() {
@@ -106,19 +102,19 @@ namespace EventStore.Core.Tests.Http.Streams {
 				DefaultData.AdminNetworkCredentials);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_ok_status_code() {
-			Assert.AreEqual(HttpStatusCode.OK, _lastResponse.StatusCode);
+			Assert.Equal(HttpStatusCode.OK, _lastResponse.StatusCode);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_empty_etag() {
 			Assert.Null(_lastResponse.Headers.ETag);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_empty_body() {
-			Assert.AreEqual(Empty.Json, _lastResponseBody);
+			Assert.Equal(Empty.Json, _lastResponseBody);
 		}
 	}
 }

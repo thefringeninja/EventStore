@@ -13,7 +13,7 @@ namespace EventStore.Core.Messaging {
 		}
 
 		public void ReplyWith<T>(T message) where T : Message {
-			Debug.Assert(_createdOnThread == -1 ||
+			ESDebug.Assert(_createdOnThread == -1 ||
 			             Thread.CurrentThread.ManagedThreadId == _createdOnThread ||
 			             _publisher is IThreadSafePublisher);
 			_publisher.Publish(message);

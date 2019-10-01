@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using EventStore.ClientAPI;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI.Helpers {
 	internal class StreamWriter {
@@ -19,7 +19,7 @@ namespace EventStore.Core.Tests.ClientAPI.Helpers {
 				var expVer = _version == ExpectedVersion.Any ? ExpectedVersion.Any : _version + i;
 				var nextExpVer = (await _store.AppendToStreamAsync(_stream, expVer, new[] {events[i]})).NextExpectedVersion;
 				if (_version != ExpectedVersion.Any)
-					Assert.AreEqual(expVer + 1, nextExpVer);
+					Assert.Equal(expVer + 1, nextExpVer);
 			}
 
 			return new TailWriter(_store, _stream);

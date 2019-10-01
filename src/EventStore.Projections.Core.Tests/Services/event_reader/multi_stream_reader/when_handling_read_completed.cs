@@ -8,12 +8,11 @@ using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 using ReadStreamResult = EventStore.Core.Data.ReadStreamResult;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_reader {
-	[TestFixture]
 	public class when_handling_read_completed : TestFixtureWithExistingEvents {
 		private MultiStreamEventReader _edp;
 		private Guid _distibutionPointCorrelationId;
@@ -27,8 +26,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 		private string[] _abStreams;
 		private Dictionary<string, long> _ab12Tag;
 
-		[SetUp]
-		public new void When() {
+		public when_handling_read_completed() {
 			_ab12Tag = new Dictionary<string, long> {{"a", 1}, {"b", 2}};
 			_abStreams = new[] {"a", "b"};
 
@@ -39,7 +37,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 			_edp.Resume();
 			_firstEventId = Guid.NewGuid();
 			_secondEventId = Guid.NewGuid();
-			var correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			var correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Last(x => x.EventStreamId == "a").CorrelationId;
 			_edp.Handle(
 				new ClientMessage.ReadStreamEventsForwardCompleted(
@@ -59,36 +57,36 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 					}, null, false, "", 3, 4, false, 200));
 		}
 
-		[Test]
+		[Fact]
 		public void cannot_be_resumed() {
 			Assert.Throws<InvalidOperationException>(() => { _edp.Resume(); });
 		}
 
-		[Test]
+		[Fact]
 		public void cannot_be_paused() {
 			_edp.Pause();
 		}
 
-		[Test]
+		[Fact]
 		public void does_not_publish_committed_event_received_messages() {
-			Assert.AreEqual(
-				0, _consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
+			Assert.Equal(
+				0, Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_read_events_from_beginning_with_correct_next_event_number() {
 			// do not publish new read requests until we consume already available events
-			Assert.AreEqual(2, _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Count());
-			Assert.AreEqual(
+			Assert.Equal(2, Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Count());
+			Assert.Equal(
 				1,
-				_consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+				Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 					.Last(v => v.EventStreamId == "a")
 					.FromEventNumber);
 		}
 
-		[Test]
+		[Fact]
 		public void cannot_handle_repeated_read_events_completed() {
-			var correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			var correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Last(x => x.EventStreamId == "a").CorrelationId;
 			Assert.Throws<InvalidOperationException>(() => {
 				_edp.Handle(

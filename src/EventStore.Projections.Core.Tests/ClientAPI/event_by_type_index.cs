@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using EventStore.Core.Tests;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.ClientAPI {
 	namespace event_by_type_index {
@@ -16,7 +17,6 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
 			}
 		}
 
-		[TestFixture]
 		public class when_creating : with_existing_events {
 			protected override async Task When() {
 				await base.When();
@@ -35,13 +35,12 @@ function count(s,e) {
 ");
 			}
 
-			[Test, Category("Network")]
+			[DebugFact, Trait("Category", "Network")]
 			public async Task result_is_correct() {
 				await AssertStreamTail("$projections-test-projection-result", "Result:{\"c\":4}");
 			}
 		}
 
-		[TestFixture]
 		public class when_posting_more_events : with_existing_events {
 			protected override async Task When() {
 				await base.When();
@@ -63,7 +62,7 @@ function count(s,e) {
 				WaitIdle();
 			}
 
-			[Test, Category("Network")]
+			[DebugFact, Trait("Category", "Network")]
 			public async Task result_is_correct() {
 				await AssertStreamTail("$projections-test-projection-result", "Result:{\"c\":5}");
 			}

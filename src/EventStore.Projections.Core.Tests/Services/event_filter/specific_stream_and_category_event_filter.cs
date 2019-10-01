@@ -1,8 +1,7 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.event_filter {
-	[TestFixture]
 	public class specific_stream_and_category_event_filter : TestFixtureWithEventFilter {
 		protected override void Given() {
 			_builder.FromCategory("category");
@@ -10,7 +9,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_filter {
 			_builder.AllEvents();
 		}
 
-		[Test]
+		[Fact]
 		public void cannot_be_built() {
 			Assert.IsAssignableFrom(typeof(InvalidOperationException), _exception);
 		}

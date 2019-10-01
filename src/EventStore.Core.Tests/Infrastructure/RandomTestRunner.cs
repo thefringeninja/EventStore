@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using EventStore.Common.Utils;
 using EventStore.Core.Bus;
@@ -40,7 +41,9 @@ namespace EventStore.Core.Tests.Infrastructure {
 		}
 
 		public void Enqueue(IPEndPoint endPoint, Message message, IPublisher bus, int timeDelay = 1) {
-			System.Diagnostics.Debug.Assert(timeDelay >= 1);
+			if (timeDelay < 1) {
+				throw new ArgumentException(nameof(timeDelay));
+			}
 			_queue.Add(new RandTestQueueItem(_curLogicalTime + timeDelay, _globalMsgId++, endPoint, message, bus));
 		}
 

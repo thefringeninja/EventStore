@@ -5,12 +5,11 @@ using EventStore.Core.Data;
 using EventStore.Core.Messages;
 using EventStore.Core.Messaging;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog.Truncation {
-	[TestFixture]
 	public class when_truncating_database : SpecificationWithDirectoryPerTestFixture {
-		[Test, Category("LongRunning")]
+		[Fact, Trait("Category", "LongRunning")]
 		public async Task everything_should_go_fine() {
 			var miniNode = new MiniNode(PathName, inMemDb: false);
 			await miniNode.Start();
@@ -23,7 +22,7 @@ namespace EventStore.Core.Tests.TransactionLog.Truncation {
 
 			// --- first part of events
 			WriteEvents(cnt, miniNode, countdown);
-			Assert.IsTrue(countdown.Wait(TimeSpan.FromSeconds(10)), "Took too long writing first part of events.");
+			Assert.True(countdown.Wait(TimeSpan.FromSeconds(10)), "Took too long writing first part of events.");
 			countdown.Reset();
 
 			// -- set up truncation
@@ -33,7 +32,7 @@ namespace EventStore.Core.Tests.TransactionLog.Truncation {
 
 			// --- second part of events
 			WriteEvents(cnt, miniNode, countdown);
-			Assert.IsTrue(countdown.Wait(TimeSpan.FromSeconds(10)), "Took too long writing second part of events.");
+			Assert.True(countdown.Wait(TimeSpan.FromSeconds(10)), "Took too long writing second part of events.");
 			countdown.Reset();
 
 			await miniNode.Shutdown(keepDb: true);
@@ -42,26 +41,26 @@ namespace EventStore.Core.Tests.TransactionLog.Truncation {
 			miniNode = new MiniNode(PathName, tcpPort, tcpSecPort, httpPort, inMemDb: false);
 
 			await miniNode.Start();
-			Assert.AreEqual(-1, miniNode.Db.Config.TruncateCheckpoint.Read());
-			Assert.That(miniNode.Db.Config.WriterCheckpoint.Read(), Is.GreaterThanOrEqualTo(truncatePosition));
+			Assert.Equal(-1, miniNode.Db.Config.TruncateCheckpoint.Read());
+			Assert.True(miniNode.Db.Config.WriterCheckpoint.Read() >= truncatePosition);
 
 			// -- third part of events
 			WriteEvents(cnt, miniNode, countdown);
-			Assert.IsTrue(countdown.Wait(TimeSpan.FromSeconds(10)), "Took too long writing third part of events.");
+			Assert.True(countdown.Wait(TimeSpan.FromSeconds(10)), "Took too long writing third part of events.");
 			countdown.Reset();
 
 			await miniNode.Shutdown(keepDb: true);
 
 			// -- second restart
 			miniNode = new MiniNode(PathName, tcpPort, tcpSecPort, httpPort, inMemDb: false);
-			Assert.AreEqual(-1, miniNode.Db.Config.TruncateCheckpoint.Read());
+			Assert.Equal(-1, miniNode.Db.Config.TruncateCheckpoint.Read());
 			await miniNode.Start();
 
 			// -- if we get here -- then everything is ok
 			await miniNode.Shutdown();
 		}
 
-		[Test, Category("LongRunning"), Category("Network")]
+		[Fact, Trait("Category", "LongRunning"), Trait("Category", "Network")]
 		public async Task with_truncate_position_in_completed_chunk_everything_should_go_fine() {
 			const int chunkSize = 1024 * 1024;
 			const int cachedSize = chunkSize * 3;
@@ -77,7 +76,7 @@ namespace EventStore.Core.Tests.TransactionLog.Truncation {
 
 			// --- first part of events
 			WriteEvents(cnt, miniNode, countdown, MiniNode.ChunkSize / 5 * 3);
-			Assert.IsTrue(countdown.Wait(TimeSpan.FromSeconds(10)), "Took too long writing first part of events.");
+			Assert.True(countdown.Wait(TimeSpan.FromSeconds(10)), "Took too long writing first part of events.");
 			countdown.Reset();
 
 			// -- set up truncation
@@ -87,7 +86,7 @@ namespace EventStore.Core.Tests.TransactionLog.Truncation {
 
 			// --- second part of events
 			WriteEvents(cnt, miniNode, countdown, MiniNode.ChunkSize / 2);
-			Assert.IsTrue(countdown.Wait(TimeSpan.FromSeconds(10)), "Took too long writing second part of events.");
+			Assert.True(countdown.Wait(TimeSpan.FromSeconds(10)), "Took too long writing second part of events.");
 			countdown.Reset();
 
 			await miniNode.Shutdown(keepDb: true);
@@ -97,12 +96,12 @@ namespace EventStore.Core.Tests.TransactionLog.Truncation {
 				cachedChunkSize: cachedSize, inMemDb: false);
 
 			await miniNode.Start();
-			Assert.AreEqual(-1, miniNode.Db.Config.TruncateCheckpoint.Read());
-			Assert.That(miniNode.Db.Config.WriterCheckpoint.Read(), Is.GreaterThanOrEqualTo(truncatePosition));
+			Assert.Equal(-1, miniNode.Db.Config.TruncateCheckpoint.Read());
+			Assert.True(miniNode.Db.Config.WriterCheckpoint.Read() >= truncatePosition);
 
 			// -- third part of events
 			WriteEvents(cnt, miniNode, countdown, MiniNode.ChunkSize / 5);
-			Assert.IsTrue(countdown.Wait(TimeSpan.FromSeconds(10)), "Took too long writing third part of events.");
+			Assert.True(countdown.Wait(TimeSpan.FromSeconds(10)), "Took too long writing third part of events.");
 			countdown.Reset();
 
 			// -- if we get here -- then everything is ok
@@ -114,9 +113,9 @@ namespace EventStore.Core.Tests.TransactionLog.Truncation {
 				miniNode.Node.MainQueue.Publish(
 					new ClientMessage.WriteEvents(Guid.NewGuid(), Guid.NewGuid(),
 						new CallbackEnvelope(m => {
-							Assert.IsInstanceOf<ClientMessage.WriteEventsCompleted>(m);
+							Assert.IsType<ClientMessage.WriteEventsCompleted>(m);
 							var msg = (ClientMessage.WriteEventsCompleted)m;
-							Assert.AreEqual(OperationResult.Success, msg.Result);
+							Assert.Equal(OperationResult.Success, msg.Result);
 							countdown.Signal();
 						}),
 						true,

@@ -2,13 +2,12 @@ using System;
 using System.Security.Cryptography;
 using System.Diagnostics;
 using System.IO;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Index;
 using EventStore.Common.Utils;
 using EventStore.Common.Options;
 
 namespace EventStore.Core.Tests.Index.IndexV1 {
-	[TestFixture(PTable.IndexEntryV1Size), Explicit]
 	public class opening_a_ptable_with_more_than_32bits_of_records : SpecificationWithFilePerTestFixture {
 		public const int MD5Size = 16;
 		public const byte Version = 1;
@@ -20,12 +19,8 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 
 		protected int _indexEntrySize = PTable.IndexEntryV1Size;
 
-		public opening_a_ptable_with_more_than_32bits_of_records(int indexEntrySize) {
-			_indexEntrySize = indexEntrySize;
-		}
-
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public opening_a_ptable_with_more_than_32bits_of_records() {
+			_indexEntrySize = PTable.IndexEntryV1Size;
 			_ptableCount = (long)(uint.MaxValue + 10000000L);
 			_size = _ptableCount * (long)_indexEntrySize + PTableHeader.Size + PTable.MD5Size;
 			Console.WriteLine("Creating PTable at {0}. Size of PTable: {1}", Filename, _size);
@@ -70,19 +65,19 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 			Console.WriteLine("Created PTable File[{0}, size of {1}] in {2}.", tableId, ptableSize, sw.Elapsed);
 		}
 
-		public override void TestFixtureTearDown() {
+		public override void Dispose() {
 			_ptable.Dispose();
-			base.TestFixtureTearDown();
+			base.Dispose();
 		}
 
-		[Test, Explicit]
+		[Explicit]
 		public void count_should_be_right() {
-			Assert.AreEqual(_ptableCount, _ptable.Count);
+			Assert.Equal(_ptableCount, _ptable.Count);
 		}
 
-		[Test, Explicit]
+		[Explicit]
 		public void filename_is_correct() {
-			Assert.AreEqual(Filename, _ptable.Filename);
+			Assert.Equal(Filename, _ptable.Filename);
 		}
 	}
 }

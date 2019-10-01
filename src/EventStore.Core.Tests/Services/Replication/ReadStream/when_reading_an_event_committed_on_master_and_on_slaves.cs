@@ -4,14 +4,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using EventStore.Core.Bus;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Tests.Integration;
 using EventStore.Core.Messages;
 using EventStore.Core.Data;
 
 namespace EventStore.Core.Tests.Replication.ReadStream {
-	[TestFixture]
-	[Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class when_reading_an_event_committed_on_master_and_on_slaves : specification_with_cluster {
 		private CountdownEvent _expectedNumberOfRoleAssignments;
 
@@ -42,117 +41,117 @@ namespace EventStore.Core.Tests.Replication.ReadStream {
 			_expectedNumberOfRoleAssignments.Wait(5000);
 
 			var master = GetMaster();
-			Assert.IsNotNull(master, "Could not get master node");
+			Assert.NotNull(master);
 
 			// Set the checkpoint so the check is not skipped
 			master.Db.Config.ReplicationCheckpoint.Write(0);
 
 			var events = new Event[] {new Event(Guid.NewGuid(), "test-type", false, new byte[10], new byte[0])};
-			var writeResult = ReplicationTestHelper.WriteEvent(master, events, _streamId);
-			Assert.AreEqual(OperationResult.Success, writeResult.Result);
+			var writeResult = await ReplicationTestHelper.WriteEvent(master, events, _streamId);
+			Assert.Equal(OperationResult.Success, writeResult.Result);
 			_commitPosition = writeResult.CommitPosition;
 
-			Assert.IsTrue(_commitPosition <= GetMaster().Db.Config.ReplicationCheckpoint.ReadNonFlushed(),
+			Assert.True(_commitPosition <= GetMaster().Db.Config.ReplicationCheckpoint.ReadNonFlushed(),
 				"Replication checkpoint should be greater than event commit position");
 			await base.Given();
 		}
 
-		[Test]
-		public void should_be_able_to_read_event_from_all_forward_on_master() {
-			var readResult = ReplicationTestHelper.ReadAllEventsForward(GetMaster(), _commitPosition);
-			Assert.AreEqual(1, readResult.Events.Where(x => x.OriginalStreamId == _streamId).Count());
+		[Fact]
+		public async Task should_be_able_to_read_event_from_all_forward_on_master() {
+			var readResult = await ReplicationTestHelper.ReadAllEventsForward(GetMaster(), _commitPosition);
+			Assert.Equal(1, readResult.Events.Where(x => x.OriginalStreamId == _streamId).Count());
 		}
 
-		[Test]
-		public void should_be_able_to_read_event_from_all_backward_on_master() {
-			var readResult = ReplicationTestHelper.ReadAllEventsBackward(GetMaster(), _commitPosition);
-			Assert.AreEqual(1, readResult.Events.Where(x => x.OriginalStreamId == _streamId).Count());
+		[Fact]
+		public async Task should_be_able_to_read_event_from_all_backward_on_master() {
+			var readResult = await ReplicationTestHelper.ReadAllEventsBackward(GetMaster(), _commitPosition);
+			Assert.Equal(1, readResult.Events.Where(x => x.OriginalStreamId == _streamId).Count());
 		}
 
-		[Test]
-		public void should_be_able_to_read_event_from_stream_forward_on_master() {
-			var readResult = ReplicationTestHelper.ReadStreamEventsForward(GetMaster(), _streamId);
-			Assert.AreEqual(1, readResult.Events.Count());
-			Assert.AreEqual(ReadStreamResult.Success, readResult.Result);
+		[Fact]
+		public async Task should_be_able_to_read_event_from_stream_forward_on_master() {
+			var readResult = await ReplicationTestHelper.ReadStreamEventsForward(GetMaster(), _streamId);
+			Assert.Equal(1, readResult.Events.Count());
+			Assert.Equal(ReadStreamResult.Success, readResult.Result);
 		}
 
-		[Test]
-		public void should_be_able_to_read_event_from_stream_backward_on_master() {
-			var readResult = ReplicationTestHelper.ReadStreamEventsBackward(GetMaster(), _streamId);
-			Assert.AreEqual(ReadStreamResult.Success, readResult.Result);
-			Assert.AreEqual(1, readResult.Events.Count());
+		[Fact]
+		public async Task should_be_able_to_read_event_from_stream_backward_on_master() {
+			var readResult = await ReplicationTestHelper.ReadStreamEventsBackward(GetMaster(), _streamId);
+			Assert.Equal(ReadStreamResult.Success, readResult.Result);
+			Assert.Equal(1, readResult.Events.Count());
 		}
 
-		[Test]
-		public void should_be_able_to_read_event_on_master() {
-			var readResult = ReplicationTestHelper.ReadEvent(GetMaster(), _streamId, 0);
-			Assert.AreEqual(ReadEventResult.Success, readResult.Result);
+		[Fact]
+		public async Task should_be_able_to_read_event_on_master() {
+			var readResult = await ReplicationTestHelper.ReadEvent(GetMaster(), _streamId, 0);
+			Assert.Equal(ReadEventResult.Success, readResult.Result);
 		}
 
-		[Test]
-		public void should_be_able_to_read_event_from_all_forward_on_slaves() {
+		[Fact]
+		public async Task should_be_able_to_read_event_from_all_forward_on_slaves() {
 			var slaves = GetSlaves();
 			var quorum = (slaves.Count() + 1) / 2 + 1;
 			var successfulReads = 0;
 			foreach (var s in slaves) {
-				var readResult = ReplicationTestHelper.ReadAllEventsForward(s, _commitPosition);
+				var readResult = await ReplicationTestHelper.ReadAllEventsForward(s, _commitPosition);
 				successfulReads += readResult.Events.Where(x => x.OriginalStreamId == _streamId).Count();
 			}
 
-			Assert.GreaterOrEqual(successfulReads, quorum - 1);
+			Assert.True(successfulReads >= quorum - 1);
 		}
 
-		[Test]
-		public void should_be_able_to_read_event_from_all_backward_on_slaves() {
+		[Fact]
+		public async Task should_be_able_to_read_event_from_all_backward_on_slaves() {
 			var slaves = GetSlaves();
 			var quorum = (slaves.Count() + 1) / 2 + 1;
 			var successfulReads = 0;
 			foreach (var s in slaves) {
-				var readResult = ReplicationTestHelper.ReadAllEventsBackward(s, _commitPosition);
+				var readResult = await ReplicationTestHelper.ReadAllEventsBackward(s, _commitPosition);
 				successfulReads += readResult.Events.Where(x => x.OriginalStreamId == _streamId).Count();
 			}
 
-			Assert.GreaterOrEqual(successfulReads, quorum - 1);
+			Assert.True(successfulReads >= quorum - 1);
 		}
 
-		[Test]
-		public void should_be_able_to_read_event_from_stream_forward_on_slaves() {
+		[Fact]
+		public async Task should_be_able_to_read_event_from_stream_forward_on_slaves() {
 			var slaves = GetSlaves();
 			var quorum = (slaves.Count() + 1) / 2 + 1;
 			var successfulReads = 0;
 			foreach (var s in slaves) {
-				var readResult = ReplicationTestHelper.ReadStreamEventsForward(s, _streamId);
+				var readResult = await ReplicationTestHelper.ReadStreamEventsForward(s, _streamId);
 				successfulReads += readResult.Events.Count();
-				Assert.AreEqual(ReadStreamResult.Success, readResult.Result);
+				Assert.Equal(ReadStreamResult.Success, readResult.Result);
 			}
 
-			Assert.GreaterOrEqual(successfulReads, quorum - 1);
+			Assert.True(successfulReads >= quorum - 1);
 		}
 
-		[Test]
-		public void should_be_able_to_read_event_from_stream_backward_on_slaves() {
+		[Fact]
+		public async Task should_be_able_to_read_event_from_stream_backward_on_slaves() {
 			var slaves = GetSlaves();
 			var quorum = (slaves.Count() + 1) / 2 + 1;
 			var successfulReads = 0;
 			foreach (var s in slaves) {
-				var readResult = ReplicationTestHelper.ReadStreamEventsBackward(s, _streamId);
+				var readResult = await ReplicationTestHelper.ReadStreamEventsBackward(s, _streamId);
 				successfulReads += readResult.Events.Count();
 			}
 
-			Assert.GreaterOrEqual(successfulReads, quorum - 1);
+			Assert.True(successfulReads >= quorum - 1);
 		}
 
-		[Test]
-		public void should_be_able_to_read_event_on_slaves() {
+		[Fact]
+		public async Task should_be_able_to_read_event_on_slaves() {
 			var slaves = GetSlaves();
 			var quorum = (slaves.Count() + 1) / 2 + 1;
 			var successfulReads = 0;
 			foreach (var s in slaves) {
-				var readResult = ReplicationTestHelper.ReadEvent(s, _streamId, 0);
+				var readResult = await ReplicationTestHelper.ReadEvent(s, _streamId, 0);
 				successfulReads += readResult.Result == ReadEventResult.Success ? 1 : 0;
 			}
 
-			Assert.GreaterOrEqual(successfulReads, quorum - 1);
+			Assert.True(successfulReads >= quorum - 1);
 		}
 	}
 }

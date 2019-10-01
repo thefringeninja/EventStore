@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using EventStore.Common.Utils;
 using EventStore.Core.Services.Transport.Http;
 using EventStore.Core.Tests.Integration;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Transport.Http {
 	public class Authorization : specification_with_cluster {
@@ -105,7 +105,6 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			}
 		}
 
-		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 
@@ -124,7 +123,6 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			_httpClients["None"] = new HttpClient();
 		}
 
-        [OneTimeTearDown]
 		public override Task TestFixtureTearDown() {
 			foreach(var kvp in _httpClients){
 				kvp.Value.Dispose();
@@ -132,19 +130,17 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			return base.TestFixtureTearDown();
 		}
 
-		[Test, Combinatorial]
-		public async Task authorization_tests(
-			[Values(
+		public static IEnumerable<object[]> TestCases() {
+			var userAuthorizationLevels = new[] {
 				"None",
 				"User",
 				"Ops",
 				"Admin"
-			)] string userAuthorizationLevel,
-			[Values(
-				false,
-				true
-			)] bool useInternalEndpoint,
-			[Values(
+			};
+
+			var useInternalEndpoints = new[] {false, true};
+
+			var httpEndpointDetails = new[] {
 				"/admin/shutdown;POST;Ops", /* this test is not executed for Ops and Admin to prevent the node from shutting down */
 				"/admin/scavenge?startFromChunk={startFromChunk}&threads={threads};POST;Ops",
 				"/admin/scavenge/{scavengeId};DELETE;Ops",
@@ -221,8 +217,22 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 				"/web/{*remaining_path};GET;None",
 				";GET;None",
 				"/web;GET;None"
-			)] string httpEndpointDetails
-		){
+			};
+
+			foreach (var level in userAuthorizationLevels) {
+				foreach (var use in useInternalEndpoints) {
+					foreach (var detail in httpEndpointDetails) {
+						yield return new object[] {level, use, detail};
+					}
+				}
+			}
+		}
+
+		[Theory, MemberData(nameof(TestCases))]
+		public async Task authorization_tests(
+			string userAuthorizationLevel,
+			bool useInternalEndpoint,
+			string httpEndpointDetails){
 			/*use the master node endpoint to avoid any redirects*/
 			var nodeEndpoint = useInternalEndpoint? _nodes[_masterId].InternalHttpEndPoint: _nodes[_masterId].ExternalHttpEndPoint;
 			var httpEndpointTokens = httpEndpointDetails.Split(';');
@@ -235,15 +245,15 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 				return;
 			}
 
-			var url = string.Format("http://{0}{1}", nodeEndpoint, endpointUrl);
+			var url = $"http://{nodeEndpoint}{endpointUrl}";
 			var body = GetData(httpMethod, endpointUrl);
 			var contentType = httpMethod == HttpMethod.Post || httpMethod == HttpMethod.Put || httpMethod == HttpMethod.Delete ? "application/json" : null;
 			var statusCode = await SendRequest(_httpClients[userAuthorizationLevel], httpMethod, url, body, contentType);
 
 			if(GetAuthLevel(userAuthorizationLevel) >= GetAuthLevel(requiredMinAuthorizationLevel)){
-				Assert.AreNotEqual(401, statusCode);
+				Assert.NotEqual(401, statusCode);
 			} else{
-				Assert.AreEqual(401, statusCode);
+				Assert.Equal(401, statusCode);
 			}
 		}
 

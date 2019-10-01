@@ -1,10 +1,9 @@
 ﻿using System.Linq;
 using EventStore.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Projections.Core.Services;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_manager.multi_stream {
-	[TestFixture]
 	public class when_starting_with_prerecorded_events_before_the_last_checkpoint :
 		TestFixtureWithMultiStreamCheckpointManager {
 		protected override void Given() {
@@ -37,15 +36,15 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 			base.When();
 			_checkpointReader.BeginLoadState();
 			var checkpointLoaded =
-				_consumer.HandledMessages.OfType<CoreProjectionProcessingMessage.CheckpointLoaded>().First();
+				Consumer.HandledMessages.OfType<CoreProjectionProcessingMessage.CheckpointLoaded>().First();
 			_checkpointWriter.StartFrom(checkpointLoaded.CheckpointTag, checkpointLoaded.CheckpointEventNumber);
 			_manager.BeginLoadPrerecordedEvents(checkpointLoaded.CheckpointTag);
 		}
 
-		[Test]
+		[Fact]
 		public void stops_reading_prerecorded_events_after_found_checkpoint() {
-			Assert.AreEqual(1,
-				_consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsBackward>()
+			Assert.Equal(1,
+				Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsBackward>()
 					.Count(_ => _.EventStreamId == "$projections-projection-order"));
 		}
 	}

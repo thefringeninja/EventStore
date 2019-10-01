@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Management;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager {
-	public abstract class TestFixtureWithJsProjection {
+	public abstract class TestFixtureWithJsProjection : IDisposable {
 		private ProjectionStateHandlerFactory _stateHandlerFactory;
 		protected IProjectionStateHandler _stateHandler;
 		protected List<string> _logged;
@@ -15,7 +15,10 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 		protected string _sharedState = null;
 		protected IQuerySources _source;
 
-		[SetUp]
+		public TestFixtureWithJsProjection() {
+			Setup();
+		}
+
 		public void Setup() {
 			_state = null;
 			_projection = null;
@@ -46,10 +49,10 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 
 		protected abstract void Given();
 
-		[TearDown]
-		public void Teardown() {
-			if (_stateHandler != null)
-				_stateHandler.Dispose();
+		public void Dispose() => Teardown();
+
+		protected void Teardown() {
+			_stateHandler?.Dispose();
 			_stateHandler = null;
 			GC.Collect(2, GCCollectionMode.Forced);
 			GC.WaitForPendingFinalizers();

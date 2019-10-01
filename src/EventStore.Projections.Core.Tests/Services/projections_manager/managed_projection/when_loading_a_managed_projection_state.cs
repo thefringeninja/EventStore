@@ -8,10 +8,9 @@ using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Management;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager.managed_projection {
-	[TestFixture]
 	public class when_loading_a_managed_projection_state : TestFixtureWithExistingEvents {
 		private new ITimeProvider _timeProvider;
 
@@ -45,7 +44,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.managed
 				TimeSpan.FromMinutes(Opts.ProjectionsQueryExpiryDefault));
 		}
 
-		[Test]
+		[Fact]
 		public void null_handler_type_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				ProjectionManagementMessage.Command.Post message = new ProjectionManagementMessage.Command.Post(
@@ -68,7 +67,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.managed
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void empty_handler_type_throws_argument_null_exception() {
 			Assert.Throws<ArgumentException>(() => {
 				ProjectionManagementMessage.Command.Post message = new ProjectionManagementMessage.Command.Post(
@@ -91,7 +90,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.managed
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void null_query_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				ProjectionManagementMessage.Command.Post message = new ProjectionManagementMessage.Command.Post(

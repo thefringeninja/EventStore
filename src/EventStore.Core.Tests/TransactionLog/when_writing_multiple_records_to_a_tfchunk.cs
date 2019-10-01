@@ -1,10 +1,9 @@
 using System;
 using EventStore.Core.TransactionLog.Chunks.TFChunk;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog {
-	[TestFixture]
 	public class when_writing_multiple_records_to_a_tfchunk : SpecificationWithFilePerTestFixture {
 		private TFChunk _chunk;
 		private readonly Guid _corrId = Guid.NewGuid();
@@ -17,9 +16,7 @@ namespace EventStore.Core.Tests.TransactionLog {
 		private PrepareLogRecord _prepare1;
 		private PrepareLogRecord _prepare2;
 
-		[OneTimeSetUp]
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public when_writing_multiple_records_to_a_tfchunk() {
 			_chunk = TFChunkHelper.CreateNewChunk(Filename);
 
 			_prepare1 = new PrepareLogRecord(0, _corrId, _eventId, 0, 0, "test", 1, new DateTime(2000, 1, 1, 12, 0, 0),
@@ -37,89 +34,88 @@ namespace EventStore.Core.Tests.TransactionLog {
 			_chunk.Flush();
 		}
 
-		[OneTimeTearDown]
-		public override void TestFixtureTearDown() {
+		public override void Dispose() {
 			_chunk.Dispose();
-			base.TestFixtureTearDown();
+			base.Dispose();
 		}
 
-		[Test]
+		[Fact]
 		public void the_chunk_is_not_cached() {
-			Assert.IsFalse(_chunk.IsCached);
+			Assert.False(_chunk.IsCached);
 		}
 
-		[Test]
+		[Fact]
 		public void the_first_record_was_written() {
-			Assert.IsTrue(_written1);
+			Assert.True(_written1);
 		}
 
-		[Test]
+		[Fact]
 		public void the_second_record_was_written() {
-			Assert.IsTrue(_written2);
+			Assert.True(_written2);
 		}
 
-		[Test]
+		[Fact]
 		public void the_first_record_can_be_read_at_position() {
 			var res = _chunk.TryReadAt((int)_position1);
-			Assert.IsTrue(res.Success);
-			Assert.IsTrue(res.LogRecord is PrepareLogRecord);
-			Assert.AreEqual(_prepare1, res.LogRecord);
+			Assert.True(res.Success);
+			Assert.True(res.LogRecord is PrepareLogRecord);
+			Assert.Equal(_prepare1, res.LogRecord);
 		}
 
-		[Test]
+		[Fact]
 		public void the_second_record_can_be_read_at_position() {
 			var res = _chunk.TryReadAt((int)_position2);
-			Assert.IsTrue(res.Success);
-			Assert.IsTrue(res.LogRecord is PrepareLogRecord);
-			Assert.AreEqual(_prepare2, res.LogRecord);
+			Assert.True(res.Success);
+			Assert.True(res.LogRecord is PrepareLogRecord);
+			Assert.Equal(_prepare2, res.LogRecord);
 		}
 
-		[Test]
+		[Fact]
 		public void the_first_record_can_be_read() {
 			var res = _chunk.TryReadFirst();
-			Assert.IsTrue(res.Success);
-			Assert.AreEqual(_prepare1.GetSizeWithLengthPrefixAndSuffix(), res.NextPosition);
-			Assert.IsTrue(res.LogRecord is PrepareLogRecord);
-			Assert.AreEqual(_prepare1, res.LogRecord);
+			Assert.True(res.Success);
+			Assert.Equal(_prepare1.GetSizeWithLengthPrefixAndSuffix(), res.NextPosition);
+			Assert.True(res.LogRecord is PrepareLogRecord);
+			Assert.Equal(_prepare1, res.LogRecord);
 		}
 
-		[Test]
+		[Fact]
 		public void the_second_record_can_be_read_as_closest_forward_after_first() {
 			var res = _chunk.TryReadClosestForward(_prepare1.GetSizeWithLengthPrefixAndSuffix());
-			Assert.IsTrue(res.Success);
-			Assert.AreEqual(_prepare1.GetSizeWithLengthPrefixAndSuffix()
+			Assert.True(res.Success);
+			Assert.Equal(_prepare1.GetSizeWithLengthPrefixAndSuffix()
 			                + _prepare2.GetSizeWithLengthPrefixAndSuffix(), res.NextPosition);
-			Assert.IsTrue(res.LogRecord is PrepareLogRecord);
-			Assert.AreEqual(_prepare2, res.LogRecord);
+			Assert.True(res.LogRecord is PrepareLogRecord);
+			Assert.Equal(_prepare2, res.LogRecord);
 		}
 
-		[Test]
+		[Fact]
 		public void cannot_read_past_second_record_with_closest_forward_method() {
 			var res = _chunk.TryReadClosestForward(_prepare1.GetSizeWithLengthPrefixAndSuffix()
 			                                       + _prepare2.GetSizeWithLengthPrefixAndSuffix());
-			Assert.IsFalse(res.Success);
+			Assert.False(res.Success);
 		}
 
-		[Test]
+		[Fact]
 		public void the_seconds_record_can_be_read_as_last() {
 			var res = _chunk.TryReadLast();
-			Assert.IsTrue(res.Success);
-			Assert.AreEqual(_prepare1.GetSizeWithLengthPrefixAndSuffix(), res.NextPosition);
-			Assert.AreEqual(_prepare2, res.LogRecord);
+			Assert.True(res.Success);
+			Assert.Equal(_prepare1.GetSizeWithLengthPrefixAndSuffix(), res.NextPosition);
+			Assert.Equal(_prepare2, res.LogRecord);
 		}
 
-		[Test]
+		[Fact]
 		public void the_first_record_can_be_read_as_closest_backward_after_last() {
 			var res = _chunk.TryReadClosestBackward(_prepare1.GetSizeWithLengthPrefixAndSuffix());
-			Assert.IsTrue(res.Success);
-			Assert.AreEqual(0, res.NextPosition);
-			Assert.AreEqual(_prepare1, res.LogRecord);
+			Assert.True(res.Success);
+			Assert.Equal(0, res.NextPosition);
+			Assert.Equal(_prepare1, res.LogRecord);
 		}
 
-		[Test]
+		[Fact]
 		public void cannot_read_backward_from_zero_pos() {
 			var res = _chunk.TryReadClosestBackward(0);
-			Assert.IsFalse(res.Success);
+			Assert.False(res.Success);
 		}
 	}
 }

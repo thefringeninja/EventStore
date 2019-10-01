@@ -1,12 +1,11 @@
 using System;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Data;
 
 namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
-	[TestFixture]
-	[Category("ClientAPI"), Category("LongRunning")]
+	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
 	public class transactions_on_stream_with_event_numbers_greater_than_2_billion : MiniNodeWithExistingRecords {
 		private const string StreamName = "transactions_on_stream_with_event_numbers_greater_than_2_billion";
 		private const long intMaxValue = (long)int.MaxValue;
@@ -28,7 +27,7 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 				EventStore.ClientAPI.StreamMetadata.Create(truncateBefore: intMaxValue + 1));
 		}
 
-		[Test]
+		[Fact]
 		public async Task should_be_able_to_append_to_stream_in_a_transaction() {
 			var evnt1 = new EventData(Guid.NewGuid(), "EventType", false, new byte[10], new byte[15]);
 			var evnt2 = new EventData(Guid.NewGuid(), "EventType", false, new byte[10], new byte[15]);
@@ -40,14 +39,14 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
             await transaction.CommitAsync();
 
 			var records = await _store.ReadStreamEventsForwardAsync(StreamName, intMaxValue, 10, false);
-			Assert.AreEqual(7, records.Events.Length);
-			Assert.AreEqual(_r1.EventId, records.Events[0].Event.EventId);
-			Assert.AreEqual(_r2.EventId, records.Events[1].Event.EventId);
-			Assert.AreEqual(_r3.EventId, records.Events[2].Event.EventId);
-			Assert.AreEqual(_r4.EventId, records.Events[3].Event.EventId);
-			Assert.AreEqual(_r5.EventId, records.Events[4].Event.EventId);
-			Assert.AreEqual(evnt1.EventId, records.Events[5].Event.EventId);
-			Assert.AreEqual(evnt2.EventId, records.Events[6].Event.EventId);
+			Assert.Equal(7, records.Events.Length);
+			Assert.Equal(_r1.EventId, records.Events[0].Event.EventId);
+			Assert.Equal(_r2.EventId, records.Events[1].Event.EventId);
+			Assert.Equal(_r3.EventId, records.Events[2].Event.EventId);
+			Assert.Equal(_r4.EventId, records.Events[3].Event.EventId);
+			Assert.Equal(_r5.EventId, records.Events[4].Event.EventId);
+			Assert.Equal(evnt1.EventId, records.Events[5].Event.EventId);
+			Assert.Equal(evnt2.EventId, records.Events[6].Event.EventId);
 		}
 	}
 }

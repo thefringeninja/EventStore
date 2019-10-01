@@ -4,10 +4,9 @@ using EventStore.Core.Authentication;
 using EventStore.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
-	[TestFixture]
 	public class when_handling_an_emit_with_write_as_configured : TestFixtureWithExistingEvents {
 		private EmittedStream _stream;
 		private TestCheckpointManagerMessageHandler _readyHandler;
@@ -18,8 +17,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 			ExistingEvent("test_stream", "type", @"{""c"": 100, ""p"": 50}", "data");
 		}
 
-		[SetUp]
-		public void setup() {
+		public when_handling_an_emit_with_write_as_configured() {
 			_readyHandler = new TestCheckpointManagerMessageHandler();
 			_writeAs = new OpenGenericPrincipal("test-user");
 			_stream = new EmittedStream(
@@ -39,16 +37,16 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 				});
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_not_yet_published_events() {
-			Assert.AreEqual(1, _consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Count());
+			Assert.Equal(1, Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Count());
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_write_event_with_correct_user_account() {
-			var writeEvent = _consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Single();
+			var writeEvent = Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Single();
 
-			Assert.AreSame(_writeAs, writeEvent.User);
+			Assert.Equal(_writeAs, writeEvent.User);
 		}
 	}
 }

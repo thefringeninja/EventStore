@@ -1,71 +1,70 @@
 using System;
 using System.Threading;
+using EventStore.Core.Tests;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Management;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.v8;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.v8 {
-	[TestFixture]
 	public class when_creating_v8_projection {
 		private ProjectionStateHandlerFactory _stateHandlerFactory;
 
-		[SetUp]
-		public void Setup() {
+		public when_creating_v8_projection() {
 			_stateHandlerFactory = new ProjectionStateHandlerFactory();
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void api_can_be_used() {
 			var ver = Js1.ApiVersion();
 			Console.WriteLine(ver);
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void api_can_be_used2() {
 			var ver = Js1.ApiVersion();
 			Console.WriteLine(ver);
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void it_can_be_created() {
 			using (_stateHandlerFactory.Create("JS", @"")) {
 			}
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void it_can_log_messages() {
 			string m = null;
 			using (_stateHandlerFactory.Create("JS", @"log(""Message1"");", logger: (s, _) => m = s)) {
 			}
 
-			Assert.AreEqual("Message1", m);
+			Assert.Equal("Message1", m);
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void js_syntax_errors_are_reported() {
 			try {
 				using (_stateHandlerFactory.Create("JS", @"log(1;", logger: (s, _) => { })) {
 				}
 			} catch (Exception ex) {
-				Assert.IsInstanceOf<Js1Exception>(ex);
-				Assert.IsTrue(ex.Message.StartsWith("SyntaxError:"));
+				Assert.IsType<Js1Exception>(ex);
+				Assert.True(ex.Message.StartsWith("SyntaxError:"));
 			}
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void js_exceptions_errors_are_reported() {
 			try {
 				using (_stateHandlerFactory.Create("JS", @"throw 123;", logger: (s, _) => { })) {
 				}
 			} catch (Exception ex) {
-				Assert.IsInstanceOf<Js1Exception>(ex);
-				Assert.AreEqual("123", ex.Message);
+				Assert.IsType<Js1Exception>(ex);
+				Assert.Equal("123", ex.Message);
 			}
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void long_compilation_times_out() {
 			try {
 				using (_stateHandlerFactory.Create("JS",
@@ -81,12 +80,12 @@ namespace EventStore.Projections.Core.Tests.Services.v8 {
 					}))) {
 				}
 			} catch (Exception ex) {
-				Assert.IsInstanceOf<Js1Exception>(ex);
-				Assert.IsTrue(ex.Message.Contains("terminated"));
+				Assert.IsType<Js1Exception>(ex);
+				Assert.True(ex.Message.Contains("terminated"));
 			}
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void long_execution_times_out() {
 			try {
 				//string m = null;
@@ -115,12 +114,12 @@ namespace EventStore.Projections.Core.Tests.Services.v8 {
 						out newState, out emittedevents);
 				}
 			} catch (Exception ex) {
-				Assert.IsInstanceOf<Js1Exception>(ex);
-				Assert.IsTrue(ex.Message.Contains("terminated"));
+				Assert.IsType<Js1Exception>(ex);
+				Assert.True(ex.Message.Contains("terminated"));
 			}
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void long_post_processing_times_out() {
 			try {
 				//string m = null;
@@ -153,12 +152,12 @@ namespace EventStore.Projections.Core.Tests.Services.v8 {
 					h.TransformStateToResult();
 				}
 			} catch (Exception ex) {
-				Assert.IsInstanceOf<Js1Exception>(ex);
-				Assert.IsTrue(ex.Message.Contains("terminated"));
+				Assert.IsType<Js1Exception>(ex);
+				Assert.True(ex.Message.Contains("terminated"));
 			}
 		}
 
-		[Test, Explicit, Category("v8"), Category("Manual")]
+		[Explicit, Trait("Category", "v8"), Trait("Category", "Manual")]
 		public void long_execution_times_out_many() {
 			//string m = null;
 			for (var i = 0; i < 10; i++) {

@@ -2,15 +2,13 @@
 using System.IO;
 using System.Threading.Tasks;
 using EventStore.Core.Index;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Index.Scavenge {
-	[TestFixture]
 	public class when_scavenging_an_index_fails : SpecificationWithDirectoryPerTestFixture {
 		private PTable _oldTable;
 		private string _expectedOutputFile;
 
-		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 
@@ -29,22 +27,22 @@ namespace EventStore.Core.Tests.Index.Scavenge {
 			};
 
 			_expectedOutputFile = GetTempFilePath();
-			Assert.That(
+
+			var ex = Assert.Throws<Exception>(
 				() => PTable.Scavenged(_oldTable, _expectedOutputFile, upgradeHash, existsAt, readRecord,
-					PTableVersions.IndexV4, out spaceSaved),
-				Throws.Exception.With.Message.EqualTo("Expected exception"));
+					PTableVersions.IndexV4, out spaceSaved));
+			Assert.Equal("Expected exception", ex.Message);
 		}
 
-		[OneTimeTearDown]
 		public override Task TestFixtureTearDown() {
 			_oldTable.Dispose();
 
 			return base.TestFixtureTearDown();
 		}
 
-		[Test]
+		[Fact]
 		public void the_output_file_is_deleted() {
-			Assert.That(File.Exists(_expectedOutputFile), Is.False);
+			Assert.False(File.Exists(_expectedOutputFile));
 		}
 	}
 }

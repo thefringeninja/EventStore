@@ -1,10 +1,9 @@
 ﻿using System;
 using EventStore.Core.Services.Monitoring.Stats;
 using EventStore.Core.Tests.Fakes;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Monitoring {
-	[TestFixture]
 	public class IoParserTests {
 		private readonly string ioStr = "rchar: 23550615" + Environment.NewLine +
 		                                "wchar: 290654" + Environment.NewLine +
@@ -14,36 +13,36 @@ namespace EventStore.Core.Tests.Services.Monitoring {
 		                                "write_bytes: 188416" + Environment.NewLine +
 		                                "cancelled_write_bytes: 0" + Environment.NewLine;
 
-		[Test]
+		[Fact]
 		public void sample_io_doesnt_crash() {
 			var io = DiskIo.ParseOnUnix(ioStr, new FakeLogger());
 			var success = io != null;
 
-			Assert.That(success, Is.True);
+			Assert.True(success);;
 		}
 
-		[Test]
+		[Fact]
 		public void bad_io_crashes() {
 			var badIoStr = ioStr.Remove(5, 20);
 
 			DiskIo io = DiskIo.ParseOnUnix(badIoStr, new FakeLogger());
 			var success = io != null;
 
-			Assert.That(success, Is.False);
+			Assert.False(success);
 		}
 
-		[Test]
+		[Fact]
 		public void read_bytes_parses_ok() {
 			var io = DiskIo.ParseOnUnix(ioStr, new FakeLogger());
 
-			Assert.That(io.ReadBytes, Is.EqualTo(13824000));
+			Assert.Equal(io.ReadBytes, 13824000UL);
 		}
 
-		[Test]
+		[Fact]
 		public void write_bytes_parses_ok() {
 			var io = DiskIo.ParseOnUnix(ioStr, new FakeLogger());
 
-			Assert.That(io.WrittenBytes, Is.EqualTo(188416));
+			Assert.Equal(io.WrittenBytes, 188416UL);
 		}
 	}
 }

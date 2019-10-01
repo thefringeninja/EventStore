@@ -1,104 +1,96 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Other {
-	[TestFixture, Ignore("Until resolved in MONO")]
-	class when_matching_remaining_path {
+	public class when_matching_remaining_path {
 		private UriTemplate _urlTemplate;
 		private UriTemplateMatch _match;
 
-		[SetUp]
-		public void setup() {
+		public when_matching_remaining_path() {
 			_urlTemplate = new UriTemplate("/a/b/{*C}");
 			_match = _urlTemplate.Match(new Uri("http://localhost"), new Uri("http://localhost/a/b/123"));
 		}
 
-		[Test]
+		[Fact]
 		public void bound_variable_c_is_available() {
-			Assert.IsTrue(_match.BoundVariables.AllKeys.Contains("C"));
+			Assert.True(_match.BoundVariables.AllKeys.Contains("C"));
 		}
 
-		[Test]
+		[Fact]
 		public void bound_variable_c_contains_remaining_path() {
-			Assert.AreEqual("123", _match.BoundVariables["C"]);
+			Assert.Equal("123", _match.BoundVariables["C"]);
 		}
 	}
 
-	[TestFixture, Ignore("Until resolved in MONO")]
-	class when_matching_remaining_multi_segment_path {
+	public class when_matching_remaining_multi_segment_path {
 		private UriTemplate _urlTemplate;
 		private UriTemplateMatch _match;
 
-		[SetUp]
-		public void setup() {
+		public when_matching_remaining_multi_segment_path() {
 			_urlTemplate = new UriTemplate("/a/b/{*C}");
 			_match = _urlTemplate.Match(new Uri("http://localhost"), new Uri("http://localhost/a/b/123/456"));
 		}
 
-		[Test]
+		[Fact]
 		public void bound_variable_c_is_available() {
-			Assert.IsTrue(_match.BoundVariables.AllKeys.Contains("C"));
+			Assert.True(_match.BoundVariables.AllKeys.Contains("C"));
 		}
 
-		[Test]
+		[Fact]
 		public void bound_variable_c_contains_remaining_path() {
-			Assert.AreEqual("123/456", _match.BoundVariables["C"]);
+			Assert.Equal("123/456", _match.BoundVariables["C"]);
 		}
 	}
 
 
-	[TestFixture]
-	class when_matching_uri_with_missing_query_variable {
+	public class when_matching_uri_with_missing_query_variable {
 		private UriTemplate _urlTemplate;
 		private UriTemplateMatch _match;
 
-		[SetUp]
-		public void setup() {
+		public when_matching_uri_with_missing_query_variable() {
 			_urlTemplate = new UriTemplate("/a/b?c={C}");
 			_match = _urlTemplate.Match(new Uri("http://localhost"), new Uri("http://localhost/a/b"));
 		}
 
-		[Test]
+		[Fact]
 		public void match_succeeds() {
-			Assert.IsTrue(_match != null);
+			Assert.True(_match != null);
 		}
 
-		[Test]
+		[Fact]
 		public void bound_variable_c_is_null() {
-			Assert.AreEqual(null, _match.BoundVariables["C"]);
+			Assert.Null(_match.BoundVariables["C"]);
 		}
 	}
 
-	[TestFixture]
-	class url_segments {
-		[Test]
+	public class url_segments {
+		[Fact]
 		public void are_not_untumatically_unescaped() {
 			var uri = new Uri("http://fake/a%24a%20/123$");
-			Assert.AreEqual(3, uri.Segments.Length);
-			Assert.AreEqual("/", uri.Segments[0]);
-			Assert.AreEqual("a%24a%20/", uri.Segments[1]);
-			Assert.AreEqual("123$", uri.Segments[2]);
+			Assert.Equal(3, uri.Segments.Length);
+			Assert.Equal("/", uri.Segments[0]);
+			Assert.Equal("a%24a%20/", uri.Segments[1]);
+			Assert.Equal("123$", uri.Segments[2]);
 		}
 
-		[Test]
+		[Fact]
 		public void are_not_automatically_unescaped2() {
 			var ub = new UriBuilder();
 			ub.Scheme = "http";
 			ub.Host = "fake";
 			ub.Path = "/a%24a%20/123$";
 			var uri = ub.Uri;
-			Assert.AreEqual(3, uri.Segments.Length);
-			Assert.AreEqual("/", uri.Segments[0]);
-			Assert.AreEqual("a%24a%20/", uri.Segments[1]);
-			Assert.AreEqual("123$", uri.Segments[2]);
+			Assert.Equal(3, uri.Segments.Length);
+			Assert.Equal("/", uri.Segments[0]);
+			Assert.Equal("a%24a%20/", uri.Segments[1]);
+			Assert.Equal("123$", uri.Segments[2]);
 		}
 	}
 
-	[TestFixture]
-	class when_matching_escaped_urls {
-		[Test]
+	public class when_matching_escaped_urls {
+		[Fact]
 		public void Dump() {
 			var result = new List<Tuple<char, string>>();
 			for (char i = (char)1; i <= 127; i++) {
@@ -146,13 +138,13 @@ namespace EventStore.Projections.Core.Tests.Other {
 		private static void Matches(string template, string candidate) {
 			var urlTemplate = new UriTemplate(template);
 			var match = urlTemplate.Match(new Uri("http://localhost"), new Uri("http://localhost" + candidate));
-			Assert.IsNotNull(match);
+			Assert.NotNull(match);
 		}
 
 		private static void DoesNotMatch(string template, string candidate) {
 			var urlTemplate = new UriTemplate(template);
 			var match = urlTemplate.Match(new Uri("http://localhost"), new Uri("http://localhost" + candidate));
-			Assert.IsNull(match);
+			Assert.Null(match);
 		}
 	}
 }

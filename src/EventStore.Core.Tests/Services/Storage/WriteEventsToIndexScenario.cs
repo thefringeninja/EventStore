@@ -7,11 +7,10 @@ using EventStore.Core.Index;
 using EventStore.Core.Services.Storage.ReaderIndex;
 using EventStore.Core.TransactionLog;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Storage {
-	[TestFixture]
-	public abstract class WriteEventsToIndexScenario {
+	public abstract class WriteEventsToIndexScenario : IDisposable {
 		protected InMemoryBus _publisher;
 		protected ITransactionFileReader _tfReader;
 		protected ITableIndex _tableIndex;
@@ -109,8 +108,7 @@ namespace EventStore.Core.Tests.Services.Storage {
 
 		public abstract void WriteEvents();
 
-        [OneTimeSetUp]
-		public virtual void TestFixtureSetUp() {
+		public WriteEventsToIndexScenario() {
 			_publisher = new InMemoryBus("publisher");
 			_tfReader = new FakeInMemoryTfReader(RecordOffset);
 			_tableIndex = new FakeInMemoryTableIndex();
@@ -125,8 +123,7 @@ namespace EventStore.Core.Tests.Services.Storage {
 			WriteEvents();
 		}
 
-		[OneTimeTearDown]
-		public virtual void TestFixtureTearDown() {
+		public void Dispose() {
 			_readerPool.Dispose();
 		}
 	}

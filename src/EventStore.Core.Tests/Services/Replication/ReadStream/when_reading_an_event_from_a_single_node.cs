@@ -4,14 +4,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using EventStore.Core.Bus;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Tests.Integration;
 using EventStore.Core.Messages;
 using EventStore.Core.Data;
 
 namespace EventStore.Core.Tests.Replication.ReadStream {
-	[TestFixture]
-	[Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class when_reading_an_event_from_a_single_node : specification_with_cluster {
 		private CountdownEvent _expectedNumberOfRoleAssignments;
 		private string _streamId = "test-stream";
@@ -41,51 +40,49 @@ namespace EventStore.Core.Tests.Replication.ReadStream {
 			_expectedNumberOfRoleAssignments.Wait(5000);
 
 			_liveNode = GetMaster();
-			Assert.IsNotNull(_liveNode, "Could not get master node");
+			Assert.NotNull(_liveNode);
 
 			var events = new Event[] {new Event(Guid.NewGuid(), "test-type", false, new byte[10], new byte[0])};
-			var writeResult = ReplicationTestHelper.WriteEvent(_liveNode, events, _streamId);
-			Assert.AreEqual(OperationResult.Success, writeResult.Result);
+			var writeResult = await ReplicationTestHelper.WriteEvent(_liveNode, events, _streamId);
+			Assert.Equal(OperationResult.Success, writeResult.Result);
 			_commitPosition = writeResult.CommitPosition;
 
 			var slaves = GetSlaves();
-			foreach (var s in slaves) {
-				await ShutdownNode(s.DebugIndex);
-			}
+			await Task.WhenAll(slaves.Select(s => ShutdownNode(s.DebugIndex)));
 
 			await base.Given();
 		}
 
-		[Test]
-		public void should_be_able_to_read_event_from_all_forward() {
-			var readResult = ReplicationTestHelper.ReadAllEventsForward(_liveNode, _commitPosition);
-			Assert.AreEqual(1, readResult.Events.Where(x => x.OriginalStreamId == _streamId).Count());
+		[Fact]
+		public async Task should_be_able_to_read_event_from_all_forward() {
+			var readResult = await ReplicationTestHelper.ReadAllEventsForward(_liveNode, _commitPosition);
+			Assert.Single(readResult.Events.Where(x => x.OriginalStreamId == _streamId));
 		}
 
-		[Test]
-		public void should_be_able_to_read_event_from_all_backward() {
-			var readResult = ReplicationTestHelper.ReadAllEventsBackward(_liveNode, _commitPosition);
-			Assert.AreEqual(1, readResult.Events.Where(x => x.OriginalStreamId == _streamId).Count());
+		[Fact]
+		public async Task should_be_able_to_read_event_from_all_backward() {
+			var readResult = await ReplicationTestHelper.ReadAllEventsBackward(_liveNode, _commitPosition);
+			Assert.Single(readResult.Events.Where(x => x.OriginalStreamId == _streamId));
 		}
 
-		[Test]
-		public void should_not_be_able_to_read_event_from_stream_forward() {
-			var readResult = ReplicationTestHelper.ReadStreamEventsForward(_liveNode, _streamId);
-			Assert.AreEqual(1, readResult.Events.Count());
-			Assert.AreEqual(ReadStreamResult.Success, readResult.Result);
+		[Fact]
+		public async Task should_not_be_able_to_read_event_from_stream_forward() {
+			var readResult = await ReplicationTestHelper.ReadStreamEventsForward(_liveNode, _streamId);
+			Assert.Single(readResult.Events);
+			Assert.Equal(ReadStreamResult.Success, readResult.Result);
 		}
 
-		[Test]
-		public void should_not_be_able_to_read_event_from_stream_backward() {
-			var readResult = ReplicationTestHelper.ReadStreamEventsBackward(_liveNode, _streamId);
-			Assert.AreEqual(1, readResult.Events.Count());
-			Assert.AreEqual(ReadStreamResult.Success, readResult.Result);
+		[Fact]
+		public async Task should_not_be_able_to_read_event_from_stream_backward() {
+			var readResult =  await ReplicationTestHelper.ReadStreamEventsBackward(_liveNode, _streamId);
+			Assert.Single(readResult.Events);
+			Assert.Equal(ReadStreamResult.Success, readResult.Result);
 		}
 
-		[Test]
-		public void should_not_be_able_to_read_event() {
-			var readResult = ReplicationTestHelper.ReadEvent(_liveNode, _streamId, 0);
-			Assert.AreEqual(ReadEventResult.Success, readResult.Result);
+		[Fact]
+		public async Task should_not_be_able_to_read_event() {
+			var readResult = await ReplicationTestHelper.ReadEvent(_liveNode, _streamId, 0);
+			Assert.Equal(ReadEventResult.Success, readResult.Result);
 		}
 	}
 }

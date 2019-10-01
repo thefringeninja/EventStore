@@ -4,12 +4,11 @@ using System.Text;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Projections.Core.Services.Processing.ResolvedEvent;
 using EventStore.Projections.Core.Services;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection {
-	[TestFixture]
 	public class when_the_projection_with_pending_checkpoint_is_stopped : TestFixtureWithCoreProjectionStarted {
 		protected override void Given() {
 			_checkpointHandledThreshold = 2;
@@ -47,14 +46,14 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 			_coreProjection.Stop();
 		}
 
-		[Test]
+		[Fact]
 		public void a_projection_checkpoint_event_is_published() {
 			AllWriteComplete();
-			Assert.AreEqual(
+			Assert.Equal(
 				1,
 				_writeEventHandler.HandledMessages.Count(v =>
 					v.Events.Any(e => e.EventType == ProjectionEventTypes.ProjectionCheckpoint)));
-			Assert.AreEqual(1, _consumer.HandledMessages.OfType<CoreProjectionStatusMessage.Stopped>().Count());
+			Assert.Equal(1, Consumer.HandledMessages.OfType<CoreProjectionStatusMessage.Stopped>().Count());
 		}
 	}
 }

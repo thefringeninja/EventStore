@@ -4,12 +4,11 @@ using System.Text;
 using EventStore.Common.Utils;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Projections.Core.Services.Processing.ResolvedEvent;
 using EventStore.Projections.Core.Services;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection {
-	[TestFixture]
 	public class when_starting_an_existing_projection_missing_last_emitted_event_and_state_snapshot :
 		TestFixtureWithCoreProjectionStarted {
 		private readonly Guid _causedByEventId = Guid.NewGuid();
@@ -38,16 +37,16 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 						"metadata"), _subscriptionId, 0));
 		}
 
-		[Test]
+		[Fact]
 		public void should_write_second_emitted_event_and_state_snapshot() {
-			Assert.AreEqual(1, _writeEventHandler.HandledMessages.OfEventType("Result").Count);
-			Assert.AreEqual(
+			Assert.Equal(1, _writeEventHandler.HandledMessages.OfEventType("Result").Count);
+			Assert.Equal(
 				1, _writeEventHandler.HandledMessages.OfEventType(FakeProjectionStateHandler._emit2EventType).Count);
 
-			Assert.IsTrue(
+			Assert.True(
 				_writeEventHandler.HandledMessages.Any(
 					v => Helper.UTF8NoBom.GetString(v.Events[0].Data) == FakeProjectionStateHandler._emit2Data));
-			Assert.IsTrue(_writeEventHandler.HandledMessages.Any(v => v.Events[0].EventType == "Result"));
+			Assert.True(_writeEventHandler.HandledMessages.Any(v => v.Events[0].EventType == "Result"));
 		}
 	}
 }

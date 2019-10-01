@@ -4,7 +4,7 @@ using EventStore.Core.Bus;
 using EventStore.Core.Messaging;
 using EventStore.Core.Services.TimerService;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.TimeService {
 	public class FakeScheduler : TimerBasedScheduler {
@@ -55,7 +55,6 @@ namespace EventStore.Core.Tests.Services.TimeService {
 		}
 	}
 
-	[TestFixture]
 	public class time_service_should : IHandle<TestResponseMessage> {
 		private Action<int, int> _startTimeout;
 		private List<TestResponseMessage> _timerMessages;
@@ -63,8 +62,8 @@ namespace EventStore.Core.Tests.Services.TimeService {
 		private FakeTimeProvider _timeProvider;
 		private FakeScheduler _scheduler;
 
-		[SetUp]
-		public void SetUp() {
+
+		public time_service_should() {
 			_timerMessages = new List<TestResponseMessage>();
 
 			_timeProvider = new FakeTimeProvider();
@@ -82,49 +81,45 @@ namespace EventStore.Core.Tests.Services.TimeService {
 			_timerMessages.Add(message);
 		}
 
-		[TearDown]
-		public void TearDown() {
-		}
-
-		[Test]
+		[Fact]
 		public void respond_with_correct_message() {
 			const int id = 101;
 
 			_startTimeout(0, id);
 			_scheduler.TriggerProcessing();
 
-			Assert.That(_timerMessages.ContainsSingle<TestResponseMessage>(msg => msg != null && msg.Id == id));
+			Assert.True(_timerMessages.ContainsSingle<TestResponseMessage>(msg => msg != null && msg.Id == id));
 		}
 
-		[Test]
+		[Fact]
 		public void respond_even_if_fired_too_late() {
 			_startTimeout(-5, 100);
 			_scheduler.TriggerProcessing();
 
-			Assert.That(_timerMessages.ContainsSingle<TestResponseMessage>());
+			Assert.True(_timerMessages.ContainsSingle<TestResponseMessage>());
 		}
 
-		[Test]
+		[Fact]
 		public void not_respond_until_time_elapses() {
 			_startTimeout(5, 100);
 
 			_timeProvider.AddTime(TimeSpan.FromMilliseconds(4));
 			_scheduler.TriggerProcessing();
 
-			Assert.That(_timerMessages.ContainsNo<TestResponseMessage>());
+			Assert.True(_timerMessages.ContainsNo<TestResponseMessage>());
 		}
 
-		[Test]
+		[Fact]
 		public void respond_in_correct_time() {
 			_startTimeout(5, 100);
 
 			_timeProvider.AddTime(TimeSpan.FromMilliseconds(5));
 			_scheduler.TriggerProcessing();
 
-			Assert.That(_timerMessages.ContainsSingle<TestResponseMessage>());
+			Assert.True(_timerMessages.ContainsSingle<TestResponseMessage>());
 		}
 
-		[Test]
+		[Fact]
 		public void fire_timeouts_gradually() {
 			_startTimeout(5, 100);
 			_startTimeout(25, 102);
@@ -135,34 +130,34 @@ namespace EventStore.Core.Tests.Services.TimeService {
 			_timeProvider.AddTime(TimeSpan.FromMilliseconds(10)); // 10
 			_scheduler.TriggerProcessing();
 
-			Assert.That(_timerMessages.ContainsSingle<TestResponseMessage>(msg => msg.Id == 100) &&
+			Assert.True(_timerMessages.ContainsSingle<TestResponseMessage>(msg => msg.Id == 100) &&
 			            _timerMessages.ContainsNo<TestResponseMessage>(msg => msg.Id.IsBetween(101, 104)));
 
 			_timeProvider.AddTime(TimeSpan.FromMilliseconds(10)); // 20
 			_scheduler.TriggerProcessing();
 
-			Assert.That(_timerMessages.ContainsSingle<TestResponseMessage>(msg => msg.Id == 101) &&
+			Assert.True(_timerMessages.ContainsSingle<TestResponseMessage>(msg => msg.Id == 101) &&
 			            _timerMessages.ContainsNo<TestResponseMessage>(msg => msg.Id.IsBetween(102, 104)));
 
 			_timeProvider.AddTime(TimeSpan.FromMilliseconds(10)); //30
 			_scheduler.TriggerProcessing();
 
-			Assert.That(_timerMessages.ContainsSingle<TestResponseMessage>(msg => msg.Id == 102) &&
+			Assert.True(_timerMessages.ContainsSingle<TestResponseMessage>(msg => msg.Id == 102) &&
 			            _timerMessages.ContainsNo<TestResponseMessage>(msg => msg.Id.IsBetween(103, 104)));
 
 			_timeProvider.AddTime(TimeSpan.FromMilliseconds(10)); //40
 			_scheduler.TriggerProcessing();
 
-			Assert.That(_timerMessages.ContainsSingle<TestResponseMessage>(msg => msg.Id == 103) &&
+			Assert.True(_timerMessages.ContainsSingle<TestResponseMessage>(msg => msg.Id == 103) &&
 			            _timerMessages.ContainsNo<TestResponseMessage>(msg => msg.Id == 104));
 
 			_timeProvider.AddTime(TimeSpan.FromMilliseconds(10)); //50
 			_scheduler.TriggerProcessing();
 
-			Assert.That(_timerMessages.ContainsSingle<TestResponseMessage>(msg => msg.Id == 104));
+			Assert.True(_timerMessages.ContainsSingle<TestResponseMessage>(msg => msg.Id == 104));
 		}
 
-		[Test]
+		[Fact]
 		public void fire_all_timeouts_that_are_scheduled_at_same_time() {
 			_startTimeout(5, 100);
 			_startTimeout(5, 101);
@@ -171,20 +166,20 @@ namespace EventStore.Core.Tests.Services.TimeService {
 			_timeProvider.AddTime(TimeSpan.FromMilliseconds(5));
 			_scheduler.TriggerProcessing();
 
-			Assert.That(_timerMessages.ContainsN<TestResponseMessage>(3, msg => msg.Id.IsBetween(100, 102)));
+			Assert.True(_timerMessages.ContainsN<TestResponseMessage>(3, msg => msg.Id.IsBetween(100, 102)));
 		}
 
-		[Test]
+		[Fact]
 		public void fire_all_timeouts_after_long_pause() {
 			for (int i = 0; i < 20; i++)
 				_startTimeout(10 + i, 100 + i);
 
-			Assert.That(_timerMessages.ContainsNo<TestResponseMessage>());
+			Assert.True(_timerMessages.ContainsNo<TestResponseMessage>());
 
 			_timeProvider.AddTime(TimeSpan.FromMilliseconds(1000));
 			_scheduler.TriggerProcessing();
 
-			Assert.That(_timerMessages.ContainsN<TestResponseMessage>(20, msg => msg.Id.IsBetween(100, 119)));
+			Assert.True(_timerMessages.ContainsN<TestResponseMessage>(20, msg => msg.Id.IsBetween(100, 119)));
 		}
 	}
 }

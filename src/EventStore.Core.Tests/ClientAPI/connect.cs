@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,36 +7,30 @@ using EventStore.ClientAPI;
 using EventStore.ClientAPI.Internal;
 using EventStore.Core.Tests.ClientAPI.Helpers;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
-	[TestFixture(TcpType.Normal), TestFixture(TcpType.Ssl), Category("ClientAPI"), Category("LongRunning")]
+	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
 	public class connect : SpecificationWithDirectoryPerTestFixture {
-		private readonly TcpType _tcpType;
 
-		public connect(TcpType tcpType) {
-			_tcpType = tcpType;
-		}
+		public static IEnumerable<object[]> TestCases() => new [] {new object[]{TcpType.Normal}, new object[]{TcpType.Ssl}}; 
 
 		//TODO GFY THESE NEED TO BE LOOKED AT IN LINUX
-		[Test, Category("Network")]
-		public async Task should_not_throw_exception_when_server_is_down() {
+		[Theory, MemberData(nameof(TestCases)), Trait("Category", "Network")]
+		public async Task should_not_throw_exception_when_server_is_down(TcpType tcpType) {
 			var ip = IPAddress.Loopback;
 			int port = PortsHelper.GetAvailablePort(ip);
 			try {
-				using (var connection = TestConnection.Create(new IPEndPoint(ip, port), _tcpType)) {
+				using (var connection = TestConnection.Create(new IPEndPoint(ip, port), tcpType))
 					await connection.ConnectAsync();
-				}
-			}
-			finally{
-			{
+			} finally {
 				PortsHelper.ReturnPort(port);
-			}}
+			}
 		}
 
 		//TODO GFY THESE NEED TO BE LOOKED AT IN LINUX
-		[Test, Category("Network")]
-		public async Task should_throw_exception_when_trying_to_reopen_closed_connection() {
+		[Theory, MemberData(nameof(TestCases)), Trait("Category", "Network")]
+		public async Task should_throw_exception_when_trying_to_reopen_closed_connection(TcpType tcpType) {
 			ClientApiLoggerBridge.Default.Info("Starting '{0}' test...",
 				"should_throw_exception_when_trying_to_reopen_closed_connection");
 
@@ -47,7 +42,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 				.WithConnectionTimeoutOf(TimeSpan.FromSeconds(10))
 				.SetReconnectionDelayTo(TimeSpan.FromMilliseconds(0))
 				.FailOnNoServerResponse();
-			if (_tcpType == TcpType.Ssl)
+			if (tcpType == TcpType.Ssl)
 				settings.UseSslConnection("ES", false);
 
 			var ip = IPAddress.Loopback;
@@ -58,10 +53,9 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 					await connection.ConnectAsync();
 
-					await closed.Task.WithTimeout(
-						TimeSpan.FromSeconds(120)); // TCP connection timeout might be even 60 seconds
+					await closed.Task.WithTimeout(TimeSpan.FromSeconds(120)); // TCP connection timeout might be even 60 seconds
 
-					await AssertEx.ThrowsAsync<ObjectDisposedException>(() => connection.ConnectAsync().WithTimeout());
+					await Assert.ThrowsAsync<ObjectDisposedException>(() => connection.ConnectAsync().WithTimeout());
 				}
 			} finally {
 				PortsHelper.ReturnPort(port);
@@ -69,8 +63,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		//TODO GFY THIS TEST TIMES OUT IN LINUX.
-		[Test, Category("Network")]
-		public async Task should_close_connection_after_configured_amount_of_failed_reconnections() {
+		[Theory, MemberData(nameof(TestCases)), Trait("Category", "Network")]
+		public async Task should_close_connection_after_configured_amount_of_failed_reconnections(TcpType tcpType) {
 			var closed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 			var settings =
 				ConnectionSettings.Create()
@@ -80,7 +74,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 					.WithConnectionTimeoutOf(TimeSpan.FromSeconds(10))
 					.SetReconnectionDelayTo(TimeSpan.FromMilliseconds(0))
 					.FailOnNoServerResponse();
-			if (_tcpType == TcpType.Ssl)
+			if (tcpType == TcpType.Ssl)
 				settings.UseSslConnection("ES", false);
 
 			var ip = IPAddress.Loopback;
@@ -104,22 +98,21 @@ namespace EventStore.Core.Tests.ClientAPI {
 					await closed.Task.WithTimeout(
 						TimeSpan.FromSeconds(120)); // TCP connection timeout might be even 60 seconds
 
-					await AssertEx.ThrowsAsync<ObjectDisposedException>(() => connection
+					await Assert.ThrowsAsync<ObjectDisposedException>(() => connection
 						.AppendToStreamAsync("stream", ExpectedVersion.NoStream, TestEvent.NewTestEvent())
 						.WithTimeout());
 				}
-
 			} finally {
 				PortsHelper.ReturnPort(port);
 			}
 		}
 	}
 
-	[TestFixture, Category("ClientAPI"), Category("LongRunning")]
+	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
 	public class not_connected_tests {
 		private readonly TcpType _tcpType = TcpType.Normal;
 		
-		[Test]
+		[Fact]
 		public async Task should_timeout_connection_after_configured_amount_time_on_conenct() {
 			var closed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 			var settings =

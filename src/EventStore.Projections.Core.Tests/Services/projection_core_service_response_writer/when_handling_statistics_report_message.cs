@@ -4,11 +4,10 @@ using EventStore.Projections.Core.Messages.Persisted.Responses;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Management;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projection_core_service_response_writer {
-	[TestFixture]
-	class when_handling_statistics_report_message : specification_with_projection_core_service_response_writer {
+	public class when_handling_statistics_report_message : specification_with_projection_core_service_response_writer {
 		private Guid _projectionId;
 		private ProjectionStatistics _statistics;
 
@@ -45,37 +44,37 @@ namespace EventStore.Projections.Core.Tests.Services.projection_core_service_res
 			_sut.Handle(new CoreProjectionStatusMessage.StatisticsReport(_projectionId, _statistics, 0));
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_statistics_report_response() {
 			var command = AssertParsedSingleCommand<StatisticsReport>("$statistics-report");
-			Assert.AreEqual(_projectionId.ToString("N"), command.Id);
-			Assert.AreEqual(_statistics.BufferedEvents, command.Statistics.BufferedEvents);
-			Assert.AreEqual(_statistics.CheckpointStatus, command.Statistics.CheckpointStatus);
-			Assert.AreEqual(_statistics.CoreProcessingTime, command.Statistics.CoreProcessingTime);
-			Assert.AreEqual(_statistics.EffectiveName, command.Statistics.EffectiveName);
-			Assert.AreEqual(_statistics.Enabled, command.Statistics.Enabled);
-			Assert.AreEqual(_statistics.Epoch, command.Statistics.Epoch);
-			Assert.AreEqual(_statistics.EventsProcessedAfterRestart, command.Statistics.EventsProcessedAfterRestart);
-			Assert.AreEqual(_statistics.LastCheckpoint, command.Statistics.LastCheckpoint);
-			Assert.AreEqual(_statistics.MasterStatus, command.Statistics.MasterStatus);
-			Assert.AreEqual(_statistics.Mode, command.Statistics.Mode);
-			Assert.AreEqual(_statistics.Name, command.Statistics.Name);
-			Assert.AreEqual(_statistics.PartitionsCached, command.Statistics.PartitionsCached);
-			Assert.AreEqual(_statistics.Position, command.Statistics.Position);
-			Assert.AreEqual(_statistics.Progress, command.Statistics.Progress);
-			Assert.AreEqual(_statistics.ProjectionId, command.Statistics.ProjectionId);
-			Assert.AreEqual(_statistics.ReadsInProgress, command.Statistics.ReadsInProgress);
-			Assert.AreEqual(_statistics.StateReason, command.Statistics.StateReason);
-			Assert.AreEqual(_statistics.Status, command.Statistics.Status);
-			Assert.AreEqual(_statistics.Version, command.Statistics.Version);
-			Assert.AreEqual(
+			Assert.Equal(_projectionId.ToString("N"), command.Id);
+			Assert.Equal(_statistics.BufferedEvents, command.Statistics.BufferedEvents);
+			Assert.Equal(_statistics.CheckpointStatus, command.Statistics.CheckpointStatus);
+			Assert.Equal(_statistics.CoreProcessingTime, command.Statistics.CoreProcessingTime);
+			Assert.Equal(_statistics.EffectiveName, command.Statistics.EffectiveName);
+			Assert.Equal(_statistics.Enabled, command.Statistics.Enabled);
+			Assert.Equal(_statistics.Epoch, command.Statistics.Epoch);
+			Assert.Equal(_statistics.EventsProcessedAfterRestart, command.Statistics.EventsProcessedAfterRestart);
+			Assert.Equal(_statistics.LastCheckpoint, command.Statistics.LastCheckpoint);
+			Assert.Equal(_statistics.MasterStatus, command.Statistics.MasterStatus);
+			Assert.Equal(_statistics.Mode, command.Statistics.Mode);
+			Assert.Equal(_statistics.Name, command.Statistics.Name);
+			Assert.Equal(_statistics.PartitionsCached, command.Statistics.PartitionsCached);
+			Assert.Equal(_statistics.Position, command.Statistics.Position);
+			Assert.Equal(_statistics.Progress, command.Statistics.Progress);
+			Assert.Equal(_statistics.ProjectionId, command.Statistics.ProjectionId);
+			Assert.Equal(_statistics.ReadsInProgress, command.Statistics.ReadsInProgress);
+			Assert.Equal(_statistics.StateReason, command.Statistics.StateReason);
+			Assert.Equal(_statistics.Status, command.Statistics.Status);
+			Assert.Equal(_statistics.Version, command.Statistics.Version);
+			Assert.Equal(
 				_statistics.WritePendingEventsAfterCheckpoint,
 				command.Statistics.WritePendingEventsAfterCheckpoint);
-			Assert.AreEqual(
+			Assert.Equal(
 				_statistics.WritePendingEventsBeforeCheckpoint,
 				command.Statistics.WritePendingEventsBeforeCheckpoint);
-			Assert.AreEqual(_statistics.WritesInProgress, command.Statistics.WritesInProgress);
-			Assert.AreEqual(_statistics.ResultStreamName, command.Statistics.ResultStreamName);
+			Assert.Equal(_statistics.WritesInProgress, command.Statistics.WritesInProgress);
+			Assert.Equal(_statistics.ResultStreamName, command.Statistics.ResultStreamName);
 		}
 	}
 }

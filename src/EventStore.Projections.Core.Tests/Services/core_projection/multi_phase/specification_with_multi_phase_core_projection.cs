@@ -9,7 +9,7 @@ using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Processing;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.multi_phase {
-	abstract class specification_with_multi_phase_core_projection : TestFixtureWithCoreProjection {
+	public abstract class specification_with_multi_phase_core_projection : TestFixtureWithCoreProjection {
 		private FakeCheckpointManager _phase1checkpointManager;
 		private FakeCheckpointManager _phase2checkpointManager;
 		private IEmittedStreamsTracker _emittedStreamsTracker;
@@ -18,7 +18,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.multi_phase
 		private IReaderStrategy _phase1readerStrategy;
 		private IReaderStrategy _phase2readerStrategy;
 
-		class FakeProjectionProcessingStrategy : ProjectionProcessingStrategy {
+		public class FakeProjectionProcessingStrategy : ProjectionProcessingStrategy {
 			private readonly FakeProjectionProcessingPhase _phase1;
 			private readonly FakeProjectionProcessingPhase _phase2;
 
@@ -81,7 +81,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.multi_phase
 			}
 		}
 
-		internal class FakeProjectionProcessingPhase : IProjectionProcessingPhase {
+		public class FakeProjectionProcessingPhase : IProjectionProcessingPhase {
 			private readonly int _phase;
 			private readonly specification_with_multi_phase_core_projection _specification;
 			private readonly ICoreProjectionCheckpointManager _checkpointManager;
@@ -203,7 +203,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.multi_phase
 			}
 		}
 
-		internal class FakeCheckpointManager : ICoreProjectionCheckpointManager, IEmittedEventWriter {
+		public class FakeCheckpointManager : ICoreProjectionCheckpointManager, IEmittedEventWriter {
 			private readonly IPublisher _publisher;
 			private readonly Guid _projectionCorrelationId;
 

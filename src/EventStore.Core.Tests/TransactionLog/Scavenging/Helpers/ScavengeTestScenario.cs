@@ -11,11 +11,10 @@ using EventStore.Core.Tests.Fakes;
 using EventStore.Core.TransactionLog;
 using EventStore.Core.TransactionLog.Chunks;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Util;
 
 namespace EventStore.Core.Tests.TransactionLog.Scavenging.Helpers {
-	[TestFixture]
 	public abstract class ScavengeTestScenario : SpecificationWithDirectoryPerTestFixture {
 		protected IReadIndex ReadIndex;
 
@@ -69,6 +68,7 @@ namespace EventStore.Core.Tests.TransactionLog.Scavenging.Helpers {
 			var scavenger = new TFChunkScavenger(_dbResult.Db, new FakeTFScavengerLog(), tableIndex, ReadIndex,
 				unsafeIgnoreHardDeletes: UnsafeIgnoreHardDelete());
             await scavenger.Scavenge(alwaysKeepScavenged: true, mergeChunks: false);
+            CheckRecords();
 		}
 
 		public override async Task TestFixtureTearDown() {
@@ -87,7 +87,7 @@ namespace EventStore.Core.Tests.TransactionLog.Scavenging.Helpers {
 
 		protected void CheckRecords() {
 			_checked = true;
-			Assert.AreEqual(_keptRecords.Length, _dbResult.Db.Manager.ChunksCount, "Wrong chunks count.");
+			Assert.Equal(_keptRecords.Length, _dbResult.Db.Manager.ChunksCount);
 
 			for (int i = 0; i < _keptRecords.Length; ++i) {
 				var chunk = _dbResult.Db.Manager.GetChunk(i);
@@ -99,11 +99,10 @@ namespace EventStore.Core.Tests.TransactionLog.Scavenging.Helpers {
 					result = chunk.TryReadClosestForward((int)result.NextPosition);
 				}
 
-				Assert.AreEqual(_keptRecords[i].Length, chunkRecords.Count, "Wrong number of records in chunk #{0}", i);
+				Assert.Equal(_keptRecords[i].Length, chunkRecords.Count);
 
 				for (int j = 0; j < _keptRecords[i].Length; ++j) {
-					Assert.AreEqual(_keptRecords[i][j], chunkRecords[j], "Wrong log record #{0} read from chunk #{1}",
-						j, i);
+					Assert.Equal(_keptRecords[i][j], chunkRecords[j]);
 				}
 			}
 		}

@@ -1,9 +1,9 @@
+using System;
 using System.Threading;
 using EventStore.Core.Bus;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.projection_checkpoint_reader {
-	[TestFixture]
 	public class when_projection_reader_reads_successfully : with_projection_checkpoint_reader,
 		IHandle<CoreProjectionProcessingMessage.CheckpointLoaded> {
 		private ManualResetEventSlim _mre = new ManualResetEventSlim();
@@ -15,7 +15,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.projection_
 			_reader.Initialize();
 			_reader.BeginLoadState();
 			if (!_mre.Wait(10000)) {
-				Assert.Fail("Timed out waiting for checkpoint to load");
+				throw new Exception("Timed out waiting for checkpoint to load");
 			}
 		}
 
@@ -24,10 +24,10 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.projection_
 			_mre.Set();
 		}
 
-		[Test]
+		[Fact]
 		public void should_load_checkpoint() {
-			Assert.IsNotNull(_checkpointLoaded);
-			Assert.AreEqual(_checkpointLoaded.ProjectionId, _projectionId);
+			Assert.NotNull(_checkpointLoaded);
+			Assert.Equal(_checkpointLoaded.ProjectionId, _projectionId);
 		}
 	}
 }

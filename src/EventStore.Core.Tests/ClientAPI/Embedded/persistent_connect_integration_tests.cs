@@ -1,5 +1,5 @@
 ﻿using EventStore.ClientAPI;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Tests.ClientAPI.Helpers;
 using EventStore.Core.Tests.Helpers;
 

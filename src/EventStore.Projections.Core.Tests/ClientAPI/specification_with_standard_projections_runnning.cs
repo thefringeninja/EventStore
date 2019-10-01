@@ -13,12 +13,12 @@ using EventStore.Core.Tests;
 using EventStore.Core.Tests.Helpers;
 using EventStore.Core.Util;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.ClientAPI.ResolvedEvent;
 using EventStore.ClientAPI.Projections;
 
 namespace EventStore.Projections.Core.Tests.ClientAPI {
-	[Category("ClientAPI")]
+	[Trait("Category", "ClientAPI")]
 	public class specification_with_standard_projections_runnning : SpecificationWithDirectoryPerTestFixture {
 		protected MiniNode _node;
 		protected IEventStoreConnection _conn;
@@ -27,11 +27,10 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
 		protected ProjectionsManager _manager;
 		protected QueryManager _queryManager;
 
-		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 #if (!DEBUG)
-            Assert.Ignore("These tests require DEBUG conditional");
+			//Assert.Ignore("These tests require DEBUG conditional");
 #else
 			QueueStatsCollector.InitializeIdleDetection();
 			await CreateNode();
@@ -86,12 +85,6 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
 			return 1;
 		}
 
-		[TearDown]
-		public async Task PostTestAsserts() {
-			var all = await _manager.ListAllAsync(_admin);
-			if (all.Any(p => p.Name == "Faulted"))
-				Assert.Fail("Projections faulted while running the test" + "\r\n" + all);
-		}
 
 		protected async Task EnableStandardProjections() {
 			await EnableProjection(ProjectionNamesBuilder.StandardProjections.EventByCategoryStandardProjection);
@@ -119,8 +112,10 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
 			return _manager.DisableAsync(name, _admin);
 		}
 
-		[OneTimeTearDown]
 		public override async Task TestFixtureTearDown() {
+			var all = await _manager.ListAllAsync(_admin);
+			if (all.Any(p => p.Name == "Faulted"))
+				throw new Exception("Projections faulted while running the test" + "\r\n" + all);
 			if (_conn != null)
 				_conn.Close();
 
@@ -161,10 +156,10 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
 			var result = await _conn.ReadStreamEventsBackwardAsync(streamId, -1, events.Length, true, _admin);
 			switch (result.Status) {
 				case SliceReadStatus.StreamDeleted:
-					Assert.Fail("Stream '{0}' is deleted", streamId);
+					throw new Exception($"Stream '{streamId}' is deleted");
 					break;
 				case SliceReadStatus.StreamNotFound:
-					Assert.Fail("Stream '{0}' does not exist", streamId);
+					throw new Exception(string.Format("Stream '{0}' does not exist", streamId));
 					break;
 				case SliceReadStatus.Success:
 					var resultEventsReversed = result.Events.Reverse().ToArray();
@@ -193,10 +188,10 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
 			var result = await _conn.ReadStreamEventsBackwardAsync(streamId, -1, 100, true, _admin);
 			switch (result.Status) {
 				case SliceReadStatus.StreamDeleted:
-					Assert.Fail("Stream '{0}' is deleted", streamId);
+					throw new Exception(string.Format("Stream '{0}' is deleted", streamId));
 					break;
 				case SliceReadStatus.StreamNotFound:
-					Assert.Fail("Stream '{0}' does not exist", streamId);
+					throw new Exception(string.Format("Stream '{0}' does not exist", streamId));
 					break;
 				case SliceReadStatus.Success:
 					Dump("Dumping..", streamId, result.Events.Reverse().ToArray());
@@ -215,10 +210,8 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
 				"", (a, v) => a + "\r\n" + v.Event.EventType + ":" + v.Event.DebugMetadataView);
 
 
-			Assert.Fail(
-				"Stream: '{0}'\r\n{1}\r\n\r\nExisting events: \r\n{2}\r\n Expected events: \r\n{3}\r\n\r\nActual metas:{4}",
-				streamId,
-				message, actual, expected, actualMeta);
+			throw new Exception(
+				$"Stream: '{streamId}'\r\n{message}\r\n\r\nExisting events: \r\n{actual}\r\n Expected events: \r\n{expected}\r\n\r\nActual metas:{actualMeta}");
 		}
 
 		protected void Dump(string message, string streamId, ResolvedEvent[] resultEvents) {
@@ -236,12 +229,12 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
 #endif
 
 		protected async Task PostProjection(string query) {
-            await _manager.CreateContinuousAsync("test-projection", query, _admin);
+			await _manager.CreateContinuousAsync("test-projection", query, _admin);
 			WaitIdle();
 		}
 
 		protected async Task PostQuery(string query) {
-            await _manager.CreateTransientAsync("query", query, _admin);
+			await _manager.CreateTransientAsync("query", query, _admin);
 			WaitIdle();
 		}
 	}

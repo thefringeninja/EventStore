@@ -1,7 +1,9 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Services.UserManagement;
 using EventStore.Core.Messages;
 using EventStore.Core.Messaging;
@@ -12,143 +14,149 @@ namespace EventStore.Core.Tests.Replication.ReadStream {
 	public static class ReplicationTestHelper {
 		private static TimeSpan _timeout = TimeSpan.FromSeconds(8);
 
-		public static ClientMessage.WriteEventsCompleted WriteEvent(MiniClusterNode node, Event[] events,
+		public static Task<ClientMessage.WriteEventsCompleted> WriteEvent(MiniClusterNode node, Event[] events,
 			string streamId) {
-			var resetEvent = new ManualResetEventSlim();
-			ClientMessage.WriteEventsCompleted writeResult = null;
+			var writeResultSource = new TaskCompletionSource<ClientMessage.WriteEventsCompleted>();
 			node.Node.MainQueue.Publish(new ClientMessage.WriteEvents(Guid.NewGuid(), Guid.NewGuid(),
 				new CallbackEnvelope(msg => {
-					writeResult = (ClientMessage.WriteEventsCompleted)msg;
-					resetEvent.Set();
+					if (msg is ClientMessage.WriteEventsCompleted completed) {
+						writeResultSource.TrySetResult(completed);
+					} else {
+						writeResultSource.TrySetException(new InvalidOperationException(
+							$"Failed to write events. Expected {nameof(ClientMessage.WriteEventsCompleted)}; received {msg.GetType().Name}"));
+					}
 				}), false, streamId, -1, events,
 				SystemAccount.Principal, SystemUsers.Admin, SystemUsers.DefaultAdminPassword));
-			if (!resetEvent.Wait(_timeout)) {
-				Assert.Fail("Timed out waiting for event to be written");
-				return null;
-			}
 
-			return writeResult;
+			return writeResultSource.Task.WithTimeout(_timeout);
 		}
 
-		public static ClientMessage.ReadAllEventsForwardCompleted ReadAllEventsForward(MiniClusterNode node,
+		public static Task<ClientMessage.ReadAllEventsForwardCompleted> ReadAllEventsForward(MiniClusterNode node,
 			long position) {
-			ClientMessage.ReadAllEventsForwardCompleted readResult = null;
-			var readEvent = new ManualResetEventSlim();
-			var done = false;
-			while (!done) {
+			var source = new TaskCompletionSource<ClientMessage.ReadAllEventsForwardCompleted>();
+			while (!source.Task.IsCompleted) {
 				var read = new ClientMessage.ReadAllEventsForward(Guid.NewGuid(), Guid.NewGuid(), new CallbackEnvelope(
 						msg => {
-							readResult = (ClientMessage.ReadAllEventsForwardCompleted)msg;
-							readEvent.Set();
+							if (msg is ClientMessage.ReadAllEventsForwardCompleted completed) {
+								if (completed.Result == ReadAllResult.Error) {
+									source.TrySetException(
+										new InvalidOperationException(
+											$"Failed to read forwards. Read result error: {completed.Error}"));
+								} else {
+									if (completed.NextPos.CommitPosition > position) {
+										source.TrySetResult(completed);
+									}
+								}
+							} else {
+								source.TrySetException(new InvalidOperationException(
+									$"Failed to read forwards. Expected {nameof(ClientMessage.ReadAllEventsForwardCompleted)}; received {msg.GetType().Name}"));
+							}
 						}),
 					0, 0, 100, false, false, null, SystemAccount.Principal);
 				node.Node.MainQueue.Publish(read);
-
-				if (!readEvent.Wait(_timeout)) {
-					Assert.Fail("Timed out waiting for events to be read forward");
-					return null;
-				}
-
-				if (readResult.Result == ReadAllResult.Error) {
-					Assert.Fail("Failed to read forwards. Read result error: {0}", readResult.Error);
-					return null;
-				}
-
-				done = readResult.NextPos.CommitPosition > position;
-				readEvent.Reset();
 			}
 
-			return readResult;
+			return source.Task.WithTimeout(_timeout);
 		}
 
-		public static ClientMessage.ReadAllEventsBackwardCompleted ReadAllEventsBackward(MiniClusterNode node,
+		public static Task<ClientMessage.ReadAllEventsBackwardCompleted> ReadAllEventsBackward(MiniClusterNode node,
 			long position) {
-			ClientMessage.ReadAllEventsBackwardCompleted readResult = null;
-			var resetEvent = new ManualResetEventSlim();
-			var done = false;
-			while (!done) {
-				resetEvent.Reset();
+			var source = new TaskCompletionSource<ClientMessage.ReadAllEventsBackwardCompleted>();
+			while (!source.Task.IsCompleted) {
 				var read = new ClientMessage.ReadAllEventsBackward(Guid.NewGuid(), Guid.NewGuid(), new CallbackEnvelope(
 						msg => {
-							readResult = (ClientMessage.ReadAllEventsBackwardCompleted)msg;
-							resetEvent.Set();
+							if (msg is ClientMessage.ReadAllEventsBackwardCompleted completed) {
+								if (completed.Result == ReadAllResult.Error) {
+									source.TrySetException(
+										new InvalidOperationException(
+											$"Failed to read backwards. Read result error: {completed.Error}"));
+								} else {
+									if (completed.NextPos.CommitPosition < position) {
+										source.TrySetResult(completed);
+									}
+								}
+							} else {
+								source.TrySetException(new InvalidOperationException(
+									$"Failed to read backwards. Expected {nameof(ClientMessage.ReadAllEventsBackwardCompleted)}; received {msg.GetType().Name}"));
+							}
 						}),
 					-1, -1, 100, false, false, null, SystemAccount.Principal);
 				node.Node.MainQueue.Publish(read);
-
-				if (!resetEvent.Wait(_timeout)) {
-					Assert.Fail("Timed out waiting for events to be read backward");
-					return null;
-				}
-
-				if (readResult.Result == ReadAllResult.Error) {
-					Assert.Fail("Failed to read backwards. Read result error: {0}", readResult.Error);
-					return null;
-				}
-
-				done = readResult.NextPos.CommitPosition < position;
 			}
 
-			return readResult;
+			return source.Task.WithTimeout(_timeout);
 		}
 
-		public static ClientMessage.ReadStreamEventsForwardCompleted ReadStreamEventsForward(MiniClusterNode node,
+		public static Task<ClientMessage.ReadStreamEventsForwardCompleted> ReadStreamEventsForward(MiniClusterNode node,
 			string streamId) {
-			ClientMessage.ReadStreamEventsForwardCompleted readResult = null;
-			var resetEvent = new ManualResetEventSlim();
+			var source = new TaskCompletionSource<ClientMessage.ReadStreamEventsForwardCompleted>();
 			var read = new ClientMessage.ReadStreamEventsForward(Guid.NewGuid(), Guid.NewGuid(), new CallbackEnvelope(
 					msg => {
-						readResult = (ClientMessage.ReadStreamEventsForwardCompleted)msg;
-						resetEvent.Set();
+						if (msg is ClientMessage.ReadStreamEventsForwardCompleted completed) {
+							if (completed.Result == ReadStreamResult.Error) {
+								source.TrySetException(
+									new InvalidOperationException(
+										$"Failed to read forwards. Read result error: {completed.Error}"));
+							} else {
+								source.TrySetResult(completed);
+							}
+						} else {
+							source.TrySetException(new InvalidOperationException(
+								$"Failed to read forwards. Expected {nameof(ClientMessage.ReadStreamEventsForwardCompleted)}; received {msg.GetType().Name}"));
+						}
 					}), streamId, 0, 10,
 				false, false, null, SystemAccount.Principal);
 			node.Node.MainQueue.Publish(read);
 
-			if (!resetEvent.Wait(_timeout)) {
-				Assert.Fail("Timed out waiting for the stream to be read forward");
-				return null;
-			}
-
-			return readResult;
+			return source.Task.WithTimeout(_timeout);
 		}
 
-		public static ClientMessage.ReadStreamEventsBackwardCompleted ReadStreamEventsBackward(MiniClusterNode node,
+		public static Task<ClientMessage.ReadStreamEventsBackwardCompleted> ReadStreamEventsBackward(
+			MiniClusterNode node,
 			string streamId) {
-			ClientMessage.ReadStreamEventsBackwardCompleted readResult = null;
-			var resetEvent = new ManualResetEventSlim();
+			var source = new TaskCompletionSource<ClientMessage.ReadStreamEventsBackwardCompleted>();
 			var read = new ClientMessage.ReadStreamEventsBackward(Guid.NewGuid(), Guid.NewGuid(), new CallbackEnvelope(
 					msg => {
-						readResult = (ClientMessage.ReadStreamEventsBackwardCompleted)msg;
-						resetEvent.Set();
+						if (msg is ClientMessage.ReadStreamEventsBackwardCompleted completed) {
+							if (completed.Result == ReadStreamResult.Error) {
+								source.TrySetException(
+									new InvalidOperationException(
+										$"Failed to read forwards. Read result error: {completed.Error}"));
+							} else {
+								source.TrySetResult(completed);
+							}
+						} else {
+							source.TrySetException(new InvalidOperationException(
+								$"Failed to read backwards. Expected {nameof(ClientMessage.ReadStreamEventsBackwardCompleted)}; received {msg.GetType().Name}"));
+						}
 					}), streamId, 9, 10,
 				false, false, null, SystemAccount.Principal);
 			node.Node.MainQueue.Publish(read);
 
-			if (!resetEvent.Wait(_timeout)) {
-				Assert.Fail("Timed out waiting for the stream to be read backward");
-				return null;
-			}
-
-			return readResult;
+			return source.Task.WithTimeout(_timeout);
 		}
 
-		public static ClientMessage.ReadEventCompleted ReadEvent(MiniClusterNode node, string streamId,
+		public static Task<ClientMessage.ReadEventCompleted> ReadEvent(MiniClusterNode node, string streamId,
 			long eventNumber) {
-			ClientMessage.ReadEventCompleted readResult = null;
-			var resetEvent = new ManualResetEventSlim();
+			var source = new TaskCompletionSource<ClientMessage.ReadEventCompleted>();
 			var read = new ClientMessage.ReadEvent(Guid.NewGuid(), Guid.NewGuid(), new CallbackEnvelope(msg => {
-					readResult = (ClientMessage.ReadEventCompleted)msg;
-					resetEvent.Set();
+					if (msg is ClientMessage.ReadEventCompleted completed) {
+						if (completed.Result == ReadEventResult.Error) {
+							source.TrySetException(
+								new InvalidOperationException(
+									$"Failed to read event. Read result error: {completed.Error}"));
+						} else {
+							source.TrySetResult(completed);
+						}
+					} else {
+						source.TrySetException(new InvalidOperationException(
+							$"Failed to read event. Expected {nameof(ClientMessage.ReadEventCompleted)}; received {msg.GetType().Name}"));
+					}
 				}), streamId, eventNumber,
 				false, false, SystemAccount.Principal);
 			node.Node.MainQueue.Publish(read);
 
-			if (!resetEvent.Wait(_timeout)) {
-				Assert.Fail("Timed out waiting for the event to be read");
-				return null;
-			}
-
-			return readResult;
+			return source.Task.WithTimeout(_timeout);
 		}
 	}
 }

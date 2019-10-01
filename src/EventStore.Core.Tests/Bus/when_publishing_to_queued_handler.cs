@@ -5,43 +5,39 @@ using EventStore.Core.Bus;
 using EventStore.Core.Messaging;
 using EventStore.Core.Tests.Bus.Helpers;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Bus {
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public abstract class when_publishing_to_queued_handler : QueuedHandlerTestWithWaitingConsumer {
 		protected when_publishing_to_queued_handler(
 			Func<IHandle<Message>, string, TimeSpan, IQueuedHandler> queuedHandlerFactory)
 			: base(queuedHandlerFactory) {
-		}
-
-		public override void SetUp() {
-			base.SetUp();
 			Queue.Start();
 		}
 
-		public override void TearDown() {
-			Consumer.Dispose();
-			Queue.Stop();
-			base.TearDown();
+		public override void Dispose() {
+			Consumer?.Dispose();
+			Queue?.Stop();
+			base.Dispose();
 		}
 
-		[Test, Ignore("We do not check each message for null for performance reasons.")]
+		[Fact(Skip = "We do not check each message for null for performance reasons.")]
 		public void null_message_should_throw() {
 			Assert.Throws<ArgumentNullException>(() => Queue.Publish(null));
 		}
 
-		[Test]
+		[Fact]
 		public void message_it_should_be_delivered_to_bus() {
 			Consumer.SetWaitingCount(1);
 
 			Queue.Publish(new TestMessage());
 
 			Consumer.Wait();
-			Assert.IsTrue(Consumer.HandledMessages.ContainsSingle<TestMessage>());
+			Assert.True(Consumer.HandledMessages.ContainsSingle<TestMessage>());
 		}
 
-		[Test]
+		[Fact]
 		public void multiple_messages_they_should_be_delivered_to_bus() {
 			Consumer.SetWaitingCount(2);
 
@@ -50,11 +46,11 @@ namespace EventStore.Core.Tests.Bus {
 
 			Consumer.Wait();
 
-			Assert.IsTrue(Consumer.HandledMessages.ContainsSingle<TestMessage>());
-			Assert.IsTrue(Consumer.HandledMessages.ContainsSingle<TestMessage2>());
+			Assert.True(Consumer.HandledMessages.ContainsSingle<TestMessage>());
+			Assert.True(Consumer.HandledMessages.ContainsSingle<TestMessage2>());
 		}
 
-		[Test]
+		[Fact]
 		public void messages_order_should_remain_the_same() {
 			Consumer.SetWaitingCount(6);
 
@@ -68,24 +64,24 @@ namespace EventStore.Core.Tests.Bus {
 			Consumer.Wait();
 
 			var typedMessages = Consumer.HandledMessages.OfType<TestMessageWithId>().ToArray();
-			Assert.AreEqual(6, typedMessages.Length);
-			Assert.AreEqual(4, typedMessages[0].Id);
-			Assert.AreEqual(8, typedMessages[1].Id);
-			Assert.AreEqual(15, typedMessages[2].Id);
-			Assert.AreEqual(16, typedMessages[3].Id);
-			Assert.AreEqual(23, typedMessages[4].Id);
-			Assert.AreEqual(42, typedMessages[5].Id);
+			Assert.Equal(6, typedMessages.Length);
+			Assert.Equal(4, typedMessages[0].Id);
+			Assert.Equal(8, typedMessages[1].Id);
+			Assert.Equal(15, typedMessages[2].Id);
+			Assert.Equal(16, typedMessages[3].Id);
+			Assert.Equal(23, typedMessages[4].Id);
+			Assert.Equal(42, typedMessages[5].Id);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class when_publishing_to_queued_handler_mres : when_publishing_to_queued_handler {
 		public when_publishing_to_queued_handler_mres()
 			: base((consumer, name, timeout) => new QueuedHandlerMresWithMpsc(consumer, name, false, null, timeout)) {
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class when_publishing_to_queued_handler_autoreset : when_publishing_to_queued_handler {
 		public when_publishing_to_queued_handler_autoreset()
 			: base((consumer, name, timeout) => new QueuedHandlerAutoResetWithMpsc(consumer, name, false, null, timeout)
@@ -93,21 +89,21 @@ namespace EventStore.Core.Tests.Bus {
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class when_publishing_to_queued_handler_sleep : when_publishing_to_queued_handler {
 		public when_publishing_to_queued_handler_sleep()
 			: base((consumer, name, timeout) => new QueuedHandlerSleep(consumer, name, false, null, timeout)) {
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class when_publishing_to_queued_handler_pulse : when_publishing_to_queued_handler {
 		public when_publishing_to_queued_handler_pulse()
 			: base((consumer, name, timeout) => new QueuedHandlerPulse(consumer, name, false, null, timeout)) {
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class when_publishing_to_queued_handler_threadpool : when_publishing_to_queued_handler {
 		public when_publishing_to_queued_handler_threadpool()
 			: base((consumer, name, timeout) => new QueuedHandlerThreadPool(consumer, name, false, null, timeout)) {

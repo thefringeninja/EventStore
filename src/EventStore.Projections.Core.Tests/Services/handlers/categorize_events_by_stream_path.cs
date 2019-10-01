@@ -3,20 +3,18 @@ using System.Collections.Generic;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Standard;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Projections.Core.Services.Processing.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.handlers {
 	public static class categorize_events_by_stream_path {
-		[TestFixture]
 		public class when_handling_simple_event {
 			private CategorizeEventsByStreamPath _handler;
 			private string _state;
 			private EmittedEventEnvelope[] _emittedEvents;
 			private bool _result;
 
-			[SetUp]
-			public void when() {
+			public when_handling_simple_event() {
 				_handler = new CategorizeEventsByStreamPath("-", Console.WriteLine);
 				_handler.Initialize();
 				string sharedState;
@@ -27,36 +25,34 @@ namespace EventStore.Projections.Core.Tests.Services.handlers {
 						"event_type", true, "{}", "{}"), out _state, out sharedState, out _emittedEvents);
 			}
 
-			[Test]
+			[Fact]
 			public void result_is_true() {
-				Assert.IsTrue(_result);
+				Assert.True(_result);
 			}
 
-			[Test]
+			[Fact]
 			public void state_stays_null() {
-				Assert.IsNull(_state);
+				Assert.Null(_state);
 			}
 
-			[Test]
+			[Fact]
 			public void emits_correct_link() {
 				Assert.NotNull(_emittedEvents);
-				Assert.AreEqual(1, _emittedEvents.Length);
+				Assert.Equal(1, _emittedEvents.Length);
 				var @event = _emittedEvents[0].Event;
-				Assert.AreEqual("$>", @event.EventType);
-				Assert.AreEqual("$ce-cat1", @event.StreamId);
-				Assert.AreEqual("10@cat1-stream1", @event.Data);
+				Assert.Equal("$>", @event.EventType);
+				Assert.Equal("$ce-cat1", @event.StreamId);
+				Assert.Equal("10@cat1-stream1", @event.Data);
 			}
 		}
 
-		[TestFixture]
 		public class when_handling_link_to_event {
 			private CategorizeEventsByStreamPath _handler;
 			private string _state;
 			private EmittedEventEnvelope[] _emittedEvents;
 			private bool _result;
 
-			[SetUp]
-			public void when() {
+			public when_handling_link_to_event() {
 				_handler = new CategorizeEventsByStreamPath("-", Console.WriteLine);
 				_handler.Initialize();
 				string sharedState;
@@ -67,36 +63,34 @@ namespace EventStore.Projections.Core.Tests.Services.handlers {
 						"$>", true, "10@cat1-stream1", "{}"), out _state, out sharedState, out _emittedEvents);
 			}
 
-			[Test]
+			[Fact]
 			public void result_is_true() {
-				Assert.IsTrue(_result);
+				Assert.True(_result);
 			}
 
-			[Test]
+			[Fact]
 			public void state_stays_null() {
-				Assert.IsNull(_state);
+				Assert.Null(_state);
 			}
 
-			[Test]
+			[Fact]
 			public void emits_correct_link() {
 				Assert.NotNull(_emittedEvents);
-				Assert.AreEqual(1, _emittedEvents.Length);
+				Assert.Equal(1, _emittedEvents.Length);
 				var @event = _emittedEvents[0].Event;
-				Assert.AreEqual("$>", @event.EventType);
-				Assert.AreEqual("$ce-cat2", @event.StreamId);
-				Assert.AreEqual("10@cat1-stream1", @event.Data);
+				Assert.Equal("$>", @event.EventType);
+				Assert.Equal("$ce-cat2", @event.StreamId);
+				Assert.Equal("10@cat1-stream1", @event.Data);
 			}
 		}
 
-		[TestFixture]
 		public class when_handling_normal_stream_metadata_event {
 			private CategorizeEventsByStreamPath _handler;
 			private string _state;
 			private EmittedEventEnvelope[] _emittedEvents;
 			private bool _result;
 
-			[SetUp]
-			public void when() {
+			public when_handling_normal_stream_metadata_event() {
 				_handler = new CategorizeEventsByStreamPath("-", Console.WriteLine);
 				_handler.Initialize();
 				string sharedState;
@@ -107,31 +101,29 @@ namespace EventStore.Projections.Core.Tests.Services.handlers {
 						"$metadata", true, "{}", "{}"), out _state, out sharedState, out _emittedEvents);
 			}
 
-			[Test]
+			[Fact]
 			public void result_is_true() {
-				Assert.IsTrue(_result);
+				Assert.True(_result);
 			}
 
-			[Test]
+			[Fact]
 			public void state_stays_null() {
-				Assert.IsNull(_state);
+				Assert.Null(_state);
 			}
 
-			[Test]
+			[Fact]
 			public void does_not_emit_events() {
-				Assert.IsNull(_emittedEvents);
+				Assert.Null(_emittedEvents);
 			}
 		}
 
-[TestFixture]
 		public class when_handling_soft_deleted_stream_metadata_event {
 			private CategorizeEventsByStreamPath _handler;
 			private string _state;
 			private EmittedEventEnvelope[] _emittedEvents;
 			private bool _result;
 
-			[SetUp]
-			public void when() {
+			public when_handling_soft_deleted_stream_metadata_event() {
 				_handler = new CategorizeEventsByStreamPath("-", Console.WriteLine);
 				_handler.Initialize();
 				string sharedState;
@@ -139,47 +131,47 @@ namespace EventStore.Projections.Core.Tests.Services.handlers {
 					"", CheckpointTag.FromPosition(0, 200, 150), null,
 					new ResolvedEvent(
 						"$$cat4-stream4", 20, "$$cat4-stream4", 20, true, new TFPos(200, 150), Guid.NewGuid(),
-						"$metadata", true, "{ \"$tb\": "+long.MaxValue+" }", "{}"), out _state, out sharedState, out _emittedEvents);
+						"$metadata", true, "{ \"$tb\": " + long.MaxValue + " }", "{}"), out _state, out sharedState,
+					out _emittedEvents);
 			}
 
-			[Test]
+			[Fact]
 			public void result_is_true() {
-				Assert.IsTrue(_result);
+				Assert.True(_result);
 			}
 
-			[Test]
+			[Fact]
 			public void state_stays_null() {
-				Assert.IsNull(_state);
+				Assert.Null(_state);
 			}
 
-			[Test]
+			[Fact]
 			public void emits_correct_link() {
 				Assert.NotNull(_emittedEvents);
-				Assert.AreEqual(1, _emittedEvents.Length);
+				Assert.Equal(1, _emittedEvents.Length);
 				var @event = _emittedEvents[0].Event;
-				Assert.AreEqual("$>", @event.EventType);
-				Assert.AreEqual("$ce-cat4", @event.StreamId);
-				Assert.AreEqual("20@$$cat4-stream4", @event.Data);
-				var metadata = new Dictionary<string,string>();
-				foreach(var kvp in @event.ExtraMetaData()){
+				Assert.Equal("$>", @event.EventType);
+				Assert.Equal("$ce-cat4", @event.StreamId);
+				Assert.Equal("20@$$cat4-stream4", @event.Data);
+				var metadata = new Dictionary<string, string>();
+				foreach (var kvp in @event.ExtraMetaData()) {
 					metadata[kvp.Key] = kvp.Value;
 				}
+
 				Assert.NotNull(metadata["$o"]);
-				Assert.AreEqual("\"cat4-stream4\"", metadata["$o"]);
+				Assert.Equal("\"cat4-stream4\"", metadata["$o"]);
 				Assert.NotNull(metadata["$deleted"]);
-				Assert.AreEqual("-1", metadata["$deleted"]);
+				Assert.Equal("-1", metadata["$deleted"]);
 			}
 		}
 
-[TestFixture]
 		public class when_handling_hard_deleted_stream_event {
 			private CategorizeEventsByStreamPath _handler;
 			private string _state;
 			private EmittedEventEnvelope[] _emittedEvents;
 			private bool _result;
 
-			[SetUp]
-			public void when() {
+			public when_handling_hard_deleted_stream_event() {
 				_handler = new CategorizeEventsByStreamPath("-", Console.WriteLine);
 				_handler.Initialize();
 				string sharedState;
@@ -190,33 +182,34 @@ namespace EventStore.Projections.Core.Tests.Services.handlers {
 						"$streamDeleted", true, "{}", "{}"), out _state, out sharedState, out _emittedEvents);
 			}
 
-			[Test]
+			[Fact]
 			public void result_is_true() {
-				Assert.IsTrue(_result);
+				Assert.True(_result);
 			}
 
-			[Test]
+			[Fact]
 			public void state_stays_null() {
-				Assert.IsNull(_state);
+				Assert.Null(_state);
 			}
 
-			[Test]
+			[Fact]
 			public void emits_correct_link() {
 				Assert.NotNull(_emittedEvents);
-				Assert.AreEqual(1, _emittedEvents.Length);
+				Assert.Equal(1, _emittedEvents.Length);
 				var @event = _emittedEvents[0].Event;
-				Assert.AreEqual("$>", @event.EventType);
-				Assert.AreEqual("$ce-cat5", @event.StreamId);
-				Assert.AreEqual("20@cat5-stream5", @event.Data);
+				Assert.Equal("$>", @event.EventType);
+				Assert.Equal("$ce-cat5", @event.StreamId);
+				Assert.Equal("20@cat5-stream5", @event.Data);
 
-				var metadata = new Dictionary<string,string>();
-				foreach(var kvp in @event.ExtraMetaData()){
+				var metadata = new Dictionary<string, string>();
+				foreach (var kvp in @event.ExtraMetaData()) {
 					metadata[kvp.Key] = kvp.Value;
 				}
+
 				Assert.NotNull(metadata["$o"]);
-				Assert.AreEqual("\"cat5-stream5\"", metadata["$o"]);
+				Assert.Equal("\"cat5-stream5\"", metadata["$o"]);
 				Assert.NotNull(metadata["$deleted"]);
-				Assert.AreEqual("-1", metadata["$deleted"]);
+				Assert.Equal("-1", metadata["$deleted"]);
 			}
 		}
 	}

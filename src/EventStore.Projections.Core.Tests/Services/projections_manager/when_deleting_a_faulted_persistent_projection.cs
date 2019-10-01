@@ -7,10 +7,9 @@ using EventStore.Core.Messaging;
 using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager {
-	[TestFixture]
 	public class when_deleting_a_faulted_persistent_projection : TestFixtureWithProjectionCoreAndManagementServices {
 		private string _projectionName;
 		private const string _projectionCheckpointStream = "$projections-test-projection-checkpoint";
@@ -37,26 +36,26 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 					ProjectionManagementMessage.RunAs.System, true, true, true);
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void a_projection_deleted_event_is_written() {
-			Assert.AreEqual(
+			Assert.Equal(
 				true,
-				_consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Any(x =>
+				Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Any(x =>
 					x.Events[0].EventType == ProjectionEventTypes.ProjectionDeleted &&
 					Helper.UTF8NoBom.GetString(x.Events[0].Data) == _projectionName));
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void should_have_attempted_to_delete_the_checkpoint_stream() {
-			Assert.IsTrue(
-				_consumer.HandledMessages.OfType<ClientMessage.DeleteStream>()
+			Assert.True(
+				Consumer.HandledMessages.OfType<ClientMessage.DeleteStream>()
 					.Any(x => x.EventStreamId == _projectionCheckpointStream));
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void should_have_attempted_to_delete_the_emitted_streams_stream() {
-			Assert.IsTrue(
-				_consumer.HandledMessages.OfType<ClientMessage.DeleteStream>()
+			Assert.True(
+				Consumer.HandledMessages.OfType<ClientMessage.DeleteStream>()
 					.Any(x => x.EventStreamId == _projectionEmittedStreamsStream));
 		}
 	}

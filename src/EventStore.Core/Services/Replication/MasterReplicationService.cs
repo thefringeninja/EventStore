@@ -295,7 +295,7 @@ namespace EventStore.Core.Services.Replication {
 
 			try {
 				var chunk = _db.Manager.GetChunkFor(logPosition);
-				Debug.Assert(chunk != null, string.Format(
+				ESDebug.Assert(chunk != null, string.Format(
 					"Chunk for LogPosition {0} (0x{0:X}) is null in MasterReplicationService! Replica: [{1},C:{2},S:{3}]",
 					logPosition, sub.ReplicaEndPoint, sub.ConnectionId, sub.SubscriptionId));
 				var bulkReader = chunk.AcquireReader();
@@ -593,7 +593,7 @@ namespace EventStore.Core.Services.Replication {
 					break;
 
 				// we have enough slaves, but some of them are probably lagging behind
-				Debug.Assert(slaveIndex >= 0);
+				ESDebug.Assert(slaveIndex >= 0);
 
 				var oldSlave = candidates[slaveIndex];
 				oldSlave.State = ReplicaState.Clone;

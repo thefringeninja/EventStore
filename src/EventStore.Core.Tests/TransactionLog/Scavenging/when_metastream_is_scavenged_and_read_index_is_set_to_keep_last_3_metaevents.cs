@@ -3,10 +3,9 @@ using EventStore.Core.Data;
 using EventStore.Core.Services.Storage.ReaderIndex;
 using EventStore.Core.Tests.TransactionLog.Scavenging.Helpers;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog.Scavenging {
-	[TestFixture]
 	public class when_metastream_is_scavenged_and_read_index_is_set_to_keep_last_3_metaevents : ScavengeTestScenario {
 		public when_metastream_is_scavenged_and_read_index_is_set_to_keep_last_3_metaevents() :
 			base(metastreamMaxCount: 3) {
@@ -30,9 +29,8 @@ namespace EventStore.Core.Tests.TransactionLog.Scavenging {
 			};
 		}
 
-		[Test]
+		[Fact]
 		public void metastream_is_scavenged_correctly() {
-			CheckRecords();
 		}
 	}
 }

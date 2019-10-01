@@ -5,11 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.Core.Tests.Http.Users.users;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Http.PersistentSubscription {
-	[TestFixture, Category("LongRunning")]
-	class when_deleting_non_existing_subscription : with_admin_user {
+	[Trait("Category", "LongRunning")]
+	public class when_deleting_non_existing_subscription : with_admin_user {
 		private HttpResponseMessage _response;
 
 		protected override Task Given() => Task.CompletedTask;
@@ -19,14 +19,14 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 			_response = await GetRequestResponse(req);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_not_found() {
-			Assert.AreEqual(HttpStatusCode.NotFound, _response.StatusCode);
+			Assert.Equal(HttpStatusCode.NotFound, _response.StatusCode);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
-	class when_deleting_an_existing_subscription : with_admin_user {
+	[Trait("Category", "LongRunning")]
+	public class when_deleting_an_existing_subscription : with_admin_user {
 		private HttpResponseMessage _response;
 
 		protected override async Task Given() {
@@ -42,14 +42,14 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 			_response = await GetRequestResponse(req);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_ok() {
-			Assert.AreEqual(HttpStatusCode.OK, _response.StatusCode);
+			Assert.Equal(HttpStatusCode.OK, _response.StatusCode);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
-	class when_deleting_an_existing_subscription_without_permissions : with_admin_user {
+	[Trait("Category", "LongRunning")]
+	public class when_deleting_an_existing_subscription_without_permissions : with_admin_user {
 		private HttpResponseMessage _response;
 
 		protected override async Task Given() {
@@ -66,14 +66,14 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 			_response = await GetRequestResponse(req);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_unauthorized() {
-			Assert.AreEqual(HttpStatusCode.Unauthorized, _response.StatusCode);
+			Assert.Equal(HttpStatusCode.Unauthorized, _response.StatusCode);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
-	class when_deleting_an_existing_subscription_with_subscribers : with_admin_user {
+	[Trait("Category", "LongRunning")]
+	public class when_deleting_an_existing_subscription_with_subscribers : with_admin_user {
 		private HttpResponseMessage _response;
 		private const string _stream = "astreamname";
 		private readonly string _groupName = Guid.NewGuid().ToString();
@@ -100,16 +100,16 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 			_response = await GetRequestResponse(req);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_ok() {
-			Assert.AreEqual(HttpStatusCode.OK, _response.StatusCode);
+			Assert.Equal(HttpStatusCode.OK, _response.StatusCode);
 		}
 
-		[Test]
+		[Fact]
 		public void the_subscription_is_dropped() {
-			Assert.IsTrue(_dropped.WaitOne(TimeSpan.FromSeconds(5)));
-			Assert.AreEqual(SubscriptionDropReason.UserInitiated, _reason);
-			Assert.IsNull(_exception);
+			Assert.True(_dropped.WaitOne(TimeSpan.FromSeconds(5)));
+			Assert.Equal(SubscriptionDropReason.UserInitiated, _reason);
+			Assert.Null(_exception);
 		}
 	}
 }

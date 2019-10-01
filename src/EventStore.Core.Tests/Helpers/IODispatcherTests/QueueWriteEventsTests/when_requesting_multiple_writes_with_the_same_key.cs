@@ -1,12 +1,11 @@
 ﻿using EventStore.Core.Data;
 using EventStore.Core.Messages;
 using EventStore.Core.Services.UserManagement;
-using NUnit.Framework;
+using Xunit;
 using System;
 using System.Linq;
 
 namespace EventStore.Core.Tests.Helpers.IODispatcherTests.QueueWriteEventsTests {
-	[TestFixture]
 	public class when_requesting_multiple_writes_with_the_same_key : TestFixtureWithExistingEvents {
 		protected override void Given() {
 			AllWritesQueueUp();
@@ -23,29 +22,29 @@ namespace EventStore.Core.Tests.Helpers.IODispatcherTests.QueueWriteEventsTests 
 				SystemAccount.Principal, (msg) => { });
 		}
 
-		[Test]
+		[Fact]
 		public void should_only_have_a_single_write_in_flight() {
-			Assert.AreEqual(1, _consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Count());
+			Assert.Equal(1, Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Count());
 		}
 
-		[Test]
+		[Fact]
 		public void should_continue_to_only_have_a_single_write_in_flight_as_writes_complete() {
-			var writeRequests = _consumer.HandledMessages.OfType<ClientMessage.WriteEvents>();
+			var writeRequests = Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>();
 
 			//first write
-			_consumer.HandledMessages.Clear();
+			Consumer.HandledMessages.Clear();
 			OneWriteCompletes();
-			Assert.AreEqual(1, writeRequests.Count());
+			Assert.Equal(1, writeRequests.Count());
 
 			//second write
-			_consumer.HandledMessages.Clear();
+			Consumer.HandledMessages.Clear();
 			OneWriteCompletes();
-			Assert.AreEqual(1, writeRequests.Count());
+			Assert.Equal(1, writeRequests.Count());
 
 			//third write completes, no more writes left in the queue
-			_consumer.HandledMessages.Clear();
+			Consumer.HandledMessages.Clear();
 			OneWriteCompletes();
-			Assert.AreEqual(0, writeRequests.Count());
+			Assert.Equal(0, writeRequests.Count());
 		}
 	}
 }

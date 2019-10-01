@@ -1,16 +1,14 @@
 using System.Collections.Generic;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.position_tagging.multistream_position_tagger {
-	[TestFixture]
 	public class when_updating_multistream_postion_tracker_from_a_tag {
 		private MultiStreamPositionTagger _tagger;
 		private CheckpointTag _tag;
 		private PositionTracker _positionTracker;
 
-		[SetUp]
-		public void When() {
+		public when_updating_multistream_postion_tracker_from_a_tag() {
 			// given
 			var tagger = new MultiStreamPositionTagger(0, new[] {"stream1", "stream2"});
 			var tracker = new PositionTracker(tagger);
@@ -26,10 +24,10 @@ namespace EventStore.Projections.Core.Tests.Services.position_tagging.multistrea
 			_positionTracker.UpdateByCheckpointTagInitial(_tag);
 		}
 
-		[Test]
+		[Fact]
 		public void stream_position_is_updated() {
-			Assert.AreEqual(1, _positionTracker.LastTag.Streams["stream1"]);
-			Assert.AreEqual(2, _positionTracker.LastTag.Streams["stream2"]);
+			Assert.Equal(1, _positionTracker.LastTag.Streams["stream1"]);
+			Assert.Equal(2, _positionTracker.LastTag.Streams["stream2"]);
 		}
 	}
 }

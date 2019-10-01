@@ -6,12 +6,11 @@ using EventStore.Core.Tests.Services.TimeService;
 using EventStore.Core.Util;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Management;
-using NUnit.Framework;
+using Xunit;
 using TestFixtureWithReadWriteDispatchers =
 	EventStore.Projections.Core.Tests.Services.core_projection.TestFixtureWithReadWriteDispatchers;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager.managed_projection {
-	[TestFixture]
 	public class when_creating_a_managed_projection : TestFixtureWithReadWriteDispatchers {
 		private new ITimeProvider _timeProvider;
 
@@ -24,8 +23,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.managed
 			<CoreProjectionManagementMessage.GetResult, CoreProjectionStatusMessage.ResultReport>
 			_getResultDispatcher;
 
-		[SetUp]
-		public void setup() {
+		public when_creating_a_managed_projection() {
 			_timeProvider = new FakeTimeProvider();
 			_getStateDispatcher =
 				new RequestResponseDispatcher
@@ -44,7 +42,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.managed
 		}
 
 
-		[Test]
+		[Fact]
 		public void empty_guid_throws_invali_argument_exception() {
 			Assert.Throws<ArgumentException>(() => {
 				new ManagedProjection(
@@ -66,7 +64,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.managed
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void empty_guid_throws_invali_argument_exception2() {
 			Assert.Throws<ArgumentException>(() => {
 				new ManagedProjection(
@@ -98,7 +96,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.managed
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void null_name_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				new ManagedProjection(
@@ -130,7 +128,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.managed
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void null_name_throws_argument_null_exception2() {
 			Assert.Throws<ArgumentNullException>(() => {
 				new ManagedProjection(
@@ -162,7 +160,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.managed
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void empty_name_throws_argument_exception() {
 			Assert.Throws<ArgumentException>(() => {
 				new ManagedProjection(
@@ -194,7 +192,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.managed
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void empty_name_throws_argument_exception2() {
 			Assert.Throws<ArgumentException>(() => {
 				new ManagedProjection(

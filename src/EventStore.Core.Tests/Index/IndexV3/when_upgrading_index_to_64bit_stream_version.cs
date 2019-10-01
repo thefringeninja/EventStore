@@ -1,14 +1,14 @@
 using System.Linq;
 using EventStore.Core.Index;
 using EventStore.Core.TransactionLog;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Index.Hashes;
 using System;
 using System.Threading.Tasks;
 using EventStore.Core.TransactionLog.LogRecords;
 
 namespace EventStore.Core.Tests.Index.IndexV3 {
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class when_upgrading_index_to_64bit_stream_version : SpecificationWithDirectoryPerTestFixture {
 		private TableIndex _tableIndex;
 		private IHasher _lowHasher;
@@ -20,7 +20,6 @@ namespace EventStore.Core.Tests.Index.IndexV3 {
 			_ptableVersion = PTableVersions.IndexV3;
 		}
 
-		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 
@@ -63,66 +62,65 @@ namespace EventStore.Core.Tests.Index.IndexV3 {
 			await Task.Delay(500);
 		}
 
-		[OneTimeTearDown]
 		public override Task TestFixtureTearDown() {
 			_tableIndex.Close();
 
 			return base.TestFixtureTearDown();
 		}
 
-		[Test]
+		[Fact]
 		public void should_have_entries_in_sorted_order() {
 			var streamId = "testStream-2";
 			var result = _tableIndex.GetRange(streamId, 0, 4).ToArray();
 			var hash = (ulong)_lowHasher.Hash(streamId) << 32 | _highHasher.Hash(streamId);
 
-			Assert.That(result.Count(), Is.EqualTo(5));
+			Assert.Equal(result.Count(), 5);
 
-			Assert.That(result[0].Stream, Is.EqualTo(hash));
-			Assert.That(result[0].Version, Is.EqualTo(4));
-			Assert.That(result[0].Position, Is.EqualTo(10));
+			Assert.Equal(result[0].Stream, hash);
+			Assert.Equal(result[0].Version, 4);
+			Assert.Equal(result[0].Position, 10);
 
-			Assert.That(result[1].Stream, Is.EqualTo(hash));
-			Assert.That(result[1].Version, Is.EqualTo(3));
-			Assert.That(result[1].Position, Is.EqualTo(8));
+			Assert.Equal(result[1].Stream, hash);
+			Assert.Equal(result[1].Version, 3);
+			Assert.Equal(result[1].Position, 8);
 
-			Assert.That(result[2].Stream, Is.EqualTo(hash));
-			Assert.That(result[2].Version, Is.EqualTo(2));
-			Assert.That(result[2].Position, Is.EqualTo(6));
+			Assert.Equal(result[2].Stream, hash);
+			Assert.Equal(result[2].Version, 2);
+			Assert.Equal(result[2].Position, 6);
 
-			Assert.That(result[3].Stream, Is.EqualTo(hash));
-			Assert.That(result[3].Version, Is.EqualTo(1));
-			Assert.That(result[3].Position, Is.EqualTo(4));
+			Assert.Equal(result[3].Stream, hash);
+			Assert.Equal(result[3].Version, 1);
+			Assert.Equal(result[3].Position, 4);
 
-			Assert.That(result[4].Stream, Is.EqualTo(hash));
-			Assert.That(result[4].Version, Is.EqualTo(0));
-			Assert.That(result[4].Position, Is.EqualTo(2));
+			Assert.Equal(result[4].Stream, hash);
+			Assert.Equal(result[4].Version, 0);
+			Assert.Equal(result[4].Position, 2);
 
 			streamId = "testStream-1";
 			result = _tableIndex.GetRange(streamId, 0, 4).ToArray();
 			hash = (ulong)_lowHasher.Hash(streamId) << 32 | _highHasher.Hash(streamId);
 
-			Assert.That(result.Count(), Is.EqualTo(5));
+			Assert.Equal(result.Count(), 5);
 
-			Assert.That(result[0].Stream, Is.EqualTo(hash));
-			Assert.That(result[0].Version, Is.EqualTo(4));
-			Assert.That(result[0].Position, Is.EqualTo(9));
+			Assert.Equal(result[0].Stream, hash);
+			Assert.Equal(result[0].Version, 4);
+			Assert.Equal(result[0].Position, 9);
 
-			Assert.That(result[1].Stream, Is.EqualTo(hash));
-			Assert.That(result[1].Version, Is.EqualTo(3));
-			Assert.That(result[1].Position, Is.EqualTo(7));
+			Assert.Equal(result[1].Stream, hash);
+			Assert.Equal(result[1].Version, 3);
+			Assert.Equal(result[1].Position, 7);
 
-			Assert.That(result[2].Stream, Is.EqualTo(hash));
-			Assert.That(result[2].Version, Is.EqualTo(2));
-			Assert.That(result[2].Position, Is.EqualTo(5));
+			Assert.Equal(result[2].Stream, hash);
+			Assert.Equal(result[2].Version, 2);
+			Assert.Equal(result[2].Position, 5);
 
-			Assert.That(result[3].Stream, Is.EqualTo(hash));
-			Assert.That(result[3].Version, Is.EqualTo(1));
-			Assert.That(result[3].Position, Is.EqualTo(3));
+			Assert.Equal(result[3].Stream, hash);
+			Assert.Equal(result[3].Version, 1);
+			Assert.Equal(result[3].Position, 3);
 
-			Assert.That(result[4].Stream, Is.EqualTo(hash));
-			Assert.That(result[4].Version, Is.EqualTo(0));
-			Assert.That(result[4].Position, Is.EqualTo(1));
+			Assert.Equal(result[4].Stream, hash);
+			Assert.Equal(result[4].Version, 0);
+			Assert.Equal(result[4].Position, 1);
 		}
 	}
 

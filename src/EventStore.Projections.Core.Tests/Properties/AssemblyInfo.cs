@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
-using NUnit.Framework;
+using Xunit;
 
 [assembly: AssemblyTitle("EventStore.Projections.Core.Tests")]
 [assembly: AssemblyDescription("")]
@@ -17,3 +17,4 @@ using NUnit.Framework;
 
 [assembly: ComVisible(false)]
 [assembly: Guid("000aa1a5-5e87-4404-a909-49d3f8878f00")]
+[assembly: CollectionBehavior(DisableTestParallelization = true)]

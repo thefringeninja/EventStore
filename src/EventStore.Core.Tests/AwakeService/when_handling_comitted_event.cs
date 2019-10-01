@@ -2,18 +2,16 @@
 using EventStore.Core.Data;
 using EventStore.Core.Messages;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.AwakeService {
-	[TestFixture]
 	public class when_handling_comitted_event {
 		private Core.Services.AwakeReaderService.AwakeService _it;
 		private EventRecord _eventRecord;
 		private StorageMessage.EventCommitted _eventCommitted;
 		private Exception _exception;
 
-		[SetUp]
-		public void SetUp() {
+		public when_handling_comitted_event() {
 			_exception = null;
 			Given();
 			When();
@@ -38,9 +36,9 @@ namespace EventStore.Core.Tests.AwakeService {
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void it_is_handled() {
-			Assert.IsNull(_exception, (_exception ?? (object)"").ToString());
+			Assert.Null(_exception);
 		}
 	}
 }

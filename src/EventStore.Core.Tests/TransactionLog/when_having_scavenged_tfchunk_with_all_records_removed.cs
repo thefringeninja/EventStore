@@ -15,10 +15,9 @@ using EventStore.Core.TransactionLog.Chunks;
 using EventStore.Core.TransactionLog.Chunks.TFChunk;
 using EventStore.Core.TransactionLog.FileNamingStrategy;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog {
-	[TestFixture]
 	public class when_having_scavenged_tfchunk_with_all_records_removed : SpecificationWithDirectoryPerTestFixture {
 		private TFChunkDb _db;
 		private TFChunk _scavengedChunk;
@@ -80,61 +79,61 @@ namespace EventStore.Core.Tests.TransactionLog {
 			return base.TestFixtureTearDown();
 		}
 
-		[Test]
+		[Fact]
 		public void first_record_was_written() {
-			Assert.IsTrue(_res1.Success);
-			Assert.IsTrue(_cres1.Success);
+			Assert.True(_res1.Success);
+			Assert.True(_cres1.Success);
 		}
 
-		[Test]
+		[Fact]
 		public void second_record_was_written() {
-			Assert.IsTrue(_res2.Success);
-			Assert.IsTrue(_cres2.Success);
+			Assert.True(_res2.Success);
+			Assert.True(_cres2.Success);
 		}
 
-		[Test]
+		[Fact]
 		public void third_record_was_written() {
-			Assert.IsTrue(_res3.Success);
-			Assert.IsTrue(_cres3.Success);
+			Assert.True(_res3.Success);
+			Assert.True(_cres3.Success);
 		}
 
-		[Test]
+		[Fact]
 		public void prepare1_cant_be_read_at_position() {
 			var res = _scavengedChunk.TryReadAt((int)_p1.LogPosition);
-			Assert.IsFalse(res.Success);
+			Assert.False(res.Success);
 		}
 
-		[Test]
+		[Fact]
 		public void commit1_cant_be_read_at_position() {
 			var res = _scavengedChunk.TryReadAt((int)_c1.LogPosition);
-			Assert.IsFalse(res.Success);
+			Assert.False(res.Success);
 		}
 
-		[Test]
+		[Fact]
 		public void prepare2_cant_be_read_at_position() {
 			var res = _scavengedChunk.TryReadAt((int)_p2.LogPosition);
-			Assert.IsFalse(res.Success);
+			Assert.False(res.Success);
 		}
 
-		[Test]
+		[Fact]
 		public void commit2_cant_be_read_at_position() {
 			var res = _scavengedChunk.TryReadAt((int)_c2.LogPosition);
-			Assert.IsFalse(res.Success);
+			Assert.False(res.Success);
 		}
 
-		[Test]
+		[Fact]
 		public void prepare3_cant_be_read_at_position() {
 			var res = _scavengedChunk.TryReadAt((int)_p3.LogPosition);
-			Assert.IsFalse(res.Success);
+			Assert.False(res.Success);
 		}
 
-		[Test]
+		[Fact]
 		public void commit3_cant_be_read_at_position() {
 			var res = _scavengedChunk.TryReadAt((int)_c3.LogPosition);
-			Assert.IsFalse(res.Success);
+			Assert.False(res.Success);
 		}
 
-		[Test]
+		[Fact]
 		public void sequencial_read_returns_no_records() {
 			var records = new List<LogRecord>();
 			RecordReadResult res = _scavengedChunk.TryReadFirst();
@@ -143,19 +142,19 @@ namespace EventStore.Core.Tests.TransactionLog {
 				res = _scavengedChunk.TryReadClosestForward((int)res.NextPosition);
 			}
 
-			Assert.AreEqual(0, records.Count);
+			Assert.Equal(0, records.Count);
 		}
 
-		[Test]
+		[Fact]
 		public void scavenged_chunk_should_have_saved_space() {
-			Assert.IsTrue(_scavengedChunk.FileSize < _originalFileSize,
+			Assert.True(_scavengedChunk.FileSize < _originalFileSize,
 				String.Format("Expected scavenged file size ({0}) to be less than original file size ({1})",
 					_scavengedChunk.FileSize, _originalFileSize));
 		}
 
-		[Test]
+		[Fact]
 		public void scavenged_chunk_should_be_aligned() {
-			Assert.IsTrue(_scavengedChunk.FileSize % 4096 == 0);
+			Assert.True(_scavengedChunk.FileSize % 4096 == 0);
 		}
 	}
 }

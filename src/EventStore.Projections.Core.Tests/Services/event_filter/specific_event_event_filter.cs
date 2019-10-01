@@ -1,36 +1,35 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.event_filter {
-	[TestFixture]
 	public class specific_event_event_filter : TestFixtureWithEventFilter {
 		protected override void Given() {
 			_builder.FromAll();
 			_builder.IncludeEvent("event");
 		}
 
-		[Test]
+		[Fact]
 		public void can_be_built() {
-			Assert.IsNotNull(_ef);
+			Assert.NotNull(_ef);
 		}
 
-		[Test]
+		[Fact]
 		public void does_not_pass_categorized_event_with_correct_event_name() {
-			Assert.IsFalse(_ef.Passes(true, "stream", "event"));
+			Assert.False(_ef.Passes(true, "stream", "event"));
 		}
 
-		[Test]
+		[Fact]
 		public void does_not_pass_categorized_event_with_incorrect_event_name() {
-			Assert.IsFalse(_ef.Passes(true, "stream", "incorrect_event"));
+			Assert.False(_ef.Passes(true, "stream", "incorrect_event"));
 		}
 
-		[Test]
+		[Fact]
 		public void passes_uncategorized_event_with_correct_event_name() {
-			Assert.IsTrue(_ef.Passes(false, "stream", "event"));
+			Assert.True(_ef.Passes(false, "stream", "event"));
 		}
 
-		[Test]
+		[Fact]
 		public void does_not_pass_uncategorized_event_with_incorrect_event_name() {
-			Assert.IsFalse(_ef.Passes(true, "stream", "incorrect_event"));
+			Assert.False(_ef.Passes(true, "stream", "incorrect_event"));
 		}
 	}
 }

@@ -6,11 +6,10 @@ using EventStore.Core.Helpers;
 using EventStore.Core.Messages;
 using EventStore.Core.Services.TimerService;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_manager.multi_stream {
-	[TestFixture]
 	public class when_starting_and_enqueue_prerecorded_events_read_times_out : with_multi_stream_checkpoint_manager,
 		IHandle<TimerMessage.Schedule>,
 		IHandle<CoreProjectionProcessingMessage.PrerecordedEventsLoaded> {
@@ -28,7 +27,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 			_checkpointManager.BeginLoadPrerecordedEvents(CheckpointTag.FromStreamPositions(0, positions));
 
 			if (!_mre.Wait(10000)) {
-				Assert.Fail("Timed out waiting for pre recorded events loaded message");
+				throw new Exception("Timed out waiting for pre recorded events loaded message");
 			}
 		}
 
@@ -54,9 +53,9 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 			_mre.Set();
 		}
 
-		[Test]
+		[Fact]
 		public void should_send_prerecorded_events_message() {
-			Assert.IsNotNull(_eventsLoadedMessage);
+			Assert.NotNull(_eventsLoadedMessage);
 		}
 	}
 }

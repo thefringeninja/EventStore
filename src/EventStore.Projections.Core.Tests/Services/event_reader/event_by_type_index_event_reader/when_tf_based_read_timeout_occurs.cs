@@ -7,11 +7,10 @@ using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Core.Tests.Services.TimeService;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.event_by_type_index_event_reader {
-	[TestFixture]
 	public class when_tf_based_read_timeout_occurs : EventByTypeIndexEventReaderTestFixture {
 		private EventByTypeIndexEventReader _eventReader;
 		private Guid _distributionCorrelationId;
@@ -23,8 +22,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.event_by_type_
 
 		private FakeTimeProvider _fakeTimeProvider;
 
-		[SetUp]
-		public new void When() {
+			public when_tf_based_read_timeout_occurs() {
 			_distributionCorrelationId = Guid.NewGuid();
 			_fakeTimeProvider = new FakeTimeProvider();
 			var fromPositions = new Dictionary<string, long>();
@@ -61,18 +59,18 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.event_by_type_
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void should_not_deliver_events() {
-			Assert.AreEqual(0,
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
+			Assert.Equal(0,
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
 		}
 
-		[Test]
+		[Fact]
 		public void should_attempt_another_read_for_the_timed_out_reads() {
-			var readAllEventsForwardMessages = _consumer.HandledMessages.OfType<ClientMessage.ReadAllEventsForward>();
+			var readAllEventsForwardMessages = Consumer.HandledMessages.OfType<ClientMessage.ReadAllEventsForward>();
 
-			Assert.AreEqual(readAllEventsForwardMessages.First().CorrelationId, _readAllEventsForwardCorrelationId);
-			Assert.AreEqual(1, readAllEventsForwardMessages.Skip(1).Count());
+			Assert.Equal(readAllEventsForwardMessages.First().CorrelationId, _readAllEventsForwardCorrelationId);
+			Assert.Equal(1, readAllEventsForwardMessages.Skip(1).Count());
 		}
 	}
 }

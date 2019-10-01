@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using EventStore.ClientAPI.Common.Utils;
 using EventStore.Projections.Core.Services.Management;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projection_core_service_response_writer {
-	abstract class specification_with_projection_core_service_response_writer {
+	public abstract class specification_with_projection_core_service_response_writer {
 		protected ProjectionCoreResponseWriter _sut;
 		protected List<Tuple<string, object>> _publishedCommands;
 		private IResponseWriter _writer;
 
-		[SetUp]
-		public void SetUp() {
+		public specification_with_projection_core_service_response_writer() {
 			_publishedCommands = new List<Tuple<string, object>>();
 			_writer = new FakeWriter(this);
 			_sut = new ProjectionCoreResponseWriter(_writer);
@@ -20,9 +19,9 @@ namespace EventStore.Projections.Core.Tests.Services.projection_core_service_res
 		}
 
 		protected T AssertParsedSingleCommand<T>(string command) {
-			Assert.AreEqual(1, _publishedCommands.Count);
-			Assert.AreEqual(command, _publishedCommands[0].Item1);
-			Assert.IsInstanceOf<T>(_publishedCommands[0].Item2);
+			Assert.Equal(1, _publishedCommands.Count);
+			Assert.Equal(command, _publishedCommands[0].Item1);
+			Assert.IsType<T>(_publishedCommands[0].Item2);
 			var source = (T)_publishedCommands[0].Item2;
 			var serialized = source.ToJson();
 			var parsed = serialized.ParseJson<T>();
@@ -34,7 +33,7 @@ namespace EventStore.Projections.Core.Tests.Services.projection_core_service_res
 
 		protected abstract void When();
 
-		class FakeWriter : IResponseWriter {
+		public class FakeWriter : IResponseWriter {
 			private readonly specification_with_projection_core_service_response_writer _container;
 
 			public FakeWriter(specification_with_projection_core_service_response_writer container) {

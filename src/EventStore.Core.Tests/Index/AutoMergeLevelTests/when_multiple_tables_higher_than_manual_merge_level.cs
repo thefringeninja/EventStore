@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Linq;
-using NUnit.Framework;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace EventStore.Core.Tests.Index.AutoMergeLevelTests {
-	[TestFixture]
 	public class when_multiple_tables_higher_than_manual_merge_level : when_max_auto_merge_level_is_set {
-		public override void Setup() {
-			base.Setup();
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 			AddTables(8);
 			_map.Dispose(TimeSpan.FromMilliseconds(100));
 			var filename = GetFilePathFor("indexmap");
@@ -15,7 +15,7 @@ namespace EventStore.Core.Tests.Index.AutoMergeLevelTests {
 			_map = IndexMapTestFactory.FromFile(filename, maxAutoMergeLevel: 1);
 		}
 
-		[Test]
+		[Fact]
 		public void tables_should_be_merged() {
 			var (level, table) = _map.GetTableForManualMerge();
 			Assert.NotNull(table);
@@ -25,7 +25,7 @@ namespace EventStore.Core.Tests.Index.AutoMergeLevelTests {
 				RecordExistsAt, _fileNameProvider, _ptableVersion,
 				level: level,
 				skipIndexVerify: _skipIndexVerify);
-			Assert.AreEqual(1, _result.MergedMap.InOrder().Count());
+			Assert.Equal(1, _result.MergedMap.InOrder().Count());
 		}
 	}
 }

@@ -12,7 +12,7 @@ using EventStore.Core.Tests.Fakes;
 using EventStore.Transport.Http;
 using EventStore.Transport.Http.Client;
 using EventStore.Transport.Http.Codecs;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Transport.Http {
 	public class FakeController : IHttpController {
@@ -122,9 +122,8 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		}
 	}
 
-	[TestFixture]
 	public class speed_test {
-		[Test, Ignore("speed test")]
+		[Fact(Skip = "speed test")]
 		public void of_http_requests_routing() {
 			const int iterations = 100000;
 
@@ -180,7 +179,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			multiQueuedHandler.Stop();
 		}
 
-		[Test, Ignore("speed test")]
+		[Fact(Skip = "speed test")]
 		public void of_uri_router() {
 			const int iterations = 100000;
 

@@ -1,10 +1,9 @@
 ﻿using System;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reordering_projection_subscription {
-	[TestFixture]
 	public class
 		when_handling_committed_event_passing_the_filter : TestFixtureWithEventReorderingProjectionSubscription {
 		protected override void When() {
@@ -14,9 +13,9 @@ namespace EventStore.Projections.Core.Tests.Services.event_reordering_projection
 					new byte[0], new byte[0]));
 		}
 
-		[Test]
+		[Fact]
 		public void event_is_not_passed_to_downstream_handler_immediately() {
-			Assert.AreEqual(0, _eventHandler.HandledMessages.Count);
+			Assert.Equal(0, _eventHandler.HandledMessages.Count);
 		}
 	}
 }

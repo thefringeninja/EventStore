@@ -1,39 +1,38 @@
 using System;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services {
-	[TestFixture]
 	public class mixed_checkpoint_tags {
 		private readonly CheckpointTag _a = CheckpointTag.FromStreamPosition(0, "stream1", 9);
 		private readonly CheckpointTag _b = CheckpointTag.FromStreamPosition(0, "stream2", 15);
 		private readonly CheckpointTag _c = CheckpointTag.FromPosition(0, 50, 29);
 
-		[Test]
+		[Fact]
 		public void are_not_equal() {
-			Assert.AreNotEqual(_a, _b);
-			Assert.AreNotEqual(_a, _c);
-			Assert.AreNotEqual(_b, _c);
+			Assert.NotEqual(_a, _b);
+			Assert.NotEqual(_a, _c);
+			Assert.NotEqual(_b, _c);
 
-			Assert.IsTrue(_a != _b);
-			Assert.IsTrue(_a != _c);
-			Assert.IsTrue(_b != _c);
+			Assert.True(_a != _b);
+			Assert.True(_a != _c);
+			Assert.True(_b != _c);
 		}
 
-		[Test]
+		[Fact]
 		public void cannot_be_compared() {
-			Assert.IsTrue(throws(() => _a > _b));
-			Assert.IsTrue(throws(() => _a >= _b));
-			Assert.IsTrue(throws(() => _a > _c));
-			Assert.IsTrue(throws(() => _a >= _c));
-			Assert.IsTrue(throws(() => _b > _c));
-			Assert.IsTrue(throws(() => _b >= _c));
-			Assert.IsTrue(throws(() => _a < _b));
-			Assert.IsTrue(throws(() => _a <= _b));
-			Assert.IsTrue(throws(() => _a < _c));
-			Assert.IsTrue(throws(() => _a <= _c));
-			Assert.IsTrue(throws(() => _b < _c));
-			Assert.IsTrue(throws(() => _b <= _c));
+			Assert.True(throws(() => _a > _b));
+			Assert.True(throws(() => _a >= _b));
+			Assert.True(throws(() => _a > _c));
+			Assert.True(throws(() => _a >= _c));
+			Assert.True(throws(() => _b > _c));
+			Assert.True(throws(() => _b >= _c));
+			Assert.True(throws(() => _a < _b));
+			Assert.True(throws(() => _a <= _b));
+			Assert.True(throws(() => _a < _c));
+			Assert.True(throws(() => _a <= _c));
+			Assert.True(throws(() => _b < _c));
+			Assert.True(throws(() => _b <= _c));
 		}
 
 		private bool throws(Func<bool> func) {

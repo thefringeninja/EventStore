@@ -50,7 +50,7 @@ namespace EventStore.Core.Tests.Helpers {
 		public readonly TFChunkDb Db;
 		private readonly string _dbPath;
 		private readonly bool _isReadOnlyReplica;
-		public ManualResetEvent StartedEvent;
+		private readonly TaskCompletionSource<bool> _startedSource = new TaskCompletionSource<bool>();
 
 		public VNodeState NodeState = VNodeState.Unknown;
 
@@ -128,10 +128,9 @@ namespace EventStore.Core.Tests.Helpers {
 			Node.ExternalHttpService.SetupController(new TestController(Node.MainQueue));
 		}
 
-		public void Start() {
+		public Task Start() {
 			StartingTime.Start();
 
-			StartedEvent = new ManualResetEvent(false);
 			Node.MainBus.Subscribe(
 				new AdHocHandler<SystemMessage.StateChangeMessage>(m => { NodeState = _isReadOnlyReplica ?
 					VNodeState.ReadOnlyMasterless : VNodeState.Unknown; }));
@@ -139,21 +138,23 @@ namespace EventStore.Core.Tests.Helpers {
 				Node.MainBus.Subscribe(
 					new AdHocHandler<SystemMessage.BecomeMaster>(m => {
 						NodeState = VNodeState.Master;
-						StartedEvent.Set();
+						_startedSource.TrySetResult(true);
 					}));
 				Node.MainBus.Subscribe(
 					new AdHocHandler<SystemMessage.BecomeSlave>(m => {
 						NodeState = VNodeState.Slave;
-						StartedEvent.Set();
+						_startedSource.TrySetResult(true);
 					}));
 			} else {
 				Node.MainBus.Subscribe(
 					new AdHocHandler<SystemMessage.BecomeReadOnlyReplica>(m => {
 						NodeState = VNodeState.ReadOnlyReplica;
-						StartedEvent.Set();
+						_startedSource.TrySetResult(true);
 					}));
 			}
 			Node.Start();
+
+			return _startedSource.Task;
 		}
 
 		public async Task Shutdown(bool keepDb = false) {
@@ -171,8 +172,10 @@ namespace EventStore.Core.Tests.Helpers {
 			try {
 				Directory.Delete(directory, true);
 			} catch (Exception e) {
-				Debug.WriteLine("Failed to remove directory {0}", directory);
-				Debug.WriteLine(e);
+#if DEBUG
+				ESDebug.WriteLine("Failed to remove directory {0}", directory);
+				ESDebug.WriteLine(e);
+#endif
 			}
 		}
 

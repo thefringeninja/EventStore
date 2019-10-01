@@ -2,7 +2,7 @@
 using System.Linq;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Messages;
 using EventStore.Core.Tests.Helpers;
 using System;
@@ -10,7 +10,6 @@ using System.Net;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_system {
 	namespace startup {
-		[TestFixture]
 		public class when_starting_with_empty_db : with_projections_subsystem {
 			protected override IEnumerable<WhenStep> When() {
 				yield return
@@ -19,33 +18,32 @@ namespace EventStore.Projections.Core.Tests.Services.projections_system {
 					;
 			}
 
-			[Test]
+			[Fact]
 			public void system_projections_are_registered() {
 				var statistics = HandledMessages.OfType<ProjectionManagementMessage.Statistics>().LastOrDefault();
 				Assert.NotNull(statistics);
-				Assert.AreEqual(5, statistics.Projections.Length);
+				Assert.Equal(5, statistics.Projections.Length);
 			}
 
-			[Test]
+			[Fact]
 			public void system_projections_are_running() {
 				var statistics = HandledMessages.OfType<ProjectionManagementMessage.Statistics>().LastOrDefault();
 				Assert.NotNull(statistics);
-				Assert.That(statistics.Projections.All(s => s.Status == "Stopped"));
+				Assert.True(statistics.Projections.All(s => s.Status == "Stopped"));
 			}
 
-			[Test]
+			[Fact]
 			public void core_readers_should_use_the_unique_id_provided_by_the_state_change_message() {
-				var epochWrittenMessages = _consumer.HandledMessages.OfType<SystemMessage.EpochWritten>().First();
-				var startCoreMessages = _consumer.HandledMessages.OfType<ProjectionCoreServiceMessage.StartCore>();
-				var startingMessage = _consumer.HandledMessages.OfType<ProjectionManagementMessage.Starting>().First();
+				var epochWrittenMessages = Consumer.HandledMessages.OfType<SystemMessage.EpochWritten>().First();
+				var startCoreMessages = Consumer.HandledMessages.OfType<ProjectionCoreServiceMessage.StartCore>();
+				var startingMessage = Consumer.HandledMessages.OfType<ProjectionManagementMessage.Starting>().First();
 
-				Assert.AreEqual(1, startCoreMessages.Select(x => x.EpochId).Distinct().Count());
-				Assert.AreEqual(epochWrittenMessages.Epoch.EpochId, startCoreMessages.First().EpochId);
-				Assert.AreEqual(epochWrittenMessages.Epoch.EpochId, startingMessage.EpochId);
+				Assert.Equal(1, startCoreMessages.Select(x => x.EpochId).Distinct().Count());
+				Assert.Equal(epochWrittenMessages.Epoch.EpochId, startCoreMessages.First().EpochId);
+				Assert.Equal(epochWrittenMessages.Epoch.EpochId, startingMessage.EpochId);
 			}
 		}
 
-		[TestFixture]
 		public class when_starting_as_slave : with_projections_subsystem {
 			protected override IEnumerable<WhenStep> PreWhen() {
 				yield return (new SystemMessage.BecomeSlave(Guid.NewGuid(),
@@ -75,11 +73,11 @@ namespace EventStore.Projections.Core.Tests.Services.projections_system {
 				}
 			}
 
-			[Test]
+			[Fact]
 			public void projections_core_coordinator_should_not_publish_start_core_message() {
 				//projections are not allowed (yet) to run on slaves
-				var startCoreMessages = _consumer.HandledMessages.OfType<ProjectionCoreServiceMessage.StartCore>();
-				Assert.AreEqual(0, startCoreMessages.Select(x => x.EpochId).Distinct().Count());
+				var startCoreMessages = Consumer.HandledMessages.OfType<ProjectionCoreServiceMessage.StartCore>();
+				Assert.Equal(0, startCoreMessages.Select(x => x.EpochId).Distinct().Count());
 			}
 		}
 	}

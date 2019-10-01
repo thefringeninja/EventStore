@@ -2,7 +2,7 @@
 using EventStore.ClientAPI.SystemData;
 using EventStore.Core.Tests.ClientAPI.Helpers;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,15 +10,13 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace EventStore.Core.Tests.ClientAPI {
-	[TestFixture, Ignore("Very long running")]
-	[Category("LongRunning"), Category("ClientAPI")]
+	[Trait("Category", "LongRunning"), Trait("Category", "ClientAPI")]
 	public class catchup_subscription_handles_small_batch_sizes : SpecificationWithDirectoryPerTestFixture {
 		private MiniNode _node;
 		private string _streamName = "TestStream";
 		private CatchUpSubscriptionSettings _settings;
 		private IEventStoreConnection _conn;
 
-		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 			_node = new MiniNode(PathName, inMemDb: true);
@@ -44,7 +42,6 @@ namespace EventStore.Core.Tests.ClientAPI {
 			return events.ToArray();
 		}
 
-		[OneTimeTearDown]
 		public override async Task TestFixtureTearDown() {
 			_conn.Dispose();
 			await _node.Shutdown();
@@ -55,7 +52,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			return TestConnection.Create(node.TcpEndPoint);
 		}
 
-		[Test]
+		[Fact(Skip = "Very long running")]
 		public void CatchupSubscriptionToAllHandlesManyEventsWithSmallBatchSize() {
 			var mre = new ManualResetEvent(false);
 			_conn.SubscribeToAllFrom(null, _settings, (sub, evnt) => {
@@ -66,11 +63,10 @@ namespace EventStore.Core.Tests.ClientAPI {
 				return Task.CompletedTask;
 			}, (sub) => { mre.Set(); }, null, new UserCredentials("admin", "changeit"));
 
-			if (!mre.WaitOne(TimeSpan.FromMinutes(10)))
-				Assert.Fail("Timed out waiting for test to complete");
+			Assert.True(mre.WaitOne(TimeSpan.FromMinutes(10)));
 		}
 
-		[Test]
+		[Fact(Skip = "Very long running")]
 		public void CatchupSubscriptionToStreamHandlesManyEventsWithSmallBatchSize() {
 			var mre = new ManualResetEvent(false);
 			_conn.SubscribeToStreamFrom(_streamName, null, _settings, (sub, evnt) => {
@@ -81,8 +77,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 				return Task.CompletedTask;
 			}, (sub) => { mre.Set(); }, null, new UserCredentials("admin", "changeit"));
 
-			if (!mre.WaitOne(TimeSpan.FromMinutes(10)))
-				Assert.Fail("Timed out waiting for test to complete");
+			Assert.True(mre.WaitOne(TimeSpan.FromMinutes(10)));
 		}
 	}
 }

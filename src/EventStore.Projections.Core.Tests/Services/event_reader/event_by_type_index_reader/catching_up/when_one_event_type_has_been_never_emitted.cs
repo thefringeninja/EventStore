@@ -4,12 +4,12 @@ using System.Linq;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Projections.Core.Services;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.event_by_type_index_reader.catching_up {
 	namespace when_one_event_type_has_been_never_emitted {
-		abstract class with_one_event_type_has_been_never_emitted : TestFixtureWithEventReaderService {
+		public abstract class with_one_event_type_has_been_never_emitted : TestFixtureWithEventReaderService {
 			protected const int TailLength = 10;
 			protected Guid _subscriptionId;
 			private QuerySourcesDefinition _sourceDefinition;
@@ -63,20 +63,20 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.event_by_type_
 				return string.Format(@"{{""$c"":{0},""$p"":{1}}}", tfPos.CommitPosition, tfPos.PreparePosition);
 			}
 
-			[Test]
+			[Fact]
 			public void returns_all_events() {
 				var receivedEvents =
-					_consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.CommittedEventReceived>().ToArray();
+					Consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.CommittedEventReceived>().ToArray();
 
-				Assert.AreEqual(TailLength + 3, receivedEvents.Length);
+				Assert.Equal(TailLength + 3, receivedEvents.Length);
 			}
 
-			[Test]
+			[Fact]
 			public void returns_events_in_original_order() {
 				var receivedEvents =
-					_consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.CommittedEventReceived>().ToArray();
+					Consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.CommittedEventReceived>().ToArray();
 
-				Assert.That(
+				Assert.True(
 					(from e in receivedEvents
 						orderby e.Data.EventSequenceNumber
 						select e.Data.EventSequenceNumber)
@@ -86,8 +86,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.event_by_type_
 			}
 		}
 
-		[TestFixture]
-		class when_index_checkpoint_multiple_events_behind : with_one_event_type_has_been_never_emitted {
+		public class when_index_checkpoint_multiple_events_behind : with_one_event_type_has_been_never_emitted {
 			protected override void GivenInitialIndexState() {
 				ExistingEvent("$et-type1", "$>", TFPosToMetadata(_tfPos1), "0@test-stream");
 				ExistingEvent("$et-type1", "$>", TFPosToMetadata(_tfPos2), "1@test-stream");

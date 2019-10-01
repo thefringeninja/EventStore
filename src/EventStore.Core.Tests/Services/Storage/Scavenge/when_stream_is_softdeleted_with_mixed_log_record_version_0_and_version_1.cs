@@ -2,11 +2,10 @@ using System.Linq;
 using EventStore.Core.Data;
 using EventStore.Core.Tests.TransactionLog.Scavenging.Helpers;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 using ReadStreamResult = EventStore.Core.Services.Storage.ReaderIndex.ReadStreamResult;
 
 namespace EventStore.Core.Tests.Services.Storage.Scavenge {
-	[TestFixture]
 	public class when_stream_is_softdeleted_with_mixed_log_record_version_0_and_version_1 : ScavengeTestScenario {
 		private const string _deletedStream = "test";
 		private const string _deletedMetaStream = "$$test";
@@ -48,52 +47,51 @@ namespace EventStore.Core.Tests.Services.Storage.Scavenge {
 			};
 		}
 
-		[Test]
+		[Fact]
 		public void scavenging_goes_as_expected() {
-			CheckRecords();
 		}
 
-		[Test]
+		[Fact]
 		public void the_stream_is_absent_logically() {
-			Assert.AreEqual(ReadEventResult.NoStream, ReadIndex.ReadEvent(_deletedStream, 0).Result);
-			Assert.AreEqual(ReadStreamResult.NoStream,
+			Assert.Equal(ReadEventResult.NoStream, ReadIndex.ReadEvent(_deletedStream, 0).Result);
+			Assert.Equal(ReadStreamResult.NoStream,
 				ReadIndex.ReadStreamEventsForward(_deletedStream, 0, 100).Result);
-			Assert.AreEqual(ReadStreamResult.NoStream,
+			Assert.Equal(ReadStreamResult.NoStream,
 				ReadIndex.ReadStreamEventsBackward(_deletedStream, -1, 100).Result);
 		}
 
-		[Test]
+		[Fact]
 		public void the_metastream_is_absent_logically() {
-			Assert.AreEqual(ReadEventResult.NotFound, ReadIndex.ReadEvent(_deletedMetaStream, 0).Result);
-			Assert.AreEqual(ReadStreamResult.Success,
+			Assert.Equal(ReadEventResult.NotFound, ReadIndex.ReadEvent(_deletedMetaStream, 0).Result);
+			Assert.Equal(ReadStreamResult.Success,
 				ReadIndex.ReadStreamEventsForward(_deletedMetaStream, 0, 100).Result);
-			Assert.AreEqual(ReadStreamResult.Success,
+			Assert.Equal(ReadStreamResult.Success,
 				ReadIndex.ReadStreamEventsBackward(_deletedMetaStream, -1, 100).Result);
 		}
 
-		[Test]
+		[Fact]
 		public void the_stream_is_absent_physically() {
 			var headOfTf = new TFPos(Db.Config.WriterCheckpoint.Read(), Db.Config.WriterCheckpoint.Read());
-			Assert.IsEmpty(ReadIndex.ReadAllEventsForward(new TFPos(0, 0), 1000).Records
+			Assert.Empty(ReadIndex.ReadAllEventsForward(new TFPos(0, 0), 1000).Records
 				.Where(x => x.Event.EventStreamId == _deletedStream));
-			Assert.IsEmpty(ReadIndex.ReadAllEventsBackward(headOfTf, 1000).Records
+			Assert.Empty(ReadIndex.ReadAllEventsBackward(headOfTf, 1000).Records
 				.Where(x => x.Event.EventStreamId == _deletedStream));
 		}
 
-		[Test]
+		[Fact]
 		public void the_metastream_is_absent_physically() {
 			var headOfTf = new TFPos(Db.Config.WriterCheckpoint.Read(), Db.Config.WriterCheckpoint.Read());
-			Assert.IsEmpty(ReadIndex.ReadAllEventsForward(new TFPos(0, 0), 1000).Records
+			Assert.Empty(ReadIndex.ReadAllEventsForward(new TFPos(0, 0), 1000).Records
 				.Where(x => x.Event.EventStreamId == _deletedMetaStream));
-			Assert.IsEmpty(ReadIndex.ReadAllEventsBackward(headOfTf, 1000).Records
+			Assert.Empty(ReadIndex.ReadAllEventsBackward(headOfTf, 1000).Records
 				.Where(x => x.Event.EventStreamId == _deletedMetaStream));
 		}
 
-		[Test]
+		[Fact]
 		public void the_kept_stream_is_present() {
-			Assert.AreEqual(ReadEventResult.Success, ReadIndex.ReadEvent(_keptStream, 0).Result);
-			Assert.AreEqual(ReadStreamResult.Success, ReadIndex.ReadStreamEventsForward(_keptStream, 0, 100).Result);
-			Assert.AreEqual(ReadStreamResult.Success, ReadIndex.ReadStreamEventsBackward(_keptStream, -1, 100).Result);
+			Assert.Equal(ReadEventResult.Success, ReadIndex.ReadEvent(_keptStream, 0).Result);
+			Assert.Equal(ReadStreamResult.Success, ReadIndex.ReadStreamEventsForward(_keptStream, 0, 100).Result);
+			Assert.Equal(ReadStreamResult.Success, ReadIndex.ReadStreamEventsBackward(_keptStream, -1, 100).Result);
 		}
 	}
 }

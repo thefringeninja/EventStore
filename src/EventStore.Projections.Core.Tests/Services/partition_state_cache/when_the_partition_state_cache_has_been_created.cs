@@ -1,15 +1,13 @@
 ﻿using System;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.partition_state_cache {
-	[TestFixture]
 	public class when_the_partition_state_cache_has_been_created {
 		private PartitionStateCache _cache;
 		private Exception _exception;
 
-		[SetUp]
-		public void when() {
+		public when_the_partition_state_cache_has_been_created() {
 			try {
 				_cache = new PartitionStateCache();
 			} catch (Exception ex) {
@@ -17,44 +15,42 @@ namespace EventStore.Projections.Core.Tests.Services.partition_state_cache {
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void it_has_been_created() {
-			Assert.IsNotNull(_cache, ((object)_exception ?? "").ToString());
+			Assert.NotNull(_cache);
 		}
 
-		[Test]
+		[Fact]
 		public void state_can_be_cached() {
 			CheckpointTag at = CheckpointTag.FromPosition(0, 100, 90);
 			_cache.CacheAndLockPartitionState("partition", new PartitionState("data", null, at), at);
 		}
 
-		[Test]
+		[Fact]
 		public void no_items_are_cached() {
-			Assert.AreEqual(0, _cache.CachedItemCount);
+			Assert.Equal(0, _cache.CachedItemCount);
 		}
 
-		[Test]
+		[Fact]
 		public void random_item_cannot_be_retrieved_as_locked() {
-			Assert.IsNull(
+			Assert.Null(
 				_cache.TryGetAndLockPartitionState(
-					"random", CheckpointTag.FromPosition(0, 200, 190)),
-				"Cache should be empty");
+					"random", CheckpointTag.FromPosition(0, 200, 190)));
 		}
 
-		[Test]
+		[Fact]
 		public void random_item_cannot_be_retrieved() {
-			Assert.IsNull(_cache.TryGetPartitionState("random"), "Cache should be empty");
+			Assert.Null(_cache.TryGetPartitionState("random"));
 		}
 
-		[Test]
+		[Fact]
 		public void root_partition_state_cannot_be_retrieved() {
-			Assert.IsNull(
+			Assert.Null(
 				_cache.TryGetAndLockPartitionState(
-					"", CheckpointTag.FromPosition(0, 200, 190)),
-				"Cache should be empty");
+					"", CheckpointTag.FromPosition(0, 200, 190)));
 		}
 
-		[Test]
+		[Fact]
 		public void unlock_succeeds() {
 			_cache.Unlock(CheckpointTag.FromPosition(0, 300, 290));
 		}

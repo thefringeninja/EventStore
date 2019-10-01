@@ -2,12 +2,11 @@
 using System.Diagnostics;
 using System.IO;
 using EventStore.Common.Utils;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog {
-	[TestFixture]
 	public class FlushTimeMeter : SpecificationWithFile {
-		[Test, Ignore("long running")]
+		[Fact(Skip = "long running")]
 		public void Test() {
 			var rnd = new Random();
 			var sw = Stopwatch.StartNew();

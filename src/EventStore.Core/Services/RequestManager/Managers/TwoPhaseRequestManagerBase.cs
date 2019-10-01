@@ -176,7 +176,7 @@ namespace EventStore.Core.Services.RequestManager.Managers {
 		}
 
 		protected virtual void CompleteFailedRequest(OperationResult result, string error, long currentVersion = -1) {
-			Debug.Assert(result != OperationResult.Success);
+			ESDebug.Assert(result != OperationResult.Success);
 			_completed = true;
 			Publisher.Publish(new StorageMessage.RequestCompleted(_internalCorrId, false, currentVersion));
 		}

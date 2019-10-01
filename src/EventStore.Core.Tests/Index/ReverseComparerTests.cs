@@ -1,22 +1,21 @@
 ﻿using EventStore.Core.Index;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Index {
-	[TestFixture]
 	public class ReverseComparerTests {
-		[Test]
+		[Fact]
 		public void larger_values_return_as_lower() {
-			Assert.AreEqual(-1, new ReverseComparer<int>().Compare(5, 3));
+			Assert.Equal(-1, new ReverseComparer<int>().Compare(5, 3));
 		}
 
-		[Test]
+		[Fact]
 		public void smaller_values_return_as_higher() {
-			Assert.AreEqual(1, new ReverseComparer<int>().Compare(3, 5));
+			Assert.Equal(1, new ReverseComparer<int>().Compare(3, 5));
 		}
 
-		[Test]
+		[Fact]
 		public void same_values_are_equal() {
-			Assert.AreEqual(0, new ReverseComparer<int>().Compare(5, 5));
+			Assert.Equal(0, new ReverseComparer<int>().Compare(5, 5));
 		}
 	}
 }

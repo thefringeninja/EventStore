@@ -3,7 +3,7 @@ using EventStore.ClientAPI;
 using EventStore.Core.Tests.ClientAPI.Helpers;
 using EventStore.Core.Tests.Helpers;
 using EventStore.Core.Tests.TransactionLog;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Common.Utils;
 using EventStore.Core.Bus;
 using EventStore.Core.Data;
@@ -44,7 +44,6 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 			return TestConnection.To(node, _tcpType);
 		}
 
-		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 			string dbPath = Path.Combine(PathName, string.Format("mini-node-db-{0}", Guid.NewGuid()));
@@ -92,7 +91,6 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 			}
 		}
 
-		[OneTimeTearDown]
 		public override async Task TestFixtureTearDown() {
 			_store?.Dispose();
 
@@ -119,10 +117,10 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 				null,
 				timestamp);
 			long pos;
-			Assert.IsTrue(Writer.Write(prepare, out pos));
+			Assert.True(Writer.Write(prepare, out pos));
 			var commit = LogRecord.Commit(WriterCheckpoint.ReadNonFlushed(), prepare.CorrelationId, prepare.LogPosition,
 				eventNumber);
-			Assert.IsTrue(Writer.Write(commit, out pos));
+			Assert.True(Writer.Write(commit, out pos));
 
 			var eventRecord = new EventRecord(eventNumber, prepare);
 			return eventRecord;

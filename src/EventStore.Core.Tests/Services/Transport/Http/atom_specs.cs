@@ -3,27 +3,24 @@ using System.IO;
 using System.Xml;
 using EventStore.Transport.Http;
 using EventStore.Transport.Http.Atom;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Transport.Http {
-	[TestFixture]
-	public class feed_element_must {
+	public class feed_element_must : IDisposable {
 		private const string FeedUrl = "http://127.0.0.1/streams/test";
 		private FeedElement _feed;
 		private XmlWriter _writer;
 
-		[SetUp]
-		public void SetUp() {
+		public feed_element_must() {
 			_feed = new FeedElement();
 			_writer = XmlWriter.Create(new MemoryStream());
 		}
 
-		[TearDown]
-		public void TearDown() {
+		public void Dispose() {
 			_writer.Close();
 		}
 
-		[Test]
+		[Fact]
 		public void have_non_empty_title() {
 			//_feed.SetTitle("Event stream 'test'");
 			_feed.SetId(FeedUrl);
@@ -35,7 +32,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			Assert.Throws<AtomSpecificationViolationException>(() => _feed.WriteXml(_writer));
 		}
 
-		[Test]
+		[Fact]
 		public void have_non_empty_id() {
 			_feed.SetTitle("Event stream 'test'");
 			//_feed.SetId(FeedUrl);
@@ -47,7 +44,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			Assert.Throws<AtomSpecificationViolationException>(() => _feed.WriteXml(_writer));
 		}
 
-		[Test]
+		[Fact]
 		public void have_non_empty_updated() {
 			_feed.SetTitle("Event stream 'test'");
 			_feed.SetId(FeedUrl);
@@ -58,7 +55,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			Assert.Throws<AtomSpecificationViolationException>(() => _feed.WriteXml(_writer));
 		}
 
-		[Test]
+		[Fact]
 		public void format_dates_in_RFC_3339() {
 			_feed.SetTitle("Event stream 'test'");
 			_feed.SetId(FeedUrl);
@@ -66,10 +63,10 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			_feed.SetAuthor(AtomSpecs.Author);
 			_feed.AddLink("self", FeedUrl, null);
 
-			Assert.DoesNotThrow(() => _feed.WriteXml(_writer));
+			_feed.WriteXml(_writer);
 		}
 
-		[Test]
+		[Fact]
 		public void be_treated_as_valid_with_empty_entries_list() {
 			_feed.SetTitle("Event stream 'test'");
 			_feed.SetId(FeedUrl);
@@ -77,10 +74,10 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			_feed.SetAuthor(AtomSpecs.Author);
 			_feed.AddLink("self", FeedUrl, null);
 
-			Assert.DoesNotThrow(() => _feed.WriteXml(_writer));
+			_feed.WriteXml(_writer);
 		}
 
-		[Test]
+		[Fact]
 		public void have_non_empty_author() {
 			_feed.SetTitle("Event stream 'test'");
 			_feed.SetId(FeedUrl);
@@ -92,7 +89,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			Assert.Throws<AtomSpecificationViolationException>(() => _feed.WriteXml(_writer));
 		}
 
-		[Test]
+		[Fact]
 		public void have_at_least_one_link() {
 			_feed.SetTitle("Event stream 'test'");
 			_feed.SetId(FeedUrl);
@@ -104,9 +101,8 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		}
 	}
 
-	[TestFixture]
 	public class entry_element_must {
-		[Test]
+		[Fact]
 		public void have_all_fields_filled() {
 			var writer = XmlWriter.Create(new MemoryStream());
 
@@ -127,14 +123,13 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 
 			entry.SetSummary("Entry #0");
 
-			Assert.DoesNotThrow(() => entry.WriteXml(writer));
+			entry.WriteXml(writer);
 			writer.Close();
 		}
 	}
 
-	[TestFixture]
 	public class link_element_must {
-		[Test]
+		[Fact]
 		public void have_href_attribute() {
 			var link = new LinkElement(null);
 			var writer = XmlWriter.Create(new MemoryStream());
@@ -144,9 +139,8 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		}
 	}
 
-	[TestFixture]
 	public class person_element_must {
-		[Test]
+		[Fact]
 		public void have_exactly_one_name_attribute() {
 			var person = new PersonElement(null);
 			var writer = XmlWriter.Create(new MemoryStream());
@@ -156,9 +150,8 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		}
 	}
 
-	[TestFixture]
 	public class service_document_must {
-		[Test]
+		[Fact]
 		public void have_at_least_one_workspace() {
 			var writer = XmlWriter.Create(new MemoryStream());
 			var doc = new ServiceDocument();
@@ -168,9 +161,8 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		}
 	}
 
-	[TestFixture]
 	public class workspace_must {
-		[Test]
+		[Fact]
 		public void contain_title() {
 			var writer = XmlWriter.Create(new MemoryStream());
 			var workspace = new WorkspaceElement();
@@ -180,23 +172,20 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		}
 	}
 
-	[TestFixture]
-	public class collection_element_must {
+	public class collection_element_must : IDisposable {
 		private CollectionElement _collection;
 		private XmlWriter _writer;
 
-		[SetUp]
-		public void SetUp() {
+		public collection_element_must() {
 			_writer = XmlWriter.Create(new MemoryStream());
 			_collection = new CollectionElement();
 		}
 
-		[TearDown]
-		public void TearDown() {
+		public void Dispose() {
 			_writer.Close();
 		}
 
-		[Test]
+		[Fact]
 		public void contain_title() {
 			//_collection.SetTitle("title");
 			_collection.SetUri("http://127.0.0.1/streams/test");
@@ -205,7 +194,7 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			Assert.Throws<AtomSpecificationViolationException>(() => _collection.WriteXml(_writer));
 		}
 
-		[Test]
+		[Fact]
 		public void contain_uri() {
 			_collection.SetTitle("title");
 			//_collection.SetUri("http://127.0.0.1/streams/test");
@@ -215,9 +204,8 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		}
 	}
 
-	[TestFixture]
 	public class accept_element_must {
-		[Test]
+		[Fact]
 		public void contain_value() {
 			var writer = XmlWriter.Create(new MemoryStream());
 			var accept = new AcceptElement(null);

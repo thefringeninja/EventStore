@@ -4,10 +4,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.ClientAPI.Common;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
-	[TestFixture, Category("ClientAPI"), Category("LongRunning")]
+	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
 	public class happy_case_writing_and_subscribing_to_normal_events_manual_ack : SpecificationWithMiniNode {
 		private readonly string StreamName = Guid.NewGuid().ToString();
 		private readonly string GroupName = Guid.NewGuid().ToString();
@@ -19,7 +19,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		protected override Task When() => Task.CompletedTask;
 
-		[Test]
+		[Fact]
 		public async Task Test() {
 			var settings = PersistentSubscriptionSettings
 				.Create()
@@ -56,7 +56,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 	}
 
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class happy_case_writing_and_subscribing_to_normal_events_auto_ack : SpecificationWithMiniNode {
 		private readonly string StreamName = Guid.NewGuid().ToString();
 		private readonly string GroupName = Guid.NewGuid().ToString();
@@ -68,7 +68,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		protected override Task When() => Task.CompletedTask;
 
-		[Test]
+		[Fact]
 		public async Task Test() {
 			var settings = PersistentSubscriptionSettings
 				.Create()
@@ -102,7 +102,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 	}
 
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class happy_case_catching_up_to_normal_events_auto_ack : SpecificationWithMiniNode {
 		private readonly string StreamName = Guid.NewGuid().ToString();
 		private readonly string GroupName = Guid.NewGuid().ToString();
@@ -114,7 +114,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		protected override Task When() => Task.CompletedTask;
 
-		[Test]
+		[Fact]
 		public async Task Test() {
 			var settings = PersistentSubscriptionSettings
 				.Create()
@@ -150,7 +150,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 	}
 	
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class happy_case_catching_up_to_normal_events_manual_ack : SpecificationWithMiniNode {
 		private readonly string StreamName = Guid.NewGuid().ToString();
 		private readonly string GroupName = Guid.NewGuid().ToString();
@@ -162,7 +162,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		protected override Task When() => Task.CompletedTask;
 
-		[Test]
+		[Fact]
 		public async Task Test() {
 			var settings = PersistentSubscriptionSettings
 				.Create()
@@ -198,7 +198,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 	}
 
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class happy_case_catching_up_to_link_to_events_manual_ack : SpecificationWithMiniNode {
 		private readonly string StreamName = Guid.NewGuid().ToString();
 		private readonly string GroupName = Guid.NewGuid().ToString();
@@ -210,7 +210,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		protected override Task When() => Task.CompletedTask;
 
-		[Test]
+		[Fact]
 		public async Task Test() {
 			var settings = PersistentSubscriptionSettings
 				.Create()
@@ -250,7 +250,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 	}
 
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class happy_case_catching_up_to_link_to_events_auto_ack : SpecificationWithMiniNode {
 		private readonly string StreamName = Guid.NewGuid().ToString();
 		private readonly string GroupName = Guid.NewGuid().ToString();
@@ -262,7 +262,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		protected override Task When() => Task.CompletedTask;
 
-		[Test]
+		[Fact]
 		public async Task Test() {
 			var settings = PersistentSubscriptionSettings
 				.Create()
@@ -300,7 +300,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 	}
 
-	[TestFixture, Category("ClientAPI"), Category("LongRunning")]
+	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
 	public class when_writing_and_subscribing_to_normal_events_manual_nack : SpecificationWithMiniNode {
 		private readonly string StreamName = Guid.NewGuid().ToString();
 		private readonly string GroupName = Guid.NewGuid().ToString();
@@ -312,7 +312,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		protected override Task When() => Task.CompletedTask;
 
-		[Test]
+		[Fact]
 		public async Task Test() {
 			var settings = PersistentSubscriptionSettings
 				.Create()

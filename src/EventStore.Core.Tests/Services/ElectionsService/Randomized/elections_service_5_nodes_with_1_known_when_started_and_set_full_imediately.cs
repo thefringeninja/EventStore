@@ -6,15 +6,16 @@ using EventStore.Core.Cluster;
 using EventStore.Core.Data;
 using EventStore.Core.Messages;
 using EventStore.Core.Tests.Infrastructure;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace EventStore.Core.Tests.Services.ElectionsService.Randomized {
-	[TestFixture]
 	public class elections_service_5_nodes_with_1_known_when_started_and_set_full_imediately {
+		private readonly ITestOutputHelper _testOutputHelper;
 		private RandomizedElectionsAndGossipTestCase _randomCase;
 
-		[SetUp]
-		public void SetUp() {
+		public elections_service_5_nodes_with_1_known_when_started_and_set_full_imediately(ITestOutputHelper testOutputHelper) {
+			_testOutputHelper = testOutputHelper;
 			_randomCase = new RandomizedElectionsAndGossipTestCase(ElectionParams.MaxIterationCount,
 				instancesCnt: 5,
 				httpLossProbability: 0.3,
@@ -53,16 +54,18 @@ namespace EventStore.Core.Tests.Services.ElectionsService.Randomized {
 			return null;
 		}
 
-		[Test, Category("LongRunning"), Category("Network")]
-		public void should_complete_successfully([Range(0, ElectionParams.TestRunCount - 1)]
-			int run) {
+		public static IEnumerable<object[]> TestCases => Enumerable.Range(0, ElectionParams.TestRunCount - 1)
+			.Select(run => new object[] {run});
+
+		[Theory, MemberData(nameof(TestCases)), Trait("Category", "LongRunning"), Trait("Category", "Network")]
+		public void should_complete_successfully(int run) {
 			var success = _randomCase.Run();
 			if (!success)
 				_randomCase.Logger.LogMessages();
 
-			Console.WriteLine("There were a total of {0} messages in this run.",
+			_testOutputHelper.WriteLine("There were a total of {0} messages in this run.",
 				_randomCase.Logger.ProcessedItems.Count());
-			Console.WriteLine("There were {0} GossipUpdated messages in this run.",
+			_testOutputHelper.WriteLine("There were {0} GossipUpdated messages in this run.",
 				_randomCase.Logger.ProcessedItems.Count(x => x.Message is GossipMessage.GossipUpdated));
 
 			Assert.True(success);

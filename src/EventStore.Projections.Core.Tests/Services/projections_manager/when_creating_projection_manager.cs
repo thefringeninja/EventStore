@@ -9,19 +9,17 @@ using EventStore.Core.Tests.Fakes;
 using EventStore.Core.Tests.Services.TimeService;
 using EventStore.Core.Util;
 using EventStore.Projections.Core.Services.Management;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Helpers;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager {
-	[TestFixture]
 	public class when_creating_projection_manager {
 		private ITimeProvider _timeProvider;
 		private Dictionary<Guid, IPublisher> _queues;
 		private TimeoutScheduler[] _timeoutSchedulers;
 		private IODispatcher _ioDispatcher;
 
-		[SetUp]
-		public void setup() {
+		public when_creating_projection_manager() {
 			_timeProvider = new FakeTimeProvider();
 			_queues = new Dictionary<Guid, IPublisher> {{Guid.NewGuid(), new FakePublisher()}};
 			_timeoutSchedulers = ProjectionCoreWorkersNode.CreateTimeoutSchedulers(_queues.Count);
@@ -35,7 +33,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 			_ioDispatcher = new IODispatcher(fakePublisher, new PublishEnvelope(fakePublisher));
 		}
 
-		[Test]
+		[Fact]
 		public void it_can_be_created() {
 			using (
 				new ProjectionManager(
@@ -49,7 +47,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void null_main_queue_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				using (
@@ -65,7 +63,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void null_publisher_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				using (
@@ -81,7 +79,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void null_queues_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				using (
@@ -97,7 +95,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void empty_queues_throws_argument_exception() {
 			Assert.Throws<ArgumentException>(() => {
 				using (

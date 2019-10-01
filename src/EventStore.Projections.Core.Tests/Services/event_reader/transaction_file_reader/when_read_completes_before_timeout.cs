@@ -7,10 +7,9 @@ using EventStore.Core.Tests.Services.TimeService;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.transaction_file_reader {
-	[TestFixture]
 	public class when_read_completes_before_timeout : TestFixtureWithExistingEvents {
 		private TransactionFileEventReader _eventReader;
 		private Guid _distributionCorrelationId;
@@ -21,15 +20,14 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.transaction_fi
 
 		private FakeTimeProvider _fakeTimeProvider;
 
-		[SetUp]
-		public new void When() {
+		public when_read_completes_before_timeout() {
 			_distributionCorrelationId = Guid.NewGuid();
 			_fakeTimeProvider = new FakeTimeProvider();
 			_eventReader = new TransactionFileEventReader(_bus, _distributionCorrelationId, null, new TFPos(100, 50),
 				_fakeTimeProvider,
 				deliverEndOfTFPosition: false, stopOnEof: true);
 			_eventReader.Resume();
-			var correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadAllEventsForward>().Last()
+			var correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadAllEventsForward>().Last()
 				.CorrelationId;
 			_eventReader.Handle(
 				new ClientMessage.ReadAllEventsForwardCompleted(
@@ -52,10 +50,10 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.transaction_fi
 				new ProjectionManagementMessage.Internal.ReadTimeout(correlationId, "$all"));
 		}
 
-		[Test]
+		[Fact]
 		public void should_deliver_events() {
-			Assert.AreEqual(2,
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
+			Assert.Equal(2,
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
 		}
 	}
 }

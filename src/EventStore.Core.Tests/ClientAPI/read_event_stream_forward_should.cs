@@ -5,21 +5,19 @@ using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.Core.Tests.ClientAPI.Helpers;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
-	[TestFixture, Category("ClientAPI"), Category("LongRunning")]
+	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
 	public class read_event_stream_forward_should : SpecificationWithDirectoryPerTestFixture {
 		private MiniNode _node;
 
-		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 			_node = new MiniNode(PathName);
 			await _node.Start();
 		}
 
-		[OneTimeTearDown]
 		public override async Task TestFixtureTearDown() {
 			await _node.Shutdown();
 			await base.TestFixtureTearDown();
@@ -29,42 +27,42 @@ namespace EventStore.Core.Tests.ClientAPI {
 			return TestConnection.Create(node.TcpEndPoint);
 		}
 
-		[Test]
-		[Category("Network")]
+		[Fact]
+		[Trait("Category", "Network")]
 		public async Task throw_if_count_le_zero() {
 			const string stream = "read_event_stream_forward_should_throw_if_count_le_zero";
 			using (var store = BuildConnection(_node)) {
 				await store.ConnectAsync();
-				await AssertEx.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+				await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
 					store.ReadStreamEventsForwardAsync(stream, 0, 0, resolveLinkTos: false));
 			}
 		}
 
-		[Test]
-		[Category("Network")]
+		[Fact]
+		[Trait("Category", "Network")]
 		public async Task throw_if_start_lt_zero() {
 			const string stream = "read_event_stream_forward_should_throw_if_start_lt_zero";
 			using (var store = BuildConnection(_node)) {
 				await store.ConnectAsync();
-				await AssertEx.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+				await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
 					store.ReadStreamEventsForwardAsync(stream, -1, 1, resolveLinkTos: false));
 			}
 		}
 
-		[Test]
-		[Category("Network")]
+		[Fact]
+		[Trait("Category", "Network")]
 		public async Task notify_using_status_code_if_stream_not_found() {
 			const string stream = "read_event_stream_forward_should_notify_using_status_code_if_stream_not_found";
 			using (var store = BuildConnection(_node)) {
 				await store.ConnectAsync();
 				var read = await store.ReadStreamEventsForwardAsync(stream, 0, 1, resolveLinkTos: false);
 
-				Assert.That(read.Status, Is.EqualTo(SliceReadStatus.StreamNotFound));
+				Assert.Equal(SliceReadStatus.StreamNotFound, read.Status);
 			}
 		}
 
-		[Test]
-		[Category("Network")]
+		[Fact]
+		[Trait("Category", "Network")]
 		public async Task notify_using_status_code_if_stream_was_deleted() {
 			const string stream = "read_event_stream_forward_should_notify_using_status_code_if_stream_was_deleted";
 			using (var store = BuildConnection(_node)) {
@@ -73,12 +71,12 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 				var read = await store.ReadStreamEventsForwardAsync(stream, 0, 1, resolveLinkTos: false);
 
-				Assert.That(read.Status, Is.EqualTo(SliceReadStatus.StreamDeleted));
+				Assert.Equal(SliceReadStatus.StreamDeleted, read.Status);
 			}
 		}
 
-		[Test]
-		[Category("Network")]
+		[Fact]
+		[Trait("Category", "Network")]
 		public async Task return_no_events_when_called_on_empty_stream() {
 			const string stream = "read_event_stream_forward_should_return_single_event_when_called_on_empty_stream";
 			using (var store = BuildConnection(_node)) {
@@ -86,12 +84,12 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 				var read = await store.ReadStreamEventsForwardAsync(stream, 0, 1, resolveLinkTos: false);
 
-				Assert.That(read.Events.Length, Is.EqualTo(0));
+				Assert.Empty(read.Events);
 			}
 		}
 
-		[Test]
-		[Category("Network")]
+		[Fact]
+		[Trait("Category", "Network")]
 		public async Task return_empty_slice_when_called_on_non_existing_range() {
 			const string stream =
 				"read_event_stream_forward_should_return_empty_slice_when_called_on_non_existing_range";
@@ -105,12 +103,12 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 				var read = await store.ReadStreamEventsForwardAsync(stream, 11, 5, resolveLinkTos: false);
 
-				Assert.That(read.Events.Length, Is.EqualTo(0));
+				Assert.Empty(read.Events);
 			}
 		}
 
-		[Test]
-		[Category("Network")]
+		[Fact]
+		[Trait("Category", "Network")]
 		public async Task return_partial_slice_if_not_enough_events_in_stream() {
 			const string stream = "read_event_stream_forward_should_return_partial_slice_if_no_enough_events_in_stream";
 			using (var store = BuildConnection(_node)) {
@@ -123,24 +121,24 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 				var read = await store.ReadStreamEventsForwardAsync(stream, 9, 5, resolveLinkTos: false);
 
-				Assert.That(read.Events.Length, Is.EqualTo(1));
+				Assert.Single(read.Events);
 			}
 		}
 
-		[Test]
-		[Category("Network")]
+		[Fact]
+		[Trait("Category", "Network")]
 		public async Task throw_when_got_int_max_value_as_maxcount() {
 			using (var store = BuildConnection(_node)) {
 				await store.ConnectAsync();
 
-				await AssertEx.ThrowsAsync<ArgumentException>(() =>
+				await Assert.ThrowsAsync<ArgumentException>(() =>
 					store.ReadStreamEventsForwardAsync("foo", StreamPosition.Start, int.MaxValue,
 						resolveLinkTos: false));
 			}
 		}
 
-		[Test]
-		[Category("Network")]
+		[Fact]
+		[Trait("Category", "Network")]
 		public async Task return_events_in_same_order_as_written() {
 			const string stream = "read_event_stream_forward_should_return_events_in_same_order_as_written";
 			using (var store = BuildConnection(_node)) {
@@ -152,12 +150,12 @@ namespace EventStore.Core.Tests.ClientAPI {
 				var read = await store.ReadStreamEventsForwardAsync(stream, StreamPosition.Start, testEvents.Length,
 					resolveLinkTos: false);
 
-				Assert.That(EventDataComparer.Equal(testEvents, read.Events.Select(x => x.Event).ToArray()));
+				Assert.True(EventDataComparer.Equal(testEvents, read.Events.Select(x => x.Event).ToArray()));
 			}
 		}
 
-		[Test]
-		[Category("Network")]
+		[Fact]
+		[Trait("Category", "Network")]
 		public async Task be_able_to_read_single_event_from_arbitrary_position() {
 			const string stream = "read_event_stream_forward_should_be_able_to_read_from_arbitrary_position";
 			using (var store = BuildConnection(_node)) {
@@ -168,12 +166,12 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 				var read = await store.ReadStreamEventsForwardAsync(stream, 5, 1, resolveLinkTos: false);
 
-				Assert.That(EventDataComparer.Equal(testEvents[5], read.Events.Single().Event));
+				Assert.True(EventDataComparer.Equal(testEvents[5], read.Events.Single().Event));
 			}
 		}
 
-		[Test]
-		[Category("Network")]
+		[Fact]
+		[Trait("Category", "Network")]
 		public async Task be_able_to_read_slice_from_arbitrary_position() {
 			const string stream = "read_event_stream_forward_should_be_able_to_read_slice_from_arbitrary_position";
 			using (var store = BuildConnection(_node)) {
@@ -184,7 +182,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 				var read = await store.ReadStreamEventsForwardAsync(stream, 5, 2, resolveLinkTos: false);
 
-				Assert.That(EventDataComparer.Equal(testEvents.Skip(5).Take(2).ToArray(),
+				Assert.True(EventDataComparer.Equal(testEvents.Skip(5).Take(2).ToArray(),
 					read.Events.Select(x => x.Event).ToArray()));
 			}
 		}

@@ -8,10 +8,9 @@ using EventStore.Core.Messaging;
 using EventStore.Core.Services.AwakeReaderService;
 using EventStore.Core.Tests.Bus.Helpers;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.AwakeService {
-	[TestFixture]
 	public class when_subscribing_before_last_position_with_already_committed_events {
 		private Core.Services.AwakeReaderService.AwakeService _it;
 		private EventRecord _eventRecord;
@@ -24,8 +23,7 @@ namespace EventStore.Core.Tests.AwakeService {
 		private TestMessage _reply2;
 		private TestMessage _reply3;
 
-		[SetUp]
-		public void SetUp() {
+		public when_subscribing_before_last_position_with_already_committed_events() {
 			_exception = null;
 			Given();
 			When();
@@ -81,24 +79,24 @@ namespace EventStore.Core.Tests.AwakeService {
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void it_is_handled() {
-			Assert.IsNull(_exception, (_exception ?? (object)"").ToString());
+			Assert.Null(_exception);
 		}
 
-		[Test]
+		[Fact]
 		public void immediately_awakes_stream_subscriber() {
-			Assert.That(_handler.HandledMessages.Any(m => m.Kind == 1));
+			Assert.True(_handler.HandledMessages.Any(m => m.Kind == 1));
 		}
 
-		[Test]
+		[Fact]
 		public void immediately_awakes_all_subscriber() {
-			Assert.That(_handler.HandledMessages.Any(m => m.Kind == 4));
+			Assert.True(_handler.HandledMessages.Any(m => m.Kind == 4));
 		}
 
-		[Test]
+		[Fact]
 		public void immediately_awakes_another_stream_subscriber() {
-			Assert.That(_handler.HandledMessages.Any(m => m.Kind == 3));
+			Assert.True(_handler.HandledMessages.Any(m => m.Kind == 3));
 		}
 	}
 }

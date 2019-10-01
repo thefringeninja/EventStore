@@ -7,7 +7,7 @@ using EventStore.Core.Messages;
 using EventStore.Core.Messaging;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Management;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager.query {
 	namespace a_running_projection {
@@ -23,11 +23,11 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.query {
 			protected override IEnumerable<WhenStep> When() {
 				foreach (var m in base.When()) yield return m;
 				var readerAssignedMessage =
-					_consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.ReaderAssignedReader>()
+					Consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.ReaderAssignedReader>()
 						.LastOrDefault();
-				Assert.IsNotNull(readerAssignedMessage);
+				Assert.NotNull(readerAssignedMessage);
 				_reader = readerAssignedMessage.ReaderId;
-				_consumer.HandledMessages.Clear();
+				Consumer.HandledMessages.Clear();
 				yield return
 					(ReaderSubscriptionMessage.CommittedEventDistributed.Sample(
 						_reader, new TFPos(100, 50), new TFPos(100, 50), "stream", 1, "stream", 1, false,
@@ -36,7 +36,6 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.query {
 			}
 		}
 
-		[TestFixture]
 		public class when_handling_eof : Base {
 			protected override IEnumerable<WhenStep> When() {
 				foreach (var m in base.When()) yield return m;
@@ -44,55 +43,54 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.query {
 				yield return (new ReaderSubscriptionMessage.EventReaderEof(_reader));
 			}
 
-			[Test]
+			[Fact(Skip = "actually in unsubscribes...")]
 			public void pause_message_is_published() {
-				Assert.Inconclusive("actually in unsubscribes...");
 			}
 
 
-			[Test]
+			[Fact]
 			public void the_projection_status_becomes_completed_enabled() {
 				_manager.Handle(
 					new ProjectionManagementMessage.Command.GetStatistics(
 						new PublishEnvelope(_bus), null, _projectionName, false));
 
-				Assert.AreEqual(1, _consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().Count());
-				Assert.AreEqual(
+				Assert.Equal(1, Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().Count());
+				Assert.Equal(
 					1,
-					_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
+					Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
 						.Single()
 						.Projections.Length);
-				Assert.AreEqual(
+				Assert.Equal(
 					_projectionName,
-					_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
+					Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
 						.Single()
 						.Projections.Single()
 						.Name);
-				Assert.AreEqual(
+				Assert.Equal(
 					ManagedProjectionState.Completed,
-					_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
+					Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
 						.Single()
 						.Projections.Single()
 						.MasterStatus);
-				Assert.AreEqual(
+				Assert.Equal(
 					true,
-					_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
+					Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
 						.Single()
 						.Projections.Single()
 						.Enabled);
 			}
 
-			[Test]
+			[Fact]
 			public void writes_result_stream() {
 				List<EventRecord> resultsStream;
-				Assert.IsTrue((_streams.TryGetValue("$projections-test-projection-result", out resultsStream)));
-				Assert.AreEqual(1 + 1 /* $Eof*/, resultsStream.Count);
-				Assert.AreEqual("{\"data\": 1}", Encoding.UTF8.GetString(resultsStream[0].Data));
+				Assert.True((_streams.TryGetValue("$projections-test-projection-result", out resultsStream)));
+				Assert.Equal(1 + 1 /* $Eof*/, resultsStream.Count);
+				Assert.Equal("{\"data\": 1}", Encoding.UTF8.GetString(resultsStream[0].Data));
 			}
 
-			[Test]
+			[Fact]
 			public void does_not_write_to_any_other_streams() {
-				Assert.IsEmpty(
+				Assert.Empty(
 					HandledMessages.OfType<ClientMessage.WriteEvents>()
 						.Where(v => v.EventStreamId != "$projections-test-projection-result")
 						.Where(v => v.EventStreamId != "$$$projections-test-projection-result")
@@ -100,7 +98,6 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.query {
 			}
 		}
 
-		[TestFixture]
 		public class when_handling_event : Base {
 			protected override IEnumerable<WhenStep> When() {
 				foreach (var m in base.When()) yield return m;
@@ -110,33 +107,33 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.query {
 						Guid.NewGuid(), "type", false, new byte[0], new byte[0], 100, 33.3f));
 			}
 
-			[Test]
+			[Fact]
 			public void the_projection_status_remains_running_enabled() {
 				_manager.Handle(
 					new ProjectionManagementMessage.Command.GetStatistics(
 						new PublishEnvelope(_bus), null, _projectionName, false));
 
-				Assert.AreEqual(1, _consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().Count());
-				Assert.AreEqual(
+				Assert.Equal(1, Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().Count());
+				Assert.Equal(
 					1,
-					_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
+					Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
 						.Single()
 						.Projections.Length);
-				Assert.AreEqual(
+				Assert.Equal(
 					_projectionName,
-					_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
+					Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
 						.Single()
 						.Projections.Single()
 						.Name);
-				Assert.AreEqual(
+				Assert.Equal(
 					ManagedProjectionState.Running,
-					_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
+					Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
 						.Single()
 						.Projections.Single()
 						.MasterStatus);
-				Assert.AreEqual(
+				Assert.Equal(
 					true,
-					_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
+					Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
 						.Single()
 						.Projections.Single()
 						.Enabled);

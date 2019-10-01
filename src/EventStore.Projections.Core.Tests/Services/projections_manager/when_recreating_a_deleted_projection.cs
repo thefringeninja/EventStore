@@ -7,10 +7,9 @@ using EventStore.Core.Messaging;
 using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager {
-	[TestFixture]
 	public class when_recreating_a_deleted_projection : TestFixtureWithProjectionCoreAndManagementServices {
 		private string _projectionName;
 
@@ -43,25 +42,25 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 					enabled: true, checkpointsEnabled: true, emitEnabled: true, trackEmittedStreams: true);
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void a_projection_created_event_should_be_written() {
-			Assert.AreEqual(
+			Assert.Equal(
 				ProjectionEventTypes.ProjectionCreated,
-				_consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().First().Events[0].EventType);
-			Assert.AreEqual(
+				Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().First().Events[0].EventType);
+			Assert.Equal(
 				_projectionName,
-				Helper.UTF8NoBom.GetString(_consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().First()
+				Helper.UTF8NoBom.GetString(Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().First()
 					.Events[0].Data));
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void it_can_be_listed() {
 			_manager.Handle(
 				new ProjectionManagementMessage.Command.GetStatistics(new PublishEnvelope(_bus), null, null, false));
 
-			Assert.AreEqual(
+			Assert.Equal(
 				1,
-				_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().Count(
+				Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().Count(
 					v => v.Projections.Any(p => p.Name == _projectionName)));
 		}
 	}

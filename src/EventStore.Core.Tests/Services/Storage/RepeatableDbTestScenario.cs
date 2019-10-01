@@ -11,12 +11,11 @@ using EventStore.Core.TransactionLog.Checkpoint;
 using EventStore.Core.TransactionLog.Chunks;
 using EventStore.Core.TransactionLog.FileNamingStrategy;
 using EventStore.Core.Util;
-using NUnit.Framework;
+using Xunit;
 using System;
 using System.Threading.Tasks;
 
 namespace EventStore.Core.Tests.Services.Storage {
-	[TestFixture]
 	public abstract class RepeatableDbTestScenario : SpecificationWithDirectoryPerTestFixture {
 		protected readonly int MaxEntriesInMemTable;
 		protected TableIndex TableIndex;

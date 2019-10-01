@@ -2,11 +2,10 @@
 using System.Threading.Tasks;
 using EventStore.Core.Tests.Services.Storage;
 using EventStore.Core.TransactionLog.Chunks;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog.Scavenging.Helpers {
-	[TestFixture]
-	abstract class ScavengeLifeCycleScenario : SpecificationWithDirectoryPerTestFixture {
+	public abstract class ScavengeLifeCycleScenario : SpecificationWithDirectoryPerTestFixture {
 		protected TFChunkDb Db {
 			get { return _dbResult.Db; }
 		}

@@ -1,9 +1,8 @@
 ﻿using EventStore.Core.Data;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services {
 #pragma warning disable 1718 // allow a == a comparison
-	[TestFixture]
 	public class event_position {
 		private readonly TFPos _aa = new TFPos(10, 9);
 		private readonly TFPos _b1 = new TFPos(20, 15);
@@ -12,40 +11,40 @@ namespace EventStore.Projections.Core.Tests.Services {
 		private readonly TFPos _d1 = new TFPos(40, 35);
 		private readonly TFPos _d2 = new TFPos(40, 36);
 
-		[Test]
+		[Fact]
 		public void equal_equals() {
-			Assert.IsTrue(_aa.Equals(_aa));
+			Assert.True(_aa.Equals(_aa));
 		}
 
-		[Test]
+		[Fact]
 		public void equal_operator() {
-			Assert.IsTrue(_b1 == _b1);
+			Assert.True(_b1 == _b1);
 		}
 
-		[Test]
+		[Fact]
 		public void less_operator() {
-			Assert.IsTrue(_aa < _b1);
-			Assert.IsTrue(_b1 < _b2);
+			Assert.True(_aa < _b1);
+			Assert.True(_b1 < _b2);
 		}
 
-		[Test]
+		[Fact]
 		public void less_or_equal_operator() {
-			Assert.IsTrue(_aa <= _b1);
-			Assert.IsTrue(_b1 <= _b2);
-			Assert.IsTrue(_b2 <= _b2);
+			Assert.True(_aa <= _b1);
+			Assert.True(_b1 <= _b2);
+			Assert.True(_b2 <= _b2);
 		}
 
-		[Test]
+		[Fact]
 		public void greater_operator() {
-			Assert.IsTrue(_d1 > _cc);
-			Assert.IsTrue(_d2 > _d1);
+			Assert.True(_d1 > _cc);
+			Assert.True(_d2 > _d1);
 		}
 
-		[Test]
+		[Fact]
 		public void greater_or_equal_operator() {
-			Assert.IsTrue(_d1 >= _cc);
-			Assert.IsTrue(_d2 >= _d1);
-			Assert.IsTrue(_b2 >= _b2);
+			Assert.True(_d1 >= _cc);
+			Assert.True(_d2 >= _d1);
+			Assert.True(_b2 >= _b2);
 		}
 	}
 #pragma warning restore 1718

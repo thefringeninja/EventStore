@@ -1,18 +1,17 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Storage.DeletingStream {
-	[TestFixture]
 	public class is_stream_deleted_should : ReadIndexTestScenario {
 		protected override void WriteTestScenario() {
 		}
 
-		[Test]
+		[Fact]
 		public void crash_on_null_stream_argument() {
 			Assert.Throws<ArgumentNullException>(() => ReadIndex.IsStreamDeleted(null));
 		}
 
-		[Test]
+		[Fact]
 		public void throw_on_empty_stream_argument() {
 			Assert.Throws<ArgumentNullException>(() => ReadIndex.IsStreamDeleted(string.Empty));
 		}

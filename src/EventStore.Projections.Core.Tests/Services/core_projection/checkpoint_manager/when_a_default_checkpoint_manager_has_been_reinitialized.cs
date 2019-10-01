@@ -3,10 +3,9 @@ using System.Linq;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_manager {
-	[TestFixture]
 	public class when_a_default_checkpoint_manager_has_been_reinitialized :
 		TestFixtureWithCoreProjectionCheckpointManager {
 		//private Exception _exception;
@@ -23,7 +22,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 			try {
 				_checkpointReader.BeginLoadState();
 				var checkpointLoaded =
-					_consumer.HandledMessages.OfType<CoreProjectionProcessingMessage.CheckpointLoaded>().First();
+					Consumer.HandledMessages.OfType<CoreProjectionProcessingMessage.CheckpointLoaded>().First();
 				_checkpointWriter.StartFrom(checkpointLoaded.CheckpointTag, checkpointLoaded.CheckpointEventNumber);
 				_manager.BeginLoadPrerecordedEvents(checkpointLoaded.CheckpointTag);
 
@@ -40,17 +39,17 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 		}
 
 
-		[Test]
+		[Fact]
 		public void stopping_throws_invalid_operation_exception() {
 			Assert.Throws<InvalidOperationException>(() => { _manager.Stopping(); });
 		}
 
-		[Test]
+		[Fact]
 		public void stopped_throws_invalid_operation_exception() {
 			Assert.Throws<InvalidOperationException>(() => { _manager.Stopped(); });
 		}
 
-		[Test]
+		[Fact]
 		public void event_processed_throws_invalid_operation_exception() {
 //            _manager.StateUpdated("", @"{""state"":""state""}");
 			Assert.Throws<InvalidOperationException>(() => {
@@ -58,26 +57,26 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void checkpoint_suggested_throws_invalid_operation_exception() {
 			Assert.Throws<InvalidOperationException>(() => {
 				_manager.CheckpointSuggested(CheckpointTag.FromStreamPosition(0, "stream", 10), 77.7f);
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void ready_for_checkpoint_throws_invalid_operation_exception() {
 			Assert.Throws<InvalidOperationException>(() => {
 				_manager.Handle(new CoreProjectionProcessingMessage.ReadyForCheckpoint(null));
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void can_begin_load_state() {
 			_checkpointReader.BeginLoadState();
 		}
 
-		[Test]
+		[Fact]
 		public void can_be_started() {
 			_manager.Start(CheckpointTag.FromStreamPosition(0, "stream", 10), null);
 		}

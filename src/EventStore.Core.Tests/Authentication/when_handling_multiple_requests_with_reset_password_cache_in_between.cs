@@ -1,30 +1,23 @@
 ﻿using System.Linq;
 using System.Security.Principal;
 using EventStore.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Authentication {
-	[TestFixture]
 	public class when_handling_multiple_requests_with_reset_password_cache_in_between :
 		with_internal_authentication_provider {
 		private bool _unauthorized;
 		private IPrincipal _authenticatedAs;
 		private bool _error;
 
-		protected override void Given() {
-			base.Given();
-			ExistingEvent("$user-user", "$user", null, "{LoginName:'user', Salt:'drowssap',Hash:'password'}");
-		}
-
-		[SetUp]
-		public void SetUp() {
+		public when_handling_multiple_requests_with_reset_password_cache_in_between() {
 			SetUpProvider();
 
 			_internalAuthenticationProvider.Authenticate(
 				new TestAuthenticationRequest("user", "password", () => { }, p => { }, () => { }, () => { }));
 			_internalAuthenticationProvider.Handle(
 				new InternalAuthenticationProviderMessages.ResetPasswordCache("user"));
-			_consumer.HandledMessages.Clear();
+			Consumer.HandledMessages.Clear();
 
 			_internalAuthenticationProvider.Authenticate(
 				new TestAuthenticationRequest(
@@ -32,19 +25,24 @@ namespace EventStore.Core.Tests.Authentication {
 					() => { }));
 		}
 
-		[Test]
-		public void authenticates_user() {
-			Assert.IsFalse(_unauthorized);
-			Assert.IsFalse(_error);
-			Assert.NotNull(_authenticatedAs);
-			Assert.IsTrue(_authenticatedAs.IsInRole("user"));
+		protected override void Given() {
+			base.Given();
+			ExistingEvent("$user-user", "$user", null, "{LoginName:'user', Salt:'drowssap',Hash:'password'}");
 		}
 
-		[Test]
+		[Fact]
+		public void authenticates_user() {
+			Assert.False(_unauthorized);
+			Assert.False(_error);
+			Assert.NotNull(_authenticatedAs);
+			Assert.True(_authenticatedAs.IsInRole("user"));
+		}
+
+		[Fact]
 		public void publishes_some_read_requests() {
-			Assert.Greater(
-				_consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsBackward>().Count()
-				+ _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Count(), 0);
+			Assert.True(
+				Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsBackward>().Count()
+				+ Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Count() > 0);
 		}
 	}
 }

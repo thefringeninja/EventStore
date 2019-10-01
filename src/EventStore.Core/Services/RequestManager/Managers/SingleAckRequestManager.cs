@@ -147,7 +147,7 @@ namespace EventStore.Core.Services.RequestManager.Managers {
 		}
 
 		private void CompleteFailedRequest(OperationResult result, string error) {
-			Debug.Assert(result != OperationResult.Success);
+			ESDebug.Assert(result != OperationResult.Success);
 
 			_completed = true;
 			Message responseMsg;

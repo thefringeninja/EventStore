@@ -1,54 +1,57 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using EventStore.Core.Index;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Index.IndexV1 {
-	[TestFixture(PTableVersions.IndexV1, false)]
-	[TestFixture(PTableVersions.IndexV1, true)]
-	[TestFixture(PTableVersions.IndexV2, false)]
-	[TestFixture(PTableVersions.IndexV2, true)]
-	[TestFixture(PTableVersions.IndexV3, false)]
-	[TestFixture(PTableVersions.IndexV3, true)]
-	[TestFixture(PTableVersions.IndexV4, false)]
-	[TestFixture(PTableVersions.IndexV4, true)]
-	public class ptable_should : SpecificationWithFilePerTestFixture {
-		protected byte _ptableVersion = PTableVersions.IndexV1;
-		private PTable _ptable;
-		private bool _skipIndexVerify;
-
-		public ptable_should(byte version, bool skipIndexVerify) {
-			_ptableVersion = version;
-			_skipIndexVerify = skipIndexVerify;
+	public class ptable_should {
+		public static IEnumerable<object[]> TestCases() {
+			yield return new object[] {PTableVersions.IndexV1, false};
+			yield return new object[] {PTableVersions.IndexV1, true};
+			yield return new object[] {PTableVersions.IndexV2, false};
+			yield return new object[] {PTableVersions.IndexV2, true};
+			yield return new object[] {PTableVersions.IndexV3, false};
+			yield return new object[] {PTableVersions.IndexV3, true};
+			yield return new object[] {PTableVersions.IndexV4, false};
+			yield return new object[] {PTableVersions.IndexV4, true};
 		}
 
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
-
-			var table = new HashListMemTable(_ptableVersion, maxSize: 10);
-			table.Add(0x010100000000, 0x0001, 0x0001);
-			_ptable = PTable.FromMemtable(table, Filename, cacheDepth: 0, skipIndexVerify: _skipIndexVerify);
+		[Theory, MemberData(nameof(TestCases))]
+		public void throw_argumentoutofrangeexception_on_range_query_when_provided_with_negative_start_version(
+			byte version, bool skipIndexVerify) {
+			using var fixture = new Fixture(version, skipIndexVerify);
+			Assert.Throws<ArgumentOutOfRangeException>(() => fixture.PTable.GetRange(0x0000, -1, long.MaxValue).ToArray());
 		}
 
-		public override void TestFixtureTearDown() {
-			_ptable.Dispose();
-			base.TestFixtureTearDown();
+		[Theory, MemberData(nameof(TestCases))]
+		public void throw_argumentoutofrangeexception_on_range_query_when_provided_with_negative_end_version(
+			byte version, bool skipIndexVerify) {
+			using var fixture = new Fixture(version, skipIndexVerify);
+			Assert.Throws<ArgumentOutOfRangeException>(() => fixture.PTable.GetRange(0x0000, 0, -1).ToArray());
 		}
 
-		[Test]
-		public void throw_argumentoutofrangeexception_on_range_query_when_provided_with_negative_start_version() {
-			Assert.Throws<ArgumentOutOfRangeException>(() => _ptable.GetRange(0x0000, -1, long.MaxValue).ToArray());
-		}
-
-		[Test]
-		public void throw_argumentoutofrangeexception_on_range_query_when_provided_with_negative_end_version() {
-			Assert.Throws<ArgumentOutOfRangeException>(() => _ptable.GetRange(0x0000, 0, -1).ToArray());
-		}
-
-		[Test]
-		public void throw_argumentoutofrangeexception_on_get_one_entry_query_when_provided_with_negative_version() {
+		[Theory, MemberData(nameof(TestCases))]
+		public void throw_argumentoutofrangeexception_on_get_one_entry_query_when_provided_with_negative_version(
+			byte version, bool skipIndexVerify) {
+			using var fixture = new Fixture(version, skipIndexVerify);
 			long pos;
-			Assert.Throws<ArgumentOutOfRangeException>(() => _ptable.TryGetOneValue(0x0000, -1, out pos));
+			Assert.Throws<ArgumentOutOfRangeException>(() => fixture.PTable.TryGetOneValue(0x0000, -1, out pos));
+		}
+
+		class Fixture : FileFixture {
+			public PTable PTable;
+
+			public Fixture(byte version, bool skipIndexVerify) {
+				var table = new HashListMemTable(version, maxSize: 10);
+				table.Add(0x010100000000, 0x0001, 0x0001);
+				PTable = PTable.FromMemtable(table, FileName, cacheDepth: 0, skipIndexVerify: skipIndexVerify);
+			}
+
+			public override void Dispose() {
+				PTable.Dispose();
+				base.Dispose();
+			}
 		}
 	}
 }

@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
 using EventStore.ClientAPI;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
-	[TestFixture, Category("ClientAPI"), Category("LongRunning")]
+	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
 	public class read_event_of_linkto_to_deleted_event : SpecificationWithLinkToToDeletedEvents {
 		private EventReadResult _read;
 
@@ -11,23 +11,23 @@ namespace EventStore.Core.Tests.ClientAPI {
 			_read = await _conn.ReadEventAsync(LinkedStreamName, 0, true);
 		}
 
-		[Test]
+		[Fact]
 		public void the_linked_event_is_returned() {
-			Assert.IsNotNull(_read.Event.Value.Link);
+			Assert.NotNull(_read.Event.Value.Link);
 		}
 
-		[Test]
+		[Fact]
 		public void the_deleted_event_is_not_resolved() {
-			Assert.IsNull(_read.Event.Value.Event);
+			Assert.Null(_read.Event.Value.Event);
 		}
 
-		[Test]
+		[Fact]
 		public void the_status_is_success() {
-			Assert.AreEqual(EventReadStatus.Success, _read.Status);
+			Assert.Equal(EventReadStatus.Success, _read.Status);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class read_allevents_backward_with_linkto_deleted_event : SpecificationWithLinkToToDeletedEvents {
 		private StreamEventsSlice _read;
 
@@ -35,24 +35,24 @@ namespace EventStore.Core.Tests.ClientAPI {
 			_read = await _conn.ReadStreamEventsBackwardAsync(LinkedStreamName, 0, 1, true, null);
 		}
 
-		[Test]
+		[Fact]
 		public void one_event_is_read() {
-			Assert.AreEqual(1, _read.Events.Length);
+			Assert.Equal(1, _read.Events.Length);
 		}
 
-		[Test]
+		[Fact]
 		public void the_linked_event_is_not_resolved() {
-			Assert.IsNull(_read.Events[0].Event);
+			Assert.Null(_read.Events[0].Event);
 		}
 
-		[Test]
+		[Fact]
 		public void the_link_event_is_included() {
-			Assert.IsNotNull(_read.Events[0].OriginalEvent);
+			Assert.NotNull(_read.Events[0].OriginalEvent);
 		}
 
-		[Test]
+		[Fact]
 		public void the_event_is_not_resolved() {
-			Assert.IsFalse(_read.Events[0].IsResolved);
+			Assert.False(_read.Events[0].IsResolved);
 		}
 	}
 }

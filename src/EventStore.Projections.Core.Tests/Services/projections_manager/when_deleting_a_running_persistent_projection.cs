@@ -6,10 +6,9 @@ using EventStore.Core.Messaging;
 using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager {
-	[TestFixture]
 	public class when_deleting_a_running_persistent_projection : TestFixtureWithProjectionCoreAndManagementServices {
 		private string _projectionName;
 		private const string _projectionCheckpointStream = "$projections-test-projection-checkpoint";
@@ -35,12 +34,12 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 					ProjectionManagementMessage.RunAs.System, true, true, false);
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void a_projection_deleted_event_is_not_written() {
-			var projectionDeletedEventExists = _consumer.HandledMessages.Any(x =>
+			var projectionDeletedEventExists = Consumer.HandledMessages.Any(x =>
 				x.GetType() == typeof(ClientMessage.WriteEvents) &&
 				((ClientMessage.WriteEvents)x).Events[0].EventType == ProjectionEventTypes.ProjectionDeleted);
-			Assert.IsFalse(projectionDeletedEventExists,
+			Assert.False(projectionDeletedEventExists,
 				$"Expected that the {ProjectionEventTypes.ProjectionDeleted} event not to have been written");
 		}
 	}

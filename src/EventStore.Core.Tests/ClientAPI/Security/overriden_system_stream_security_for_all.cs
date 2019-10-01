@@ -2,12 +2,11 @@
 using EventStore.ClientAPI;
 using EventStore.ClientAPI.SystemData;
 using EventStore.Core.Services;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI.Security {
-	[TestFixture, Category("ClientAPI"), Category("LongRunning"), Category("Network")]
+	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning"), Trait("Category", "Network")]
 	public class overriden_system_stream_security_for_all : AuthenticationTestBase {
-		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 
@@ -18,7 +17,7 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
             await Connection.SetSystemSettingsAsync(settings, new UserCredentials("adm", "admpa$$"));
 		}
 
-		[Test]
+		[Fact]
 		public async Task operations_on_system_stream_succeeds_for_user() {
 			const string stream = "$sys-authorized-user";
 			await ReadEvent(stream, "user1", "pa$$1");
@@ -41,7 +40,7 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 			await DeleteStream(stream, "user1", "pa$$1");
 		}
 
-		[Test]
+		[Fact]
 		public async Task operations_on_system_stream_fail_for_anonymous_user() {
 			const string stream = "$sys-anonymous-user";
 			await ReadEvent(stream, null, null);
@@ -64,7 +63,7 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 			await DeleteStream(stream, null, null);
 		}
 
-		[Test]
+		[Fact]
 		public async Task operations_on_system_stream_succeed_for_admin() {
 			const string stream = "$sys-admin";
 			await ReadEvent(stream, "adm", "admpa$$");

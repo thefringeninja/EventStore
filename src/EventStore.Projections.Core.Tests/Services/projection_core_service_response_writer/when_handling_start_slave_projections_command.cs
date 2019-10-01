@@ -3,11 +3,10 @@ using EventStore.Core.Messaging;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Messages.Persisted.Responses;
 using EventStore.Projections.Core.Services;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projection_core_service_response_writer {
-	[TestFixture]
-	class
+	public class
 		when_handling_start_slave_projections_command : specification_with_projection_core_service_response_writer {
 		private string _name;
 		private ProjectionManagementMessage.RunAs _runAs;
@@ -46,27 +45,27 @@ namespace EventStore.Projections.Core.Tests.Services.projection_core_service_res
 					_masterCorrelationId));
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_start_slave_projections_command() {
 			var command = AssertParsedSingleCommand<StartSlaveProjectionsCommand>("$start-slave-projections");
-			Assert.AreEqual(_name, command.Name);
-			Assert.AreEqual(_runAs, (ProjectionManagementMessage.RunAs)command.RunAs);
-			Assert.AreEqual(_masterCorrelationId.ToString("N"), command.MasterCorrelationId);
-			Assert.AreEqual(_masterWorkerId.ToString("N"), command.MasterWorkerId);
-			Assert.IsNotNull(command.SlaveProjections);
-			Assert.IsNotNull(command.SlaveProjections.Definitions);
-			Assert.AreEqual(1, command.SlaveProjections.Definitions.Length);
+			Assert.Equal(_name, command.Name);
+			Assert.Equal(_runAs, (ProjectionManagementMessage.RunAs)command.RunAs);
+			Assert.Equal(_masterCorrelationId.ToString("N"), command.MasterCorrelationId);
+			Assert.Equal(_masterWorkerId.ToString("N"), command.MasterWorkerId);
+			Assert.NotNull(command.SlaveProjections);
+			Assert.NotNull(command.SlaveProjections.Definitions);
+			Assert.Equal(1, command.SlaveProjections.Definitions.Length);
 			var definition = _definition.Definitions[0];
 			var received = command.SlaveProjections.Definitions[0];
-			Assert.AreEqual(definition.CheckpointsEnabled, received.CheckpointsEnabled);
-			Assert.AreEqual(definition.EmitEnabled, received.EmitEnabled);
-			Assert.AreEqual(definition.EnableRunAs, received.EnableRunAs);
-			Assert.AreEqual(definition.HandlerType, received.HandlerType);
-			Assert.AreEqual(definition.Mode, received.Mode);
-			Assert.AreEqual(definition.Name, received.Name);
-			Assert.AreEqual(definition.Query, received.Query);
-			Assert.AreEqual(definition.RequestedNumber, received.RequestedNumber);
-			Assert.AreEqual(definition.RunAs1.Name, received.RunAs1.Name);
+			Assert.Equal(definition.CheckpointsEnabled, received.CheckpointsEnabled);
+			Assert.Equal(definition.EmitEnabled, received.EmitEnabled);
+			Assert.Equal(definition.EnableRunAs, received.EnableRunAs);
+			Assert.Equal(definition.HandlerType, received.HandlerType);
+			Assert.Equal(definition.Mode, received.Mode);
+			Assert.Equal(definition.Name, received.Name);
+			Assert.Equal(definition.Query, received.Query);
+			Assert.Equal(definition.RequestedNumber, received.RequestedNumber);
+			Assert.Equal(definition.RunAs1.Name, received.RunAs1.Name);
 		}
 	}
 }

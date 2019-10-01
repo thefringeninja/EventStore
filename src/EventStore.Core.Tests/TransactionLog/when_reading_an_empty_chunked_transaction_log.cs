@@ -5,12 +5,11 @@ using EventStore.Core.TransactionLog.Checkpoint;
 using EventStore.Core.TransactionLog.Chunks;
 using EventStore.Core.TransactionLog.FileNamingStrategy;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog {
-	[TestFixture]
 	public class when_reading_an_empty_chunked_transaction_log : SpecificationWithDirectory {
-		[Test]
+		[Fact]
 		public void try_read_returns_false_when_writer_checksum_is_zero() {
 			var writerchk = new InMemoryCheckpoint(0);
 			var chaserchk = new InMemoryCheckpoint(0);
@@ -18,12 +17,12 @@ namespace EventStore.Core.Tests.TransactionLog {
 			db.Open();
 
 			var reader = new TFChunkReader(db, writerchk, 0);
-			Assert.IsFalse(reader.TryReadNext().Success);
+			Assert.False(reader.TryReadNext().Success);
 
 			db.Close();
 		}
 
-		[Test]
+		[Fact]
 		public void try_read_does_not_cache_anything_and_returns_record_once_it_is_written_later() {
 			var writerchk = new InMemoryCheckpoint(0);
 			var chaserchk = new InMemoryCheckpoint(0);
@@ -35,17 +34,17 @@ namespace EventStore.Core.Tests.TransactionLog {
 
 			var reader = new TFChunkReader(db, writerchk, 0);
 
-			Assert.IsFalse(reader.TryReadNext().Success);
+			Assert.False(reader.TryReadNext().Success);
 
 			var rec = LogRecord.SingleWrite(0, Guid.NewGuid(), Guid.NewGuid(), "ES", -1, "ET", new byte[] {7}, null);
 			long tmp;
-			Assert.IsTrue(writer.Write(rec, out tmp));
+			Assert.True(writer.Write(rec, out tmp));
 			writer.Flush();
 			writer.Close();
 
 			var res = reader.TryReadNext();
-			Assert.IsTrue(res.Success);
-			Assert.AreEqual(rec, res.LogRecord);
+			Assert.True(res.Success);
+			Assert.Equal(rec, res.LogRecord);
 
 			db.Close();
 		}

@@ -3,11 +3,10 @@ using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Messages.Persisted.Responses;
 using EventStore.Projections.Core.Services.Management;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projection_core_service_response_writer {
-	[TestFixture]
-	class when_handling_result_report_message : specification_with_projection_core_service_response_writer {
+	public class when_handling_result_report_message : specification_with_projection_core_service_response_writer {
 		private Guid _projectionId;
 		private string _result;
 		private string _partition;
@@ -32,14 +31,14 @@ namespace EventStore.Projections.Core.Tests.Services.projection_core_service_res
 					_position));
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_result_report_response() {
 			var command = AssertParsedSingleCommand<ResultReport>("$result");
-			Assert.AreEqual(_projectionId.ToString("N"), command.Id);
-			Assert.AreEqual(_correlationId.ToString("N"), command.CorrelationId);
-			Assert.AreEqual(_result, command.Result);
-			Assert.AreEqual(_partition, command.Partition);
-			Assert.AreEqual(_position, command.Position);
+			Assert.Equal(_projectionId.ToString("N"), command.Id);
+			Assert.Equal(_correlationId.ToString("N"), command.CorrelationId);
+			Assert.Equal(_result, command.Result);
+			Assert.Equal(_partition, command.Partition);
+			Assert.Equal(_position, command.Position);
 		}
 	}
 }

@@ -2,10 +2,10 @@ using System;
 using EventStore.Common.Utils;
 using EventStore.Core.Bus;
 using EventStore.Core.Messaging;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Bus.Helpers {
-	public abstract class QueuedHandlerTestWithNoopConsumer {
+	public abstract class QueuedHandlerTestWithNoopConsumer : IDisposable {
 		private readonly Func<IHandle<Message>, string, TimeSpan, IQueuedHandler> _queuedHandlerFactory;
 
 		protected IQueuedHandler Queue;
@@ -15,17 +15,12 @@ namespace EventStore.Core.Tests.Bus.Helpers {
 			Func<IHandle<Message>, string, TimeSpan, IQueuedHandler> queuedHandlerFactory) {
 			Ensure.NotNull(queuedHandlerFactory, "queuedHandlerFactory");
 			_queuedHandlerFactory = queuedHandlerFactory;
-		}
-
-		[SetUp]
-		public virtual void SetUp() {
 			Consumer = new NoopConsumer();
 			Queue = _queuedHandlerFactory(Consumer, "test_name", TimeSpan.FromMilliseconds(5000));
 		}
 
-		[TearDown]
-		public virtual void TearDown() {
-			Queue.Stop();
+		public virtual void Dispose() {
+			Queue?.Stop();
 			Queue = null;
 			Consumer = null;
 		}

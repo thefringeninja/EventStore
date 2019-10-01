@@ -1,10 +1,9 @@
 using System;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
-	[TestFixture]
 	public class when_handling_an_emit_with_committed_callback : TestFixtureWithExistingEvents {
 		private EmittedStream _stream;
 		private TestCheckpointManagerMessageHandler _readyHandler;
@@ -14,8 +13,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 			AllWritesSucceed();
 		}
 
-		[SetUp]
-		public void setup() {
+		public when_handling_an_emit_with_committed_callback() {
 			_readyHandler = new TestCheckpointManagerMessageHandler();
 			_stream = new EmittedStream(
 				"test_stream",
@@ -27,7 +25,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 			_stream.Start();
 		}
 
-		[Test]
+		[Fact]
 		public void completes_already_published_events() {
 			var invoked = false;
 			_stream.EmitEvents(
@@ -37,10 +35,10 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 						(string)"data", (ExtraMetaData)null, CheckpointTag.FromPosition(0, 100, 50),
 						(CheckpointTag)null, v => invoked = true)
 				});
-			Assert.IsTrue(invoked);
+			Assert.True(invoked);
 		}
 
-		[Test]
+		[Fact]
 		public void completes_not_yet_published_events() {
 			var invoked = false;
 			_stream.EmitEvents(
@@ -50,7 +48,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 						(string)"data", (ExtraMetaData)null, CheckpointTag.FromPosition(0, 200, 150),
 						(CheckpointTag)null, v => invoked = true)
 				});
-			Assert.IsTrue(invoked);
+			Assert.True(invoked);
 		}
 	}
 }

@@ -6,10 +6,9 @@ using EventStore.Core.Tests.Helpers;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.projections_manager.managed_projection;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.heading_event_reader {
-	[TestFixture]
 	public class when_the_heading_event_reader_with_a_subscribed_projection_handles_an_idle_notification :
 		TestFixtureWithReadWriteDispatchers {
 		private HeadingEventReader _point;
@@ -19,8 +18,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.heading_event_
 		private FakeReaderSubscription _subscription;
 		private Guid _projectionSubscriptionId;
 
-		[SetUp]
-		public void setup() {
+		public when_the_heading_event_reader_with_a_subscribed_projection_handles_an_idle_notification() {
 			//_exception = null;
 			try {
 				_point = new HeadingEventReader(10, _bus);
@@ -51,9 +49,9 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.heading_event_
 		}
 
 
-		[Test]
+		[Fact]
 		public void projection_receives_events_after_the_subscription_point() {
-			Assert.AreEqual(1, _subscription.ReceivedIdleNotifications.Count());
+			Assert.Equal(1, _subscription.ReceivedIdleNotifications.Count());
 		}
 	}
 }

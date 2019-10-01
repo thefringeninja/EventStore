@@ -7,10 +7,10 @@ using EventStore.Core.Index.Hashes;
 using EventStore.Core.Tests.Services.Storage;
 using EventStore.Core.TransactionLog;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Index.IndexV2 {
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class
 		table_index_when_merging_upgrading_to_64bit_if_single_stream_entry_doesnt_exist_drops_entry_and_carries_on :
 			SpecificationWithDirectoryPerTestFixture {
@@ -30,7 +30,6 @@ namespace EventStore.Core.Tests.Index.IndexV2 {
 			_ptableVersion = PTableVersions.IndexV2;
 		}
 
-		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 
@@ -69,48 +68,47 @@ namespace EventStore.Core.Tests.Index.IndexV2 {
 			await Task.Delay(500);
 		}
 
-		[OneTimeTearDown]
 		public override Task TestFixtureTearDown() {
 			_tableIndex.Close();
 
 			return base.TestFixtureTearDown();
 		}
 
-		[Test]
+		[Fact]
 		public void should_have_all_entries_except_scavenged() {
 			var streamId = Stream1;
 			var result = _tableIndex.GetRange(streamId, 0, 1).ToArray();
 			var hash = (ulong)_lowHasher.Hash(streamId) << 32 | _highHasher.Hash(streamId);
 
-			Assert.That(result.Count(), Is.EqualTo(1));
+			Assert.Equal(result.Count(), 1);
 
-			Assert.That(result[0].Stream, Is.EqualTo(hash));
-			Assert.That(result[0].Version, Is.EqualTo(1));
-			Assert.That(result[0].Position, Is.EqualTo(6));
+			Assert.Equal(result[0].Stream, hash);
+			Assert.Equal(result[0].Version, 1);
+			Assert.Equal(result[0].Position, 6);
 
 			streamId = Stream2;
 			result = _tableIndex.GetRange(streamId, 0, 1).ToArray();
 			hash = (ulong)_lowHasher.Hash(streamId) << 32 | _highHasher.Hash(streamId);
 
-			Assert.That(result.Count(), Is.EqualTo(1));
+			Assert.Equal(result.Count(), 1);
 
-			Assert.That(result[0].Stream, Is.EqualTo(hash));
-			Assert.That(result[0].Version, Is.EqualTo(1));
-			Assert.That(result[0].Position, Is.EqualTo(5));
+			Assert.Equal(result[0].Stream, hash);
+			Assert.Equal(result[0].Version, 1);
+			Assert.Equal(result[0].Position, 5);
 
 			streamId = Stream3;
 			result = _tableIndex.GetRange(streamId, 0, 1).ToArray();
 			hash = (ulong)_lowHasher.Hash(streamId) << 32 | _highHasher.Hash(streamId);
 
-			Assert.That(result.Count(), Is.EqualTo(2));
+			Assert.Equal(result.Count(), 2);
 
-			Assert.That(result[0].Stream, Is.EqualTo(hash));
-			Assert.That(result[0].Version, Is.EqualTo(1));
-			Assert.That(result[0].Position, Is.EqualTo(4));
+			Assert.Equal(result[0].Stream, hash);
+			Assert.Equal(result[0].Version, 1);
+			Assert.Equal(result[0].Position, 4);
 
-			Assert.That(result[1].Stream, Is.EqualTo(hash));
-			Assert.That(result[1].Version, Is.EqualTo(0));
-			Assert.That(result[1].Position, Is.EqualTo(3));
+			Assert.Equal(result[1].Stream, hash);
+			Assert.Equal(result[1].Version, 0);
+			Assert.Equal(result[1].Position, 3);
 		}
 
 		private class FakeIndexReader2 : ITransactionFileReader {

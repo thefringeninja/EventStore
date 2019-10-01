@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.parallel_processing_load_balancer {
-	[TestFixture]
 	public class when_scheduling_first_tasks : specification_with_parallel_processing_load_balancer {
 		private List<string> _scheduledTasks;
 		private List<int> _scheduledOnWorkers;
@@ -26,19 +25,19 @@ namespace EventStore.Projections.Core.Tests.Services.parallel_processing_load_ba
 			_scheduledOnWorkers.Add(worker);
 		}
 
-		[Test]
+		[Fact]
 		public void schedules_all_tasks() {
-			Assert.AreEqual(2, _scheduled);
+			Assert.Equal(2, _scheduled);
 		}
 
-		[Test]
+		[Fact]
 		public void schedules_correct_tasks() {
-			Assert.That(new[] {"task1", "task2"}.SequenceEqual(_scheduledTasks));
+			Assert.True(new[] {"task1", "task2"}.SequenceEqual(_scheduledTasks));
 		}
 
-		[Test]
+		[Fact]
 		public void schedules_on_different_workers() {
-			Assert.That(_scheduledOnWorkers.Distinct().Count() == 2);
+			Assert.True(_scheduledOnWorkers.Distinct().Count() == 2);
 		}
 	}
 }

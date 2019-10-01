@@ -5,10 +5,9 @@ using EventStore.Core.Messaging;
 using EventStore.Core.Services.RequestManager.Managers;
 using EventStore.Core.Tests.Fakes;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Replication.WriteStream {
-	[TestFixture]
 	public class when_write_stream_gets_already_committed : RequestManagerSpecification {
 		protected override TwoPhaseRequestManagerBase OnManager(FakePublisher publisher) {
 			return new WriteStreamTwoPhaseRequestManager(publisher, 3, PrepareTimeout, CommitTimeout, false);
@@ -23,15 +22,15 @@ namespace EventStore.Core.Tests.Services.Replication.WriteStream {
 			return new StorageMessage.AlreadyCommitted(InternalCorrId, "test123", 0, 1);
 		}
 
-		[Test]
+		[Fact]
 		public void successful_request_message_is_publised() {
-			Assert.That(Produced.ContainsSingle<StorageMessage.RequestCompleted>(
+			Assert.True(Produced.ContainsSingle<StorageMessage.RequestCompleted>(
 				x => x.CorrelationId == InternalCorrId && x.Success));
 		}
 
-		[Test]
+		[Fact]
 		public void the_envelope_is_replied_to_with_success() {
-			Assert.That(Envelope.Replies.ContainsSingle<ClientMessage.WriteEventsCompleted>(
+			Assert.True(Envelope.Replies.ContainsSingle<ClientMessage.WriteEventsCompleted>(
 				x => x.CorrelationId == ClientCorrId && x.Result == OperationResult.Success));
 		}
 	}

@@ -2,11 +2,10 @@
 using System.Threading.Tasks;
 using EventStore.Core.Tests.TransactionLog.Scavenging.Helpers;
 using EventStore.Core.TransactionLog.Chunks;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog.Scavenging {
-	[TestFixture]
-	class when_scavenge_cancelled_after_completed : ScavengeLifeCycleScenario {
+	public class when_scavenge_cancelled_after_completed : ScavengeLifeCycleScenario {
 		protected override async Task When() {
 			var cancellationTokenSource = new CancellationTokenSource();
 
@@ -14,30 +13,30 @@ namespace EventStore.Core.Tests.TransactionLog.Scavenging {
             await TfChunkScavenger.Scavenge(true, true, 0, cancellationTokenSource.Token);
 		}
 
-		[Test]
+		[Fact]
 		public void completed_logged_with_success_result() {
-			Assert.That(Log.Completed);
-			Assert.That(Log.Result, Is.EqualTo(ScavengeResult.Success));
+			Assert.True(Log.Completed);
+			Assert.Equal(Log.Result, ScavengeResult.Success);
 		}
 
-		[Test]
+		[Fact]
 		public void scavenge_record_for_all_completed_chunks() {
-			Assert.That(Log.Scavenged, Has.Count.EqualTo(2));
-			Assert.That(Log.Scavenged[0].Scavenged, Is.True);
-			Assert.That(Log.Scavenged[1].Scavenged, Is.True);
+			Assert.Equal(2, Log.Scavenged.Count);
+			Assert.True(Log.Scavenged[0].Scavenged);
+			Assert.True(Log.Scavenged[1].Scavenged);
 		}
 
 
-		[Test]
+		[Fact]
 		public void merge_record_for_all_completed_merged() {
-			Assert.That(Log.Merged, Has.Count.EqualTo(1));
-			Assert.That(Log.Merged[0].Scavenged, Is.True);
+			Assert.Single(Log.Merged);
+			Assert.True(Log.Merged[0].Scavenged);;
 		}
 
 
-		[Test]
+		[Fact]
 		public void calls_scavenge_on_the_table_index() {
-			Assert.That(FakeTableIndex.ScavengeCount, Is.EqualTo(1));
+			Assert.Equal(FakeTableIndex.ScavengeCount, 1);
 		}
 	}
 }

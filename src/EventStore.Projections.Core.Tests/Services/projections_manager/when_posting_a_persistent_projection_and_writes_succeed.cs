@@ -7,10 +7,9 @@ using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Management;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager {
-	[TestFixture]
 	public class
 		when_posting_a_persistent_projection_and_writes_succeed : TestFixtureWithProjectionCoreAndManagementServices {
 		protected override void Given() {
@@ -35,28 +34,28 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 					enabled: true, checkpointsEnabled: true, emitEnabled: true, trackEmittedStreams: true);
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void projection_status_is_running() {
 			_manager.Handle(
 				new ProjectionManagementMessage.Command.GetStatistics(new PublishEnvelope(_bus), null, _projectionName,
 					true));
-			Assert.AreEqual(
+			Assert.Equal(
 				ManagedProjectionState.Running,
-				_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().Single().Projections[0]
+				Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().Single().Projections[0]
 					.MasterStatus);
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void a_projection_updated_event_is_written() {
-			Assert.IsTrue(
-				_consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Any(
+			Assert.True(
+				Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Any(
 					v => v.Events[0].EventType == ProjectionEventTypes.ProjectionUpdated));
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void a_projection_updated_message_is_published() {
 			// not published until writes complete
-			Assert.AreEqual(1, _consumer.HandledMessages.OfType<ProjectionManagementMessage.Updated>().Count());
+			Assert.Equal(1, Consumer.HandledMessages.OfType<ProjectionManagementMessage.Updated>().Count());
 		}
 	}
 }

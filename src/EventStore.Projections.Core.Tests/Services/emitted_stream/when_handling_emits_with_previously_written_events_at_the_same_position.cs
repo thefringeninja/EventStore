@@ -3,10 +3,9 @@ using System.Linq;
 using EventStore.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
-	[TestFixture]
 	public class
 		when_handling_emits_with_previously_written_events_at_the_same_position : TestFixtureWithExistingEvents {
 		private EmittedStream _stream;
@@ -39,8 +38,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 			};
 		}
 
-		[SetUp]
-		public void setup() {
+		public when_handling_emits_with_previously_written_events_at_the_same_position() {
 			_readyHandler = new TestCheckpointManagerMessageHandler();
 			_stream = new EmittedStream(
 				"test_stream",
@@ -54,19 +52,19 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 			OneWriteCompletes();
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_not_yet_written_events_only() {
-			Assert.AreEqual(1, _consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Count());
-			var writeMessage = _consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Single();
-			Assert.AreEqual(1, writeMessage.Events.Length);
-			Assert.AreEqual("type3", writeMessage.Events[0].EventType);
+			Assert.Equal(1, Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Count());
+			var writeMessage = Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Single();
+			Assert.Equal(1, writeMessage.Events.Length);
+			Assert.Equal("type3", writeMessage.Events[0].EventType);
 		}
 
-		[Test]
+		[Fact]
 		public void reports_correct_event_numbers() {
-			Assert.AreEqual(0, _1);
-			Assert.AreEqual(1, _2);
-			Assert.AreEqual(2, _3);
+			Assert.Equal(0, _1);
+			Assert.Equal(1, _2);
+			Assert.Equal(2, _3);
 		}
 	}
 }

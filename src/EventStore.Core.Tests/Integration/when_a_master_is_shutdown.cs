@@ -1,6 +1,6 @@
 ﻿using EventStore.Core.Bus;
 using EventStore.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace EventStore.Core.Tests.Integration {
-	[TestFixture, Category("LongRunning"), Ignore("Flaky test - e.g. if multiple elections take place")]
+	[Trait("Category", "LongRunning")]
 	public class when_a_master_is_shutdown : specification_with_cluster {
 		private List<Guid> _epochIds = new List<Guid>();
 		private List<string> _roleAssignments = new List<string>();
@@ -59,21 +59,21 @@ namespace EventStore.Core.Tests.Integration {
 			_expectedNumberOfEvents?.Signal();
 		}
 
-		[Test]
+		[Fact(Skip = "Flaky test - e.g. if multiple elections take place")]
 		public void should_assign_master_and_slave_roles_correctly() {
-			Assert.AreEqual(5, _roleAssignments.Count());
+			Assert.Equal(5, _roleAssignments.Count());
 
-			Assert.AreEqual(1, _roleAssignments.Take(3).Where(x => x.Equals("master")).Count());
-			Assert.AreEqual(2, _roleAssignments.Take(3).Where(x => x.Equals("slave")).Count());
+			Assert.Equal(1, _roleAssignments.Take(3).Where(x => x.Equals("master")).Count());
+			Assert.Equal(2, _roleAssignments.Take(3).Where(x => x.Equals("slave")).Count());
 
 			//after shutting down
-			Assert.AreEqual(1, _roleAssignments.Skip(3).Take(2).Where(x => x.Equals("master")).Count());
-			Assert.AreEqual(1, _roleAssignments.Skip(3).Take(2).Where(x => x.Equals("slave")).Count());
+			Assert.Equal(1, _roleAssignments.Skip(3).Take(2).Where(x => x.Equals("master")).Count());
+			Assert.Equal(1, _roleAssignments.Skip(3).Take(2).Where(x => x.Equals("slave")).Count());
 		}
 
-		[Test]
+		[Fact(Skip = "Flaky test - e.g. if multiple elections take place")]
 		public void should_have_two_unique_epoch_writes() {
-			Assert.AreEqual(2, _epochIds.Distinct().Count());
+			Assert.Equal(2, _epochIds.Distinct().Count());
 		}
 	}
 }

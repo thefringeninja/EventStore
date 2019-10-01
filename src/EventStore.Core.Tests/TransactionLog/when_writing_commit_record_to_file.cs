@@ -5,19 +5,17 @@ using EventStore.Core.TransactionLog.Checkpoint;
 using EventStore.Core.TransactionLog.Chunks;
 using EventStore.Core.TransactionLog.FileNamingStrategy;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog {
-	[TestFixture]
-	public class when_writing_commit_record_to_file : SpecificationWithDirectoryPerTestFixture {
+	public class when_writing_commit_record_to_file : SpecificationWithDirectoryPerTestFixture, IDisposable {
 		private ITransactionFileWriter _writer;
 		private InMemoryCheckpoint _writerCheckpoint;
 		private readonly Guid _eventId = Guid.NewGuid();
 		private CommitLogRecord _record;
 		private TFChunkDb _db;
 
-		[OneTimeSetUp]
-		public void SetUp() {
+		public when_writing_commit_record_to_file() {
 			_writerCheckpoint = new InMemoryCheckpoint();
 			_db = new TFChunkDb(TFChunkHelper.CreateDbConfig(PathName, _writerCheckpoint, new InMemoryCheckpoint(),
 				1024));
@@ -34,38 +32,37 @@ namespace EventStore.Core.Tests.TransactionLog {
 			_writer.Flush();
 		}
 
-		[OneTimeTearDown]
-		public void Teardown() {
+		public void Dispose() {
 			_writer.Close();
 			_db.Close();
 		}
 
-		[Test]
+		[Fact]
 		public void the_data_is_written() {
 			using (var reader = new TFChunkChaser(_db, _writerCheckpoint, _db.Config.ChaserCheckpoint, false)) {
 				reader.Open();
 				LogRecord r;
-				Assert.IsTrue(reader.TryReadNext(out r));
+				Assert.True(reader.TryReadNext(out r));
 
 				Assert.True(r is CommitLogRecord);
 				var c = (CommitLogRecord)r;
-				Assert.AreEqual(c.RecordType, LogRecordType.Commit);
-				Assert.AreEqual(c.LogPosition, 0);
-				Assert.AreEqual(c.CorrelationId, _eventId);
-				Assert.AreEqual(c.TransactionPosition, 4321);
-				Assert.AreEqual(c.TimeStamp, new DateTime(2012, 12, 21));
+				Assert.Equal(LogRecordType.Commit, c.RecordType);
+				Assert.Equal(0, c.LogPosition);
+				Assert.Equal(c.CorrelationId, _eventId);
+				Assert.Equal(4321, c.TransactionPosition);
+				Assert.Equal(c.TimeStamp, new DateTime(2012, 12, 21));
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void the_checksum_is_updated() {
-			Assert.AreEqual(_record.GetSizeWithLengthPrefixAndSuffix(), _writerCheckpoint.Read());
+			Assert.Equal(_record.GetSizeWithLengthPrefixAndSuffix(), _writerCheckpoint.Read());
 		}
 
-		[Test]
+		[Fact]
 		public void trying_to_read_past_writer_checksum_returns_false() {
 			var reader = new TFChunkReader(_db, _writerCheckpoint);
-			Assert.IsFalse(reader.TryReadAt(_writerCheckpoint.Read()).Success);
+			Assert.False(reader.TryReadAt(_writerCheckpoint.Read()).Success);
 		}
 	}
 }

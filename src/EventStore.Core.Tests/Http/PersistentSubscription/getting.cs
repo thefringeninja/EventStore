@@ -2,7 +2,7 @@
 using System.Net;
 using System.Text.RegularExpressions;
 using EventStore.Core.Tests.Http.Users.users;
-using NUnit.Framework;
+using Xunit;
 using System.Collections.Generic;
 using System.Threading;
 using Newtonsoft.Json.Linq;
@@ -16,8 +16,8 @@ using EventStore.ClientAPI.Common;
 // ReSharper disable InconsistentNaming
 
 namespace EventStore.Core.Tests.Http.PersistentSubscription {
-	[TestFixture, Category("LongRunning")]
-	class with_subscription_having_events : with_admin_user {
+	[Trait("Category", "LongRunning")]
+	public abstract class with_subscription_having_events : with_admin_user {
 		protected List<object> Events;
 		protected string SubscriptionPath;
 		protected string GroupName;
@@ -35,7 +35,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				TestStream,
 				Events.Take(NumberOfEventsToCreate ?? Events.Count),
 				_admin);
-			Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
+			Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
 			GroupName = Guid.NewGuid().ToString();
 			SubscriptionPath = string.Format("/subscriptions/{0}/{1}", TestStream.Substring(9), GroupName);
@@ -45,7 +45,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 					MessageTimeoutMilliseconds = 10000,
 				},
 				_admin);
-			Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
+			Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 		}
 
 		protected override Task When() => Task.CompletedTask;
@@ -68,12 +68,12 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 						Data = new JRaw(jsonMetadata)
 					}
 				});
-			Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
+			Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
-	class when_getting_messages_without_permission : with_subscription_having_events {
+	[Trait("Category", "LongRunning")]
+	public class when_getting_messages_without_permission : with_subscription_having_events {
 		protected override async Task Given() {
 			await base.Given();
 			await SecureStream();
@@ -86,14 +86,14 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				ContentType.CompetingJson);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_unauthorised() {
-			Assert.AreEqual(HttpStatusCode.Unauthorized, _lastResponse.StatusCode);
+			Assert.Equal(HttpStatusCode.Unauthorized, _lastResponse.StatusCode);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
-	class when_getting_messages_from_an_empty_subscription : with_admin_user {
+	[Trait("Category", "LongRunning")]
+    public class when_getting_messages_from_an_empty_subscription : with_admin_user {
 		private JObject _response;
 		protected List<object> Events;
 		protected string SubscriptionPath;
@@ -115,13 +115,13 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 					MessageTimeoutMilliseconds = 10000
 				},
 				_admin);
-			Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
+			Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
 			response = await MakeArrayEventsPost(
 				TestStream,
 				Events,
 				_admin);
-			Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
+			Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
 			//pull all events out.
 			_response = await GetJson<JObject>(
@@ -130,7 +130,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				_admin);
 
 			var count = _response["entries"].Count();
-			Assert.AreEqual(Events.Count, count, "Expected {0} events, received {1}", Events.Count, count);
+			Assert.Equal(Events.Count, count);
 		}
 
 		protected override async Task When() {
@@ -140,14 +140,14 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				_admin);
 		}
 
-		[Test]
+		[Fact]
 		public void return_0_messages() {
 			var count = _response["entries"].Count();
-			Assert.AreEqual(0, count, "Expected {0} events, received {1}", 0, count);
+			Assert.Equal(0, count);
 		}
 	}
 
-	class when_getting_messages_from_a_subscription_with_n_messages : with_subscription_having_events {
+    public class when_getting_messages_from_a_subscription_with_n_messages : with_subscription_having_events {
 		private JObject _response;
 
 		protected override async Task When() {
@@ -157,14 +157,14 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				_admin);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_n_messages() {
 			var count = ((JObject)_response)["entries"].Count();
-			Assert.AreEqual(Events.Count, count, "Expected {0} events, received {1}", Events.Count, count);
+			Assert.Equal(Events.Count, count);
 		}
 	}
 
-	class when_getting_messages_from_a_subscription_with_more_than_n_messages : with_subscription_having_events {
+    public class when_getting_messages_from_a_subscription_with_more_than_n_messages : with_subscription_having_events {
 		private JObject _response;
 
 		protected override async Task When() {
@@ -174,14 +174,14 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				_admin);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_n_messages() {
 			var count = ((JArray)_response["entries"]).Count;
-			Assert.AreEqual(Events.Count - 1, count, "Expected {0} events, received {1}", Events.Count - 1, count);
+			Assert.Equal(Events.Count - 1, count);
 		}
 	}
 
-	class when_getting_messages_from_a_subscription_with_less_than_n_messags : with_subscription_having_events {
+    public class when_getting_messages_from_a_subscription_with_less_than_n_messags : with_subscription_having_events {
 		private JObject _response;
 
 		protected override async Task When() {
@@ -191,14 +191,14 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				_admin);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_all_messages() {
 			var count = ((JArray)_response["entries"]).Count;
-			Assert.AreEqual(Events.Count, count, "Expected {0} events, received {1}", Events.Count, count);
+			Assert.Equal(Events.Count, count);
 		}
 	}
 
-	class when_getting_messages_from_a_subscription_with_unspecified_count : with_subscription_having_events {
+    public class when_getting_messages_from_a_subscription_with_unspecified_count : with_subscription_having_events {
 		private JObject _response;
 
 		protected override async Task When() {
@@ -208,14 +208,14 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				_admin);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_1_message() {
 			var count = ((JArray)_response["entries"]).Count;
-			Assert.AreEqual(1, count, "Expected {0} events, received {1}", 1, count);
+			Assert.Equal(1, count);
 		}
 	}
 
-	class when_getting_messages_from_a_subscription_with_a_negative_count : with_subscription_having_events {
+    public class when_getting_messages_from_a_subscription_with_a_negative_count : with_subscription_having_events {
 		protected override Task When() {
 			return Get(SubscriptionPath + "/-1",
 				"",
@@ -223,13 +223,13 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				_admin);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_bad_request() {
-			Assert.AreEqual(HttpStatusCode.BadRequest, _lastResponse.StatusCode);
+			Assert.Equal(HttpStatusCode.BadRequest, _lastResponse.StatusCode);
 		}
 	}
 
-	class when_getting_messages_from_a_subscription_with_a_count_of_0 : with_subscription_having_events {
+    public class when_getting_messages_from_a_subscription_with_a_count_of_0 : with_subscription_having_events {
 		protected override async Task When() {
 			await Get(SubscriptionPath + "/0",
 				"",
@@ -237,13 +237,13 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				_admin);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_bad_request() {
-			Assert.AreEqual(HttpStatusCode.BadRequest, _lastResponse.StatusCode);
+			Assert.Equal(HttpStatusCode.BadRequest, _lastResponse.StatusCode);
 		}
 	}
 
-	class when_getting_messages_from_a_subscription_with_count_more_than_100 : with_subscription_having_events {
+    public class when_getting_messages_from_a_subscription_with_count_more_than_100 : with_subscription_having_events {
 		protected override async Task When() {
 			await Get(SubscriptionPath + "/101",
 				"",
@@ -251,13 +251,13 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				_admin);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_bad_request() {
-			Assert.AreEqual(HttpStatusCode.BadRequest, _lastResponse.StatusCode);
+			Assert.Equal(HttpStatusCode.BadRequest, _lastResponse.StatusCode);
 		}
 	}
 
-	class when_getting_messages_from_a_subscription_with_count_not_an_integer : with_subscription_having_events {
+    public class when_getting_messages_from_a_subscription_with_count_not_an_integer : with_subscription_having_events {
 		protected override Task When() {
 			return Get(SubscriptionPath + "/10.1",
 				"",
@@ -265,13 +265,13 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				_admin);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_bad_request() {
-			Assert.AreEqual(HttpStatusCode.BadRequest, _lastResponse.StatusCode);
+			Assert.Equal(HttpStatusCode.BadRequest, _lastResponse.StatusCode);
 		}
 	}
 
-	class when_getting_messages_from_a_subscription_with_count_not_a_number : with_subscription_having_events {
+    public class when_getting_messages_from_a_subscription_with_count_not_a_number : with_subscription_having_events {
 		protected override Task When() {
 			return Get(SubscriptionPath + "/one",
 				"",
@@ -279,9 +279,9 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				_admin);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_bad_request() {
-			Assert.AreEqual(HttpStatusCode.BadRequest, _lastResponse.StatusCode);
+			Assert.Equal(HttpStatusCode.BadRequest, _lastResponse.StatusCode);
 		}
 	}
 }

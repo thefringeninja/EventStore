@@ -6,13 +6,11 @@ using EventStore.Core.Services.UserManagement;
 using EventStore.Core.Tests.Fakes;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection {
-	[TestFixture]
 	public class when_creating_a_projection {
-		[SetUp]
-		public void Setup() {
+		public when_creating_a_projection() {
 			var fakePublisher = new FakePublisher();
 			_ioDispatcher = new IODispatcher(fakePublisher, new PublishEnvelope(fakePublisher));
 
@@ -30,7 +28,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 			ReaderSubscriptionDispatcher
 			_subscriptionDispatcher;
 
-		[Test]
+		[Fact]
 		public void
 			a_checkpoint_threshold_less_tan_checkpoint_handled_threshold_throws_argument_out_of_range_exception() {
 			Assert.Throws<ArgumentException>(() => {
@@ -57,7 +55,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void a_negative_checkpoint_handled_interval_throws_argument_out_of_range_exception() {
 			Assert.Throws<ArgumentOutOfRangeException>(() => {
 				IProjectionStateHandler projectionStateHandler = new FakeProjectionStateHandler();
@@ -83,7 +81,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void a_null_io_dispatcher__throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				IProjectionStateHandler projectionStateHandler = new FakeProjectionStateHandler();
@@ -107,7 +105,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void a_null_name_throws_argument_null_excveption() {
 			Assert.Throws<ArgumentNullException>(() => {
 				IProjectionStateHandler projectionStateHandler = new FakeProjectionStateHandler();
@@ -131,7 +129,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void a_null_publisher_throws_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				IProjectionStateHandler projectionStateHandler = new FakeProjectionStateHandler();
@@ -155,7 +153,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void a_null_input_queue_throws_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				IProjectionStateHandler projectionStateHandler = new FakeProjectionStateHandler();
@@ -179,7 +177,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void a_null_run_as_does_not_throw_exception() {
 			IProjectionStateHandler projectionStateHandler = new FakeProjectionStateHandler();
 			var version = new ProjectionVersion(1, 0, 0);
@@ -201,7 +199,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 				new RealTimeProvider());
 		}
 
-		[Test]
+		[Fact]
 		public void a_null_subscription_dispatcher__throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				IProjectionStateHandler projectionStateHandler = new FakeProjectionStateHandler();
@@ -225,7 +223,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void a_null_time_provider__throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				IProjectionStateHandler projectionStateHandler = new FakeProjectionStateHandler();
@@ -249,7 +247,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void a_zero_checkpoint_handled_threshold_throws_argument_out_of_range_exception() {
 			Assert.Throws<ArgumentOutOfRangeException>(() => {
 				IProjectionStateHandler projectionStateHandler = new FakeProjectionStateHandler();
@@ -275,7 +273,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void an_empty_name_throws_argument_exception() {
 			Assert.Throws<ArgumentException>(() => {
 				IProjectionStateHandler projectionStateHandler = new FakeProjectionStateHandler();

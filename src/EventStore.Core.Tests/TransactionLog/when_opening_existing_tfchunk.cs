@@ -1,46 +1,42 @@
 using System;
 using EventStore.Core.TransactionLog.Chunks.TFChunk;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog {
-	[TestFixture]
 	public class when_opening_existing_tfchunk : SpecificationWithFilePerTestFixture {
 		private TFChunk _chunk;
 		private TFChunk _testChunk;
 
-		[OneTimeSetUp]
-		public override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public when_opening_existing_tfchunk() {
 			_chunk = TFChunkHelper.CreateNewChunk(Filename);
 			_chunk.Complete();
 			_testChunk = TFChunk.FromCompletedFile(Filename, true, false, 5, reduceFileCachePressure: false);
 		}
 
-		[TearDown]
-		public override void TestFixtureTearDown() {
+		public override void Dispose() {
 			_chunk.Dispose();
 			_testChunk.Dispose();
-			base.TestFixtureTearDown();
+			base.Dispose();
 		}
 
-		[Test]
+		[Fact]
 		public void the_chunk_is_not_cached() {
-			Assert.IsFalse(_testChunk.IsCached);
+			Assert.False(_testChunk.IsCached);
 		}
 
-		[Test]
+		[Fact]
 		public void the_chunk_is_readonly() {
-			Assert.IsTrue(_testChunk.IsReadOnly);
+			Assert.True(_testChunk.IsReadOnly);
 		}
 
-		[Test]
+		[Fact]
 		public void append_throws_invalid_operation_exception() {
 			Assert.Throws<InvalidOperationException>(() =>
 				_testChunk.TryAppend(new CommitLogRecord(0, Guid.NewGuid(), 0, DateTime.UtcNow, 0)));
 		}
 
-		[Test]
+		[Fact]
 		public void flush_throws_invalid_operation_exception() {
 			Assert.Throws<InvalidOperationException>(() => _testChunk.Flush());
 		}

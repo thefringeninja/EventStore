@@ -8,13 +8,12 @@ using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 using ReadStreamResult = EventStore.Core.Data.ReadStreamResult;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 using EventStore.Core.Services.AwakeReaderService;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_reader {
-	[TestFixture]
 	public class when_handling_eof_for_all_streams_and_idle_eof : TestFixtureWithExistingEvents {
 		private MultiStreamEventReader _edp;
 		private Guid _distibutionPointCorrelationId;
@@ -29,8 +28,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 		private Dictionary<string, long> _ab12Tag;
 		private FakeTimeProvider _fakeTimeProvider;
 
-		[SetUp]
-		public new void When() {
+		public when_handling_eof_for_all_streams_and_idle_eof() {
 			_ab12Tag = new Dictionary<string, long> {{"a", 1}, {"b", 2}};
 			_abStreams = new[] {"a", "b"};
 
@@ -42,7 +40,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 			_edp.Resume();
 			_firstEventId = Guid.NewGuid();
 			_secondEventId = Guid.NewGuid();
-			var correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			var correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Last(x => x.EventStreamId == "a").CorrelationId;
 			_edp.Handle(
 				new ClientMessage.ReadStreamEventsForwardCompleted(
@@ -55,7 +53,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 								PrepareFlags.SingleWrite | PrepareFlags.TransactionBegin | PrepareFlags.TransactionEnd,
 								"event_type1", new byte[] {1}, new byte[] {2})),
 					}, null, false, "", 2, 1, true, 200));
-			correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Last(x => x.EventStreamId == "b").CorrelationId;
 			_edp.Handle(
 				new ClientMessage.ReadStreamEventsForwardCompleted(
@@ -68,20 +66,20 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 								PrepareFlags.SingleWrite | PrepareFlags.TransactionBegin | PrepareFlags.TransactionEnd,
 								"event_type1", new byte[] {1}, new byte[] {2})),
 					}, null, false, "", 3, 2, true, 200));
-			correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Last(x => x.EventStreamId == "a").CorrelationId;
 			_edp.Handle(
 				new ClientMessage.ReadStreamEventsForwardCompleted(
 					correlationId, "a", 100, 100, ReadStreamResult.Success, new ResolvedEvent[] { }, null, false, "", 2,
 					1, true, 400));
-			correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Last(x => x.EventStreamId == "b").CorrelationId;
 			_edp.Handle(
 				new ClientMessage.ReadStreamEventsForwardCompleted(
 					correlationId, "b", 100, 100, ReadStreamResult.Success, new ResolvedEvent[] { }, null, false, "", 3,
 					2, true, 400));
 			_fakeTimeProvider.AddTime(TimeSpan.FromMilliseconds(500));
-			correlationId = ((ClientMessage.ReadStreamEventsForward)(_consumer.HandledMessages
+			correlationId = ((ClientMessage.ReadStreamEventsForward)(Consumer.HandledMessages
 				.OfType<AwakeServiceMessage.SubscribeAwake>().Last().ReplyWithMessage)).CorrelationId;
 			_edp.Handle(
 				new ClientMessage.ReadStreamEventsForwardCompleted(
@@ -89,16 +87,16 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 					1, true, 600));
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_event_distribution_idle_messages() {
-			Assert.AreEqual(2, _consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderIdle>().Count());
-			var first = _consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderIdle>().First();
-			var second = _consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderIdle>().Skip(1).First();
+			Assert.Equal(2, Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderIdle>().Count());
+			var first = Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderIdle>().First();
+			var second = Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderIdle>().Skip(1).First();
 
-			Assert.AreEqual(first.CorrelationId, _distibutionPointCorrelationId);
-			Assert.AreEqual(second.CorrelationId, _distibutionPointCorrelationId);
+			Assert.Equal(first.CorrelationId, _distibutionPointCorrelationId);
+			Assert.Equal(second.CorrelationId, _distibutionPointCorrelationId);
 
-			Assert.AreEqual(TimeSpan.FromMilliseconds(500), second.IdleTimestampUtc - first.IdleTimestampUtc);
+			Assert.Equal(TimeSpan.FromMilliseconds(500), second.IdleTimestampUtc - first.IdleTimestampUtc);
 		}
 	}
 }

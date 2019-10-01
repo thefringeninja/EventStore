@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using EventStore.Core.Index;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Index.Hashes;
 using EventStore.Core.TransactionLog;
 using EventStore.Core.Tests.Fakes;
@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using EventStore.Core.Exceptions;
 
 namespace EventStore.Core.Tests.Index.IndexV1 {
-	[TestFixture]
 	public class table_index_with_corrupt_index_entries_should : SpecificationWithDirectoryPerTestFixture {
 		private TableIndex _tableIndex;
 		private IndexMap _indexMap;
@@ -76,8 +75,8 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 			_tableIndex.Initialize(long.MaxValue);
 		}
 
-		[TearDown]
-		public void TearDown() {
+		public override async Task TestFixtureTearDown() {
+			await base.TestFixtureTearDown();
 			_tableIndex.Close();
 		}
 
@@ -131,10 +130,10 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 			}
 		}
 
-		[TestCase(PTableVersions.IndexV1)]
-		[TestCase(PTableVersions.IndexV2)]
-		[TestCase(PTableVersions.IndexV3)]
-		[TestCase(PTableVersions.IndexV4)]
+		[InlineData(PTableVersions.IndexV1)]
+		[InlineData(PTableVersions.IndexV2)]
+		[InlineData(PTableVersions.IndexV3)]
+		[InlineData(PTableVersions.IndexV4)]
 		public void throws_corrupt_index_exception_if_verification_enabled(byte version) {
 			//the CorruptIndexException is caught internally and should trigger an index file deletion if caught
 			ConstructTableIndexWithCorruptIndexEntries(version, false);
@@ -144,10 +143,10 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 			Assert.False(File.Exists(Path.Combine(PathName, TableIndex.ForceIndexVerifyFilename)));
 		}
 
-		[TestCase(PTableVersions.IndexV1)]
-		[TestCase(PTableVersions.IndexV2)]
-		[TestCase(PTableVersions.IndexV3)]
-		[TestCase(PTableVersions.IndexV4)]
+		[InlineData(PTableVersions.IndexV1)]
+		[InlineData(PTableVersions.IndexV2)]
+		[InlineData(PTableVersions.IndexV3)]
+		[InlineData(PTableVersions.IndexV4)]
 		public void throws_maybe_corrupt_index_exception_if_verification_disabled(byte version) {
 			//the MaybeCorruptIndexException is caught internally and should trigger an index file deletion if caught
 
@@ -161,10 +160,10 @@ namespace EventStore.Core.Tests.Index.IndexV1 {
 			Assert.True(File.Exists(Path.Combine(PathName, TableIndex.ForceIndexVerifyFilename)));
 		}
 
-		[TestCase(PTableVersions.IndexV1)]
-		[TestCase(PTableVersions.IndexV2)]
-		[TestCase(PTableVersions.IndexV3)]
-		[TestCase(PTableVersions.IndexV4)]
+		[InlineData(PTableVersions.IndexV1)]
+		[InlineData(PTableVersions.IndexV2)]
+		[InlineData(PTableVersions.IndexV3)]
+		[InlineData(PTableVersions.IndexV4)]
 		public void force_verification_of_index_if_verification_disabled_but_force_verification_file_present(
 			byte version) {
 			//the CorruptIndexException is caught internally and should trigger an index file deletion if caught

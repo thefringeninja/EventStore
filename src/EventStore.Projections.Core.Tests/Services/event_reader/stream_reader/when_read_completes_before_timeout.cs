@@ -7,12 +7,11 @@ using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 using ReadStreamResult = EventStore.Core.Data.ReadStreamResult;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader {
-	[TestFixture]
 	public class when_read_completes_before_timeout : TestFixtureWithExistingEvents {
 		private StreamEventReader _eventReader;
 		private Guid _distributionCorrelationId;
@@ -22,15 +21,14 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader 
 			TicksAreHandledImmediately();
 		}
 
-		[SetUp]
-		public new void When() {
+		public when_read_completes_before_timeout() {
 			_distributionCorrelationId = Guid.NewGuid();
 			_fakeTimeProvider = new FakeTimeProvider();
 			_eventReader = new StreamEventReader(_bus, _distributionCorrelationId, null, "stream", 10,
 				_fakeTimeProvider,
 				resolveLinkTos: false, stopOnEof: true, produceStreamDeletes: false);
 			_eventReader.Resume();
-			var correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Last()
+			var correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Last()
 				.CorrelationId;
 			_eventReader.Handle(
 				new ClientMessage.ReadStreamEventsForwardCompleted(
@@ -53,10 +51,10 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader 
 				new ProjectionManagementMessage.Internal.ReadTimeout(correlationId, "stream"));
 		}
 
-		[Test]
+		[Fact]
 		public void should_deliver_events() {
-			Assert.AreEqual(2,
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
+			Assert.Equal(2,
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
 		}
 	}
 }

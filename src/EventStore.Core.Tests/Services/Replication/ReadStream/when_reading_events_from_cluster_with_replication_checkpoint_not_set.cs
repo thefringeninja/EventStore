@@ -3,14 +3,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EventStore.Core.Bus;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Tests.Integration;
 using EventStore.Core.Messages;
 using EventStore.Core.Data;
 
 namespace EventStore.Core.Tests.Replication.ReadStream {
-	[TestFixture]
-	[Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class when_reading_events_from_cluster_with_replication_checkpoint_not_set : specification_with_cluster {
 		private CountdownEvent _expectedNumberOfRoleAssignments;
 
@@ -41,11 +40,11 @@ namespace EventStore.Core.Tests.Replication.ReadStream {
 			_expectedNumberOfRoleAssignments.Wait(5000);
 
 			var master = GetMaster();
-			Assert.IsNotNull(master, "Could not get master node");
+			Assert.NotNull(master);
 
-			var events = new Event[] {new Event(Guid.NewGuid(), "test-type", false, new byte[10], new byte[0])};
-			var writeResult = ReplicationTestHelper.WriteEvent(master, events, _streamId);
-			Assert.AreEqual(OperationResult.Success, writeResult.Result);
+			var events = new[] {new Event(Guid.NewGuid(), "test-type", false, new byte[10], new byte[0])};
+			var writeResult = await ReplicationTestHelper.WriteEvent(master, events, _streamId);
+			Assert.Equal(OperationResult.Success, writeResult.Result);
 			_commitPosition = writeResult.CommitPosition;
 
 			// Set checkpoint to starting value
@@ -53,36 +52,36 @@ namespace EventStore.Core.Tests.Replication.ReadStream {
 			await base.Given();
 		}
 
-		[Test]
-		public void should_be_able_to_read_event_from_all_forward_on_master() {
-			var readResult = ReplicationTestHelper.ReadAllEventsForward(GetMaster(), _commitPosition);
-			Assert.AreEqual(1, readResult.Events.Where(x => x.OriginalStreamId == _streamId).Count());
+		[Fact]
+		public async Task should_be_able_to_read_event_from_all_forward_on_master() {
+			var readResult = await ReplicationTestHelper.ReadAllEventsForward(GetMaster(), _commitPosition);
+			Assert.Equal(1, readResult.Events.Where(x => x.OriginalStreamId == _streamId).Count());
 		}
 
-		[Test]
-		public void should_be_able_to_read_event_from_all_backward_on_master() {
-			var readResult = ReplicationTestHelper.ReadAllEventsBackward(GetMaster(), _commitPosition);
-			Assert.AreEqual(1, readResult.Events.Where(x => x.OriginalStreamId == _streamId).Count());
+		[Fact]
+		public async Task should_be_able_to_read_event_from_all_backward_on_master() {
+			var readResult = await ReplicationTestHelper.ReadAllEventsBackward(GetMaster(), _commitPosition);
+			Assert.Equal(1, readResult.Events.Where(x => x.OriginalStreamId == _streamId).Count());
 		}
 
-		[Test]
-		public void should_be_able_to_read_event_from_stream_forward_on_master() {
-			var readResult = ReplicationTestHelper.ReadStreamEventsForward(GetMaster(), _streamId);
-			Assert.AreEqual(1, readResult.Events.Count());
-			Assert.AreEqual(ReadStreamResult.Success, readResult.Result);
+		[Fact]
+		public async Task should_be_able_to_read_event_from_stream_forward_on_master() {
+			var readResult = await ReplicationTestHelper.ReadStreamEventsForward(GetMaster(), _streamId);
+			Assert.Equal(1, readResult.Events.Count());
+			Assert.Equal(ReadStreamResult.Success, readResult.Result);
 		}
 
-		[Test]
-		public void should_be_able_to_read_event_from_stream_backward_on_master() {
-			var readResult = ReplicationTestHelper.ReadStreamEventsBackward(GetMaster(), _streamId);
-			Assert.AreEqual(ReadStreamResult.Success, readResult.Result);
-			Assert.AreEqual(1, readResult.Events.Count());
+		[Fact]
+		public async Task should_be_able_to_read_event_from_stream_backward_on_master() {
+			var readResult = await ReplicationTestHelper.ReadStreamEventsBackward(GetMaster(), _streamId);
+			Assert.Equal(ReadStreamResult.Success, readResult.Result);
+			Assert.Equal(1, readResult.Events.Count());
 		}
 
-		[Test]
-		public void should_be_able_to_read_event_on_master() {
-			var readResult = ReplicationTestHelper.ReadEvent(GetMaster(), _streamId, 0);
-			Assert.AreEqual(ReadEventResult.Success, readResult.Result);
+		[Fact]
+		public async Task should_be_able_to_read_event_on_master() {
+			var readResult = await ReplicationTestHelper.ReadEvent(GetMaster(), _streamId, 0);
+			Assert.Equal(ReadEventResult.Success, readResult.Result);
 		}
 	}
 }

@@ -17,11 +17,10 @@ using System.Threading.Tasks;
 using EventStore.Core.Data;
 using EventStore.Core.Services.Storage.ReaderIndex;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 using ReadStreamResult = EventStore.Core.Services.Storage.ReaderIndex.ReadStreamResult;
 
 namespace EventStore.Core.Tests.Services.Storage.BuildingIndex {
-	[TestFixture]
 	public class when_building_an_index_off_tfile_with_duplicate_events_in_a_stream : DuplicateReadIndexTestScenario {
 		private Guid _id1;
 		private Guid _id2;
@@ -68,10 +67,10 @@ namespace EventStore.Core.Tests.Services.Storage.BuildingIndex {
 			Writer.Write(new CommitLogRecord(pos7, _id4, pos6, DateTime.UtcNow, 0), out pos8);
 		}
 
-		[Test]
+		[Fact]
 		public void should_read_the_correct_last_event_number() {
 			var result = ReadIndex.GetStreamLastEventNumber("duplicate_stream");
-			Assert.AreEqual(2, result);
+			Assert.Equal(2, result);
 		}
 	}
 

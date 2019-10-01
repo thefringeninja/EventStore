@@ -5,11 +5,11 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 using Newtonsoft.Json.Linq;
 
 namespace EventStore.Core.Tests.Http.StreamSecurity {
-	abstract class SpecificationWithUsers : HttpBehaviorSpecification {
+	public abstract class SpecificationWithUsers : HttpBehaviorSpecification {
 		protected override async Task Given() {
 			await PostUser("user1", "User 1", "user1!", "other");
 			await PostUser("user2", "User 2", "user2!", "other");
@@ -31,20 +31,20 @@ namespace EventStore.Core.Tests.Http.StreamSecurity {
 			var response = await MakeJsonPost(
 				"/users/", new {LoginName = login + Tag, FullName = userFullName, Groups = groups, Password = password},
 				_admin);
-			Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
+			Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 		}
 
 		protected async Task<string> PostMetadata(StreamMetadata metadata) {
 			var response = await MakeArrayEventsPost(
 				TestMetadataStream, new[] {new {EventId = Guid.NewGuid(), EventType = "event-type", Data = metadata}});
-			Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
+			Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 			return response.Headers.GetLocationAsString();
 		}
 
 		protected async Task<string> PostEvent(int i) {
 			var response = await MakeArrayEventsPost(
 				TestStream, new[] {new {EventId = Guid.NewGuid(), EventType = "event-type", Data = new {Number = i}}});
-			Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
+			Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 			return response.Headers.GetLocationAsString();
 		}
 

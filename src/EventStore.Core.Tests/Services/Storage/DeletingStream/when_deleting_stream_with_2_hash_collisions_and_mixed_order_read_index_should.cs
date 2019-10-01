@@ -1,7 +1,6 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Storage.DeletingStream {
-	[TestFixture]
 	public class when_deleting_stream_with_2_hash_collisions_and_mixed_order_read_index_should : ReadIndexTestScenario {
 		protected override void WriteTestScenario() {
 			WriteSingleEvent("S1", 0, "bla1");
@@ -14,25 +13,25 @@ namespace EventStore.Core.Tests.Services.Storage.DeletingStream {
 			WriteDelete("S1");
 		}
 
-		[Test]
+		[Fact]
 		public void indicate_that_stream_is_deleted() {
-			Assert.That(ReadIndex.IsStreamDeleted("S1"));
+			Assert.True(ReadIndex.IsStreamDeleted("S1"));
 		}
 
-		[Test]
+		[Fact]
 		public void indicate_that_other_streams_with_same_hash_are_not_deleted() {
-			Assert.That(ReadIndex.IsStreamDeleted("S2"), Is.False);
-			Assert.That(ReadIndex.IsStreamDeleted("S3"), Is.False);
+			Assert.False(ReadIndex.IsStreamDeleted("S2"));
+			Assert.False(ReadIndex.IsStreamDeleted("S3"));
 		}
 
-		[Test]
+		[Fact]
 		public void indicate_that_not_existing_stream_with_same_hash_is_not_deleted() {
-			Assert.That(ReadIndex.IsStreamDeleted("XX"), Is.False);
+			Assert.False(ReadIndex.IsStreamDeleted("XX"));
 		}
 
-		[Test]
+		[Fact]
 		public void indicate_that_not_existing_stream_with_different_hash_is_not_deleted() {
-			Assert.That(ReadIndex.IsStreamDeleted("XXX"), Is.False);
+			Assert.False(ReadIndex.IsStreamDeleted("XXX"));
 		}
 	}
 }

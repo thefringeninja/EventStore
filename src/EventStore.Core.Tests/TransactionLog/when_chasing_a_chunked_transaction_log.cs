@@ -5,15 +5,14 @@ using EventStore.Core.TransactionLog.Chunks;
 using EventStore.Core.TransactionLog.Chunks.TFChunk;
 using EventStore.Core.TransactionLog.FileNamingStrategy;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog {
-	[TestFixture]
 	public class when_chasing_a_chunked_transaction_log : SpecificationWithDirectory {
 		private readonly Guid _correlationId = Guid.NewGuid();
 		private readonly Guid _eventId = Guid.NewGuid();
 
-		[Test]
+		[Fact]
 		public void try_read_returns_false_when_writer_checkpoint_is_zero() {
 			var writerchk = new InMemoryCheckpoint(0);
 			var chaserchk = new InMemoryCheckpoint();
@@ -24,13 +23,13 @@ namespace EventStore.Core.Tests.TransactionLog {
 			chaser.Open();
 
 			LogRecord record;
-			Assert.IsFalse(chaser.TryReadNext(out record));
+			Assert.False(chaser.TryReadNext(out record));
 
 			chaser.Close();
 			db.Dispose();
 		}
 
-		[Test]
+		[Fact]
 		public void try_read_returns_false_when_writer_checksum_is_equal_to_reader_checksum() {
 			var writerchk = new InMemoryCheckpoint();
 			var chaserchk = new InMemoryCheckpoint(Checkpoint.Chaser, 0);
@@ -45,14 +44,14 @@ namespace EventStore.Core.Tests.TransactionLog {
 			chaser.Open();
 
 			LogRecord record;
-			Assert.IsFalse(chaser.TryReadNext(out record));
-			Assert.AreEqual(12, chaserchk.Read());
+			Assert.False(chaser.TryReadNext(out record));
+			Assert.Equal(12, chaserchk.Read());
 
 			chaser.Close();
 			db.Dispose();
 		}
 
-		[Test]
+		[Fact]
 		public void try_read_returns_record_when_writerchecksum_ahead() {
 			var recordToWrite = new PrepareLogRecord(logPosition: 0,
 				correlationId: _correlationId,
@@ -90,15 +89,15 @@ namespace EventStore.Core.Tests.TransactionLog {
 			var recordRead = chaser.TryReadNext(out record);
 			chaser.Close();
 
-			Assert.AreEqual(record.GetSizeWithLengthPrefixAndSuffix(), chaserchk.Read());
-			Assert.IsTrue(recordRead);
-			Assert.AreEqual(recordToWrite, record);
+			Assert.Equal(record.GetSizeWithLengthPrefixAndSuffix(), chaserchk.Read());
+			Assert.True(recordRead);
+			Assert.Equal(recordToWrite, record);
 
 			db.Close();
 		}
 
 
-		[Test]
+		[Fact]
 		public void try_read_returns_record_when_record_bigger_than_internal_buffer() {
 			var writerchk = new InMemoryCheckpoint(0);
 			var chaserchk = new InMemoryCheckpoint(Checkpoint.Chaser, 0);
@@ -121,7 +120,7 @@ namespace EventStore.Core.Tests.TransactionLog {
 			var writer = new TFChunkWriter(db);
 			writer.Open();
 			long pos;
-			Assert.IsTrue(writer.Write(recordToWrite, out pos));
+			Assert.True(writer.Write(recordToWrite, out pos));
 			writer.Close();
 
 			writerchk.Write(recordToWrite.GetSizeWithLengthPrefixAndSuffix());
@@ -133,14 +132,14 @@ namespace EventStore.Core.Tests.TransactionLog {
 			var readRecord = reader.TryReadNext(out record);
 			reader.Close();
 
-			Assert.IsTrue(readRecord);
-			Assert.AreEqual(record.GetSizeWithLengthPrefixAndSuffix(), chaserchk.Read());
-			Assert.AreEqual(recordToWrite, record);
+			Assert.True(readRecord);
+			Assert.Equal(record.GetSizeWithLengthPrefixAndSuffix(), chaserchk.Read());
+			Assert.Equal(recordToWrite, record);
 
 			db.Close();
 		}
 
-		[Test]
+		[Fact]
 		public void try_read_returns_record_when_writerchecksum_equal() {
 			var writerchk = new InMemoryCheckpoint(0);
 			var chaserchk = new InMemoryCheckpoint(Checkpoint.Chaser, 0);
@@ -162,7 +161,7 @@ namespace EventStore.Core.Tests.TransactionLog {
 			var writer = new TFChunkWriter(db);
 			writer.Open();
 			long pos;
-			Assert.IsTrue(writer.Write(recordToWrite, out pos));
+			Assert.True(writer.Write(recordToWrite, out pos));
 			writer.Close();
 
 			writerchk.Write(recordToWrite.GetSizeWithLengthPrefixAndSuffix());
@@ -174,14 +173,14 @@ namespace EventStore.Core.Tests.TransactionLog {
 			var readRecord = chaser.TryReadNext(out record);
 			chaser.Close();
 
-			Assert.IsTrue(readRecord);
-			Assert.AreEqual(record.GetSizeWithLengthPrefixAndSuffix(), chaserchk.Read());
-			Assert.AreEqual(recordToWrite, record);
+			Assert.True(readRecord);
+			Assert.Equal(record.GetSizeWithLengthPrefixAndSuffix(), chaserchk.Read());
+			Assert.Equal(recordToWrite, record);
 
 			db.Close();
 		}
 
-		/*   [Test]
+		/*   [Fact]
 		   public void try_read_returns_false_when_writer_checksum_is_ahead_but_not_enough_to_read_record()
 		   {
 		       var writerchk = new InMemoryCheckpoint(50);
@@ -211,11 +210,11 @@ namespace EventStore.Core.Tests.TransactionLog {
 		       var readRecord = reader.TryReadNext(out record);
 		       reader.Close();
    
-		       Assert.IsFalse(readRecord);
-		       Assert.AreEqual(0, readerchk.Read());
+		       Assert.False(readRecord);
+		       Assert.Equal(0, readerchk.Read());
 		   }
    
-		   [Test]
+		   [Fact]
 		   public void try_read_returns_false_when_writer_checksum_is_ahead_but_not_enough_to_read_length()
 		   {
 		       var writerchk = new InMemoryCheckpoint(3);
@@ -245,11 +244,11 @@ namespace EventStore.Core.Tests.TransactionLog {
 		       LogRecord record = null;
 		       var readRecord = reader.TryReadNext(out record);
 		       reader.Close();
-		       Assert.IsFalse(readRecord);
-		       Assert.AreEqual(0, readerchk.Read());
+		       Assert.False(readRecord);
+		       Assert.Equal(0, readerchk.Read());
 		   }
    
-		   [Test]
+		   [Fact]
 		   public void try_read_returns_properly_when_writer_is_written_to_while_chasing()
 		   {
 		       var writerchk = new InMemoryCheckpoint(0);
@@ -263,7 +262,7 @@ namespace EventStore.Core.Tests.TransactionLog {
 		       reader.Open();
    
 		       LogRecord record;
-		       Assert.IsFalse(reader.TryReadNext(out record));
+		       Assert.False(reader.TryReadNext(out record));
    
 		       var recordToWrite = new PrepareLogRecord(logPosition: 0,
 		                                                correlationId: _correlationId,
@@ -287,8 +286,8 @@ namespace EventStore.Core.Tests.TransactionLog {
 		       }
 		       writerchk.Write(memstream.Length);
    
-		       Assert.IsTrue(reader.TryReadNext(out record));
-		       Assert.AreEqual(record, recordToWrite);
+		       Assert.True(reader.TryReadNext(out record));
+		       Assert.Equal(record, recordToWrite);
    
 		       var recordToWrite2 = new PrepareLogRecord(logPosition: 0,
 		                                                 correlationId: _correlationId,
@@ -311,8 +310,8 @@ namespace EventStore.Core.Tests.TransactionLog {
 		       }
 		       writerchk.Write(writerchk.Read() + memstream.Length);
    
-		       Assert.IsTrue(reader.TryReadNext(out record));
-		       Assert.AreEqual(record, recordToWrite2);
+		       Assert.True(reader.TryReadNext(out record));
+		       Assert.Equal(record, recordToWrite2);
    
 		       reader.Close();
 		   }*/

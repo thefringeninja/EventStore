@@ -7,18 +7,16 @@ using EventStore.Core.Services.TimerService;
 using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 using ReadStreamResult = EventStore.Core.Data.ReadStreamResult;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader {
-	[TestFixture]
 	public class when_resuming_stream_event_reader : TestFixtureWithExistingEvents {
 		private StreamEventReader _edp;
 		private Guid _distibutionPointCorrelationId;
 
-		[SetUp]
-		public new void When() {
+		public when_resuming_stream_event_reader() {
 			_distibutionPointCorrelationId = Guid.NewGuid();
 			_edp = new StreamEventReader(_bus, _distibutionPointCorrelationId, null, "stream", 10,
 				new RealTimeProvider(), false,
@@ -26,27 +24,27 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader 
 			_edp.Resume();
 		}
 
-		[Test]
+		[Fact]
 		public void it_cannot_be_resumed() {
 			Assert.Throws<InvalidOperationException>(() => { _edp.Resume(); });
 		}
 
-		[Test]
+		[Fact]
 		public void it_cannot_be_paused() {
 			_edp.Pause();
 		}
 
-		[Test]
+		[Fact]
 		public void it_publishes_read_events_from_beginning() {
-			Assert.AreEqual(1, _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Count());
-			Assert.AreEqual(
+			Assert.Equal(1, Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Count());
+			Assert.Equal(
 				"stream",
-				_consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Single().EventStreamId);
-			Assert.AreEqual(
-				10, _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Single().FromEventNumber);
+				Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Single().EventStreamId);
+			Assert.Equal(
+				10, Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Single().FromEventNumber);
 		}
 
-		[Test]
+		[Fact]
 		public void can_handle_read_events_completed() {
 			_edp.Handle(
 				new ClientMessage.ReadStreamEventsForwardCompleted(

@@ -9,10 +9,9 @@ using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Management;
 using EventStore.Projections.Core.Tests.Services.core_projection;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager.managed_projection {
-	[TestFixture]
 	public class when_getting_config : projection_config_test_base {
 		private ManagedProjection _mp;
 		private Guid _projectionId = Guid.NewGuid();
@@ -55,25 +54,20 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.managed
 			_config = GetProjectionConfig(_mp);
 		}
 
-		[Test]
+		[Fact]
 		public void config_should_be_same_as_persisted_state() {
-			Assert.IsNotNull(_config);
-			Assert.AreEqual(_persistedState.EmitEnabled, _config.EmitEnabled, "EmitEnabled");
-			Assert.AreEqual(_persistedState.TrackEmittedStreams, _config.TrackEmittedStreams, "TrackEmittedStreams");
-			Assert.AreEqual(_persistedState.CheckpointAfterMs, _config.CheckpointAfterMs, "CheckpointAfterMs");
-			Assert.AreEqual(_persistedState.CheckpointHandledThreshold, _config.CheckpointHandledThreshold,
-				"CheckpointHandledThreshold");
-			Assert.AreEqual(_persistedState.CheckpointUnhandledBytesThreshold,
-				_config.CheckpointUnhandledBytesThreshold, "CheckpointUnhandledBytesThreshold");
-			Assert.AreEqual(_persistedState.PendingEventsThreshold, _config.PendingEventsThreshold,
-				"PendingEventsThreshold");
-			Assert.AreEqual(_persistedState.MaxWriteBatchLength, _config.MaxWriteBatchLength, "MaxWriteBatchLength");
-			Assert.AreEqual(_persistedState.MaxAllowedWritesInFlight, _config.MaxAllowedWritesInFlight,
-				"MaxAllowedWritesInFlight");
+			Assert.NotNull(_config);
+			Assert.Equal(_persistedState.EmitEnabled, _config.EmitEnabled);
+			Assert.Equal(_persistedState.TrackEmittedStreams, _config.TrackEmittedStreams);
+			Assert.Equal(_persistedState.CheckpointAfterMs, _config.CheckpointAfterMs);
+			Assert.Equal(_persistedState.CheckpointHandledThreshold, _config.CheckpointHandledThreshold);
+			Assert.Equal(_persistedState.CheckpointUnhandledBytesThreshold, _config.CheckpointUnhandledBytesThreshold);
+			Assert.Equal(_persistedState.PendingEventsThreshold, _config.PendingEventsThreshold);
+			Assert.Equal(_persistedState.MaxWriteBatchLength, _config.MaxWriteBatchLength);
+			Assert.Equal(_persistedState.MaxAllowedWritesInFlight, _config.MaxAllowedWritesInFlight);
 		}
 	}
 
-	[TestFixture]
 	public class when_updating_projection_config_of_faulted_projection : projection_config_test_base {
 		private ManagedProjection _mp;
 		private Guid _projectionId = Guid.NewGuid();
@@ -103,7 +97,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.managed
 
 			_mp.Handle(new CoreProjectionStatusMessage.Prepared(_projectionId, new ProjectionSourceDefinition()));
 			OneWriteCompletes();
-			_consumer.HandledMessages.Clear();
+			Consumer.HandledMessages.Clear();
 
 			_mp.Handle(new CoreProjectionStatusMessage.Faulted(
 				_projectionId,
@@ -117,36 +111,35 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.managed
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void persisted_state_is_written() {
-			var writeEvents = _consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().ToList();
-			Assert.AreEqual(1, writeEvents.Count());
-			Assert.AreEqual("$projections-name", writeEvents[0].EventStreamId);
+			var writeEvents = Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().ToList();
+			Assert.Single(writeEvents);
+			Assert.Equal("$projections-name", writeEvents[0].EventStreamId);
 		}
 
-		[Test]
+		[Fact]
 		public void config_update_does_not_throw_exception() {
-			Assert.IsNull(_thrownException);
+			Assert.Null(_thrownException);
 		}
 
-		[Test]
+		[Fact]
 		public void config_is_updated() {
 			var getConfigResult = GetProjectionConfig(_mp);
 
-			Assert.IsNotNull(getConfigResult);
-			Assert.AreEqual(_updateConfig.EmitEnabled, getConfigResult.EmitEnabled);
-			Assert.AreEqual(_updateConfig.TrackEmittedStreams, getConfigResult.TrackEmittedStreams);
-			Assert.AreEqual(_updateConfig.CheckpointAfterMs, getConfigResult.CheckpointAfterMs);
-			Assert.AreEqual(_updateConfig.CheckpointHandledThreshold, getConfigResult.CheckpointHandledThreshold);
-			Assert.AreEqual(_updateConfig.CheckpointUnhandledBytesThreshold,
+			Assert.NotNull(getConfigResult);
+			Assert.Equal(_updateConfig.EmitEnabled, getConfigResult.EmitEnabled);
+			Assert.Equal(_updateConfig.TrackEmittedStreams, getConfigResult.TrackEmittedStreams);
+			Assert.Equal(_updateConfig.CheckpointAfterMs, getConfigResult.CheckpointAfterMs);
+			Assert.Equal(_updateConfig.CheckpointHandledThreshold, getConfigResult.CheckpointHandledThreshold);
+			Assert.Equal(_updateConfig.CheckpointUnhandledBytesThreshold,
 				getConfigResult.CheckpointUnhandledBytesThreshold);
-			Assert.AreEqual(_updateConfig.PendingEventsThreshold, getConfigResult.PendingEventsThreshold);
-			Assert.AreEqual(_updateConfig.MaxWriteBatchLength, getConfigResult.MaxWriteBatchLength);
-			Assert.AreEqual(_updateConfig.MaxAllowedWritesInFlight, getConfigResult.MaxAllowedWritesInFlight);
+			Assert.Equal(_updateConfig.PendingEventsThreshold, getConfigResult.PendingEventsThreshold);
+			Assert.Equal(_updateConfig.MaxWriteBatchLength, getConfigResult.MaxWriteBatchLength);
+			Assert.Equal(_updateConfig.MaxAllowedWritesInFlight, getConfigResult.MaxAllowedWritesInFlight);
 		}
 	}
 
-	[TestFixture]
 	public class when_updating_projection_config_of_running_projection : projection_config_test_base {
 		private ManagedProjection _mp;
 		private Guid _projectionId = Guid.NewGuid();
@@ -195,30 +188,25 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.managed
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void should_throw_exception_when_trying_to_update_config() {
-			Assert.IsNotNull(_thrownException);
+			Assert.NotNull(_thrownException);
 		}
 
-		[Test]
+		[Fact]
 		public void config_should_remain_unchanged() {
 			var getConfigResult = GetProjectionConfig(_mp);
 
-			Assert.IsNotNull(getConfigResult);
-			Assert.AreEqual(_persistedState.EmitEnabled, getConfigResult.EmitEnabled, "EmitEnabled");
-			Assert.AreEqual(_persistedState.TrackEmittedStreams, getConfigResult.TrackEmittedStreams,
-				"TrackEmittedStreams");
-			Assert.AreEqual(_persistedState.CheckpointAfterMs, getConfigResult.CheckpointAfterMs, "CheckpointAfterMs");
-			Assert.AreEqual(_persistedState.CheckpointHandledThreshold, getConfigResult.CheckpointHandledThreshold,
-				"CheckpointHandledThreshold");
-			Assert.AreEqual(_persistedState.CheckpointUnhandledBytesThreshold,
-				getConfigResult.CheckpointUnhandledBytesThreshold, "CheckpointUnhandledBytesThreshold");
-			Assert.AreEqual(_persistedState.PendingEventsThreshold, getConfigResult.PendingEventsThreshold,
-				"PendingEventsThreshold");
-			Assert.AreEqual(_persistedState.MaxWriteBatchLength, getConfigResult.MaxWriteBatchLength,
-				"MaxWriteBatchLength");
-			Assert.AreEqual(_persistedState.MaxAllowedWritesInFlight, getConfigResult.MaxAllowedWritesInFlight,
-				"MaxAllowedWritesInFlight");
+			Assert.NotNull(getConfigResult);
+			Assert.Equal(_persistedState.EmitEnabled, getConfigResult.EmitEnabled);
+			Assert.Equal(_persistedState.TrackEmittedStreams, getConfigResult.TrackEmittedStreams);
+			Assert.Equal(_persistedState.CheckpointAfterMs, getConfigResult.CheckpointAfterMs);
+			Assert.Equal(_persistedState.CheckpointHandledThreshold, getConfigResult.CheckpointHandledThreshold);
+			Assert.Equal(_persistedState.CheckpointUnhandledBytesThreshold,
+				getConfigResult.CheckpointUnhandledBytesThreshold);
+			Assert.Equal(_persistedState.PendingEventsThreshold, getConfigResult.PendingEventsThreshold);
+			Assert.Equal(_persistedState.MaxWriteBatchLength, getConfigResult.MaxWriteBatchLength);
+			Assert.Equal(_persistedState.MaxAllowedWritesInFlight, getConfigResult.MaxAllowedWritesInFlight);
 		}
 	}
 

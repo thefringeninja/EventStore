@@ -1,7 +1,6 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.parallel_processing_load_balancer {
-	[TestFixture]
 	public class when_accounting_measured_tasks : specification_with_parallel_processing_load_balancer {
 		private int _task2ScheduledOn;
 
@@ -25,28 +24,28 @@ namespace EventStore.Projections.Core.Tests.Services.parallel_processing_load_ba
 					break;
 				}
 				default:
-					Assert.Inconclusive();
+					//Assert.Inconclusive();
 					break;
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void schedules_on_least_loaded_worker() {
 			var scheduledOn = -1;
 			_balancer.ScheduleTask("task3", (s, on) => { scheduledOn = on; });
 
-			Assert.AreEqual(_task2ScheduledOn, scheduledOn);
+			Assert.Equal(_task2ScheduledOn, scheduledOn);
 		}
 
-		[Test]
+		[Fact]
 		public void schedules_nearest_tasks_on_least_loaded_worker() {
 			var scheduled3On = -1;
 			var scheduled4On = -1;
 			_balancer.ScheduleTask("task3", (s, on) => { scheduled3On = on; });
 			_balancer.ScheduleTask("task4", (s, on) => { scheduled4On = on; });
 
-			Assert.AreEqual(_task2ScheduledOn, scheduled3On);
-			Assert.AreEqual(_task2ScheduledOn, scheduled4On);
+			Assert.Equal(_task2ScheduledOn, scheduled3On);
+			Assert.Equal(_task2ScheduledOn, scheduled4On);
 		}
 	}
 }

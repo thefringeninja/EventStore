@@ -7,12 +7,11 @@ using EventStore.Core.Tests.Helpers;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
 using Newtonsoft.Json.Linq;
-using NUnit.Framework;
+using Xunit;
 using TestFixtureWithExistingEvents =
 	EventStore.Projections.Core.Tests.Services.core_projection.TestFixtureWithExistingEvents;
 
 namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
-	[TestFixture]
 	public class when_handling_an_emit_with_extra_metadata : TestFixtureWithExistingEvents {
 		private EmittedStream _stream;
 		private TestCheckpointManagerMessageHandler _readyHandler;
@@ -22,8 +21,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 			ExistingEvent("test_stream", "type", @"{""c"": 100, ""p"": 50}", "data");
 		}
 
-		[SetUp]
-		public void setup() {
+		public when_handling_an_emit_with_extra_metadata() {
 			_readyHandler = new TestCheckpointManagerMessageHandler();
 			_stream = new EmittedStream(
 				"test_stream",
@@ -43,22 +41,22 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 				});
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_not_yet_published_events() {
-			Assert.AreEqual(1, _consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Count());
+			Assert.Equal(1, Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Count());
 		}
 
-		[Test]
+		[Fact]
 		public void combines_checkpoint_tag_with_extra_metadata() {
-			var writeEvent = _consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Single();
+			var writeEvent = Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Single();
 
-			Assert.AreEqual(1, writeEvent.Events.Length);
+			Assert.Equal(1, writeEvent.Events.Length);
 			var @event = writeEvent.Events[0];
 			var metadata = Helper.UTF8NoBom.GetString(@event.Metadata).ParseJson<JObject>();
 
 			HelperExtensions.AssertJson(new {a = 1, b = new { }}, metadata);
 			var checkpoint = @event.Metadata.ParseCheckpointTagJson();
-			Assert.AreEqual(CheckpointTag.FromPosition(0, 200, 150), checkpoint);
+			Assert.Equal(CheckpointTag.FromPosition(0, 200, 150), checkpoint);
 		}
 	}
 }

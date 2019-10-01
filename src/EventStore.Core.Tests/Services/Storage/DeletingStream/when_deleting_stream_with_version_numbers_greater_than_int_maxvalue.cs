@@ -1,7 +1,6 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Storage.DeletingStream {
-	[TestFixture]
 	public class when_deleting_stream_with_version_numbers_greater_than_int_maxvalue : ReadIndexTestScenario {
 		long firstEventNumber = (long)int.MaxValue + 1;
 		long secondEventNumber = (long)int.MaxValue + 2;
@@ -18,14 +17,14 @@ namespace EventStore.Core.Tests.Services.Storage.DeletingStream {
 			WriteDelete("ES");
 		}
 
-		[Test]
+		[Fact]
 		public void indicate_that_stream_is_deleted() {
-			Assert.That(ReadIndex.IsStreamDeleted("ES"));
+			Assert.True(ReadIndex.IsStreamDeleted("ES"));
 		}
 
-		[Test]
+		[Fact]
 		public void indicate_that_other_stream_is_not_deleted() {
-			Assert.IsFalse(ReadIndex.IsStreamDeleted("KEEP"));
+			Assert.False(ReadIndex.IsStreamDeleted("KEEP"));
 		}
 	}
 }

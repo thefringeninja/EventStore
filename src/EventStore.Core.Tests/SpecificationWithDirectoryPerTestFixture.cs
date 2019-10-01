@@ -1,11 +1,17 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests {
-	public class SpecificationWithDirectoryPerTestFixture {
-		protected internal string PathName;
+	public class SpecificationWithDirectoryPerTestFixture : IAsyncLifetime {
+		public readonly string PathName;
+
+		public SpecificationWithDirectoryPerTestFixture() {
+			var typeName = GetType().Name.Length > 30 ? GetType().Name.Substring(0, 30) : GetType().Name;
+			PathName = Path.Combine(Path.GetTempPath(), string.Format("{0}-{1}", Guid.NewGuid(), typeName));
+			Directory.CreateDirectory(PathName);
+		}
 
 		protected string GetTempFilePath() {
 			var typeName = GetType().Name.Length > 30 ? GetType().Name.Substring(0, 30) : GetType().Name;
@@ -16,16 +22,10 @@ namespace EventStore.Core.Tests {
 			return Path.Combine(PathName, fileName);
 		}
 
-		[OneTimeSetUp]
 		public virtual Task TestFixtureSetUp() {
-			var typeName = GetType().Name.Length > 30 ? GetType().Name.Substring(0, 30) : GetType().Name;
-			PathName = Path.Combine(Path.GetTempPath(), string.Format("{0}-{1}", Guid.NewGuid(), typeName));
-			Directory.CreateDirectory(PathName);
-
 			return Task.CompletedTask;
 		}
 
-		[OneTimeTearDown]
 		public virtual Task TestFixtureTearDown() {
 			//kill whole tree
 			ForceDeleteDirectory(PathName);
@@ -41,5 +41,9 @@ namespace EventStore.Core.Tests {
 
 			directory.Delete(true);
 		}
+
+		public Task InitializeAsync() => TestFixtureSetUp();
+
+		public Task DisposeAsync() => TestFixtureTearDown();
 	}
 }

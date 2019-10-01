@@ -1,16 +1,15 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Storage.DeletingStream {
-	[TestFixture]
 	public class with_empty_db_read_index_should : ReadIndexTestScenario {
 		protected override void WriteTestScenario() {
 		}
 
-		[Test]
+		[Fact]
 		public void indicate_that_any_stream_is_not_deleted() {
-			Assert.That(ReadIndex.IsStreamDeleted("X"), Is.False);
-			Assert.That(ReadIndex.IsStreamDeleted("YY"), Is.False);
-			Assert.That(ReadIndex.IsStreamDeleted("ZZZ"), Is.False);
+			Assert.False(ReadIndex.IsStreamDeleted("X"));
+			Assert.False(ReadIndex.IsStreamDeleted("YY"));
+			Assert.False(ReadIndex.IsStreamDeleted("ZZZ"));
 		}
 	}
 }

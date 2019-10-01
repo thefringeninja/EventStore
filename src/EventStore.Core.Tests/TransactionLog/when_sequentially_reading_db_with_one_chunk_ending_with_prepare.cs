@@ -7,10 +7,9 @@ using EventStore.Core.TransactionLog.Checkpoint;
 using EventStore.Core.TransactionLog.Chunks;
 using EventStore.Core.TransactionLog.FileNamingStrategy;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog {
-	[TestFixture]
 	public class when_sequentially_reading_db_with_one_chunk_ending_with_prepare :
 		SpecificationWithDirectoryPerTestFixture {
 		private const int RecordsCount = 3;
@@ -69,7 +68,7 @@ namespace EventStore.Core.Tests.TransactionLog {
 			return base.TestFixtureTearDown();
 		}
 
-		[Test]
+		[Fact]
 		public void only_the_last_record_is_marked_eof() {
 			var seqReader = new TFChunkReader(_db, _db.Config.WriterCheckpoint, 0);
 
@@ -77,10 +76,10 @@ namespace EventStore.Core.Tests.TransactionLog {
 			int count = 0;
 			while ((res = seqReader.TryReadNext()).Success) {
 				++count;
-				Assert.AreEqual(count == RecordsCount, res.Eof);
+				Assert.Equal(count == RecordsCount, res.Eof);
 			}
 
-			Assert.AreEqual(RecordsCount, count);
+			Assert.Equal(RecordsCount, count);
 		}
 	}
 }

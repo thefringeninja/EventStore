@@ -5,11 +5,10 @@ using EventStore.Common.Utils;
 using EventStore.Core.Data;
 using EventStore.Core.Messages;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Projections.Core.Services.Processing.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection {
-	[TestFixture]
 	public class when_receiving_committed_events_the_projection_with_partitioned_state_should :
 		TestFixtureWithCoreProjectionStarted {
 		private Guid _eventId;
@@ -29,7 +28,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 		protected override void When() {
 			//projection subscribes here
 			_eventId = Guid.NewGuid();
-			_consumer.HandledMessages.Clear();
+			Consumer.HandledMessages.Clear();
 			_bus.Publish(
 				EventReaderSubscriptionMessage.CommittedEventReceived.Sample(
 					new ResolvedEvent(
@@ -54,52 +53,52 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 					_subscriptionId, 3));
 		}
 
-		[Test]
+		[Fact]
 		public void request_partition_state_from_the_correct_stream() {
-			Assert.AreEqual(
+			Assert.Equal(
 				1,
-				_consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsBackward>()
+				Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsBackward>()
 					.Count(v => v.EventStreamId == "$projections-projection-account-01-checkpoint"));
-			Assert.AreEqual(
+			Assert.Equal(
 				1,
-				_consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsBackward>()
+				Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsBackward>()
 					.Count(v => v.EventStreamId == "$projections-projection-account-02-checkpoint"));
 		}
 
-		[Test]
+		[Fact]
 		public void update_state_snapshots_are_written_to_the_correct_stream() {
 			var writeEvents =
 				_writeEventHandler.HandledMessages.Where(v => v.Events.Any(e => e.EventType == "Result")).ToList();
-			Assert.AreEqual(4, writeEvents.Count);
-			Assert.AreEqual("$projections-projection-account-01-result", writeEvents[0].EventStreamId);
-			Assert.AreEqual("$projections-projection-account-02-result", writeEvents[1].EventStreamId);
-			Assert.AreEqual("$projections-projection-account-01-result", writeEvents[2].EventStreamId);
-			Assert.AreEqual("$projections-projection-account-02-result", writeEvents[3].EventStreamId);
+			Assert.Equal(4, writeEvents.Count);
+			Assert.Equal("$projections-projection-account-01-result", writeEvents[0].EventStreamId);
+			Assert.Equal("$projections-projection-account-02-result", writeEvents[1].EventStreamId);
+			Assert.Equal("$projections-projection-account-01-result", writeEvents[2].EventStreamId);
+			Assert.Equal("$projections-projection-account-02-result", writeEvents[3].EventStreamId);
 		}
 
-		[Test]
+		[Fact]
 		public void update_state_snapshots_are_correct() {
 			var writeEvents =
 				_writeEventHandler.HandledMessages.Where(v => v.Events.Any(e => e.EventType == "Result")).ToList();
-			Assert.AreEqual(4, writeEvents.Count);
-			Assert.AreEqual("data1", Helper.UTF8NoBom.GetString(writeEvents[0].Events[0].Data));
-			Assert.AreEqual("data2", Helper.UTF8NoBom.GetString(writeEvents[1].Events[0].Data));
-			Assert.AreEqual("data1$", Helper.UTF8NoBom.GetString(writeEvents[2].Events[0].Data));
-			Assert.AreEqual("data2$", Helper.UTF8NoBom.GetString(writeEvents[3].Events[0].Data));
+			Assert.Equal(4, writeEvents.Count);
+			Assert.Equal("data1", Helper.UTF8NoBom.GetString(writeEvents[0].Events[0].Data));
+			Assert.Equal("data2", Helper.UTF8NoBom.GetString(writeEvents[1].Events[0].Data));
+			Assert.Equal("data1$", Helper.UTF8NoBom.GetString(writeEvents[2].Events[0].Data));
+			Assert.Equal("data2$", Helper.UTF8NoBom.GetString(writeEvents[3].Events[0].Data));
 		}
 
-		[Test]
+		[Fact]
 		public void register_new_partition_state_stream_only_once() {
 			var writes =
 				_writeEventHandler.HandledMessages.Where(v => v.EventStreamId == "$projections-projection-partitions")
 					.ToArray();
-			Assert.AreEqual(2, writes.Length);
+			Assert.Equal(2, writes.Length);
 
-			Assert.AreEqual(1, writes[0].Events.Length);
-			Assert.AreEqual("account-01", Helper.UTF8NoBom.GetString(writes[0].Events[0].Data));
+			Assert.Equal(1, writes[0].Events.Length);
+			Assert.Equal("account-01", Helper.UTF8NoBom.GetString(writes[0].Events[0].Data));
 
-			Assert.AreEqual(1, writes[1].Events.Length);
-			Assert.AreEqual("account-02", Helper.UTF8NoBom.GetString(writes[1].Events[0].Data));
+			Assert.Equal(1, writes[1].Events.Length);
+			Assert.Equal("account-02", Helper.UTF8NoBom.GetString(writes[1].Events[0].Data));
 		}
 	}
 }

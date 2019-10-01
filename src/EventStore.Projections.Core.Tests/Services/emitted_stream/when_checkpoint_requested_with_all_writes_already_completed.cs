@@ -4,12 +4,11 @@ using EventStore.Core.Messages;
 using EventStore.Core.Tests.Helpers;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 using TestFixtureWithExistingEvents =
 	EventStore.Projections.Core.Tests.Services.core_projection.TestFixtureWithExistingEvents;
 
 namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
-	[TestFixture]
 	public class when_checkpoint_requested_with_all_writes_already_completed : TestFixtureWithExistingEvents {
 		private EmittedStream _stream;
 		private TestCheckpointManagerMessageHandler _readyHandler;
@@ -20,8 +19,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 			NoOtherStreams();
 		}
 
-		[SetUp]
-		public void Setup() {
+		public when_checkpoint_requested_with_all_writes_already_completed() {
 			_readyHandler = new TestCheckpointManagerMessageHandler();
 			_stream = new EmittedStream(
 				"test",
@@ -35,14 +33,14 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 					new EmittedDataEvent(
 						"test", Guid.NewGuid(), "type", true, "data", null, CheckpointTag.FromPosition(0, 10, 5), null)
 				});
-			var msg = _consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().First();
+			var msg = Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().First();
 			_bus.Publish(new ClientMessage.WriteEventsCompleted(msg.CorrelationId, 0, 0, -1, -1));
 			_stream.Checkpoint();
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_ready_for_checkpoint() {
-			Assert.IsTrue(
+			Assert.True(
 				_readyHandler.HandledMessages.ContainsSingle<CoreProjectionProcessingMessage.ReadyForCheckpoint>());
 		}
 	}

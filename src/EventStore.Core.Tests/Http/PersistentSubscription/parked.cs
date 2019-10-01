@@ -2,7 +2,7 @@
 using System.Net;
 using System.Text.RegularExpressions;
 using EventStore.Core.Tests.Http.Users.users;
-using NUnit.Framework;
+using Xunit;
 using System.Collections.Generic;
 using System.Threading;
 using Newtonsoft.Json.Linq;
@@ -17,7 +17,7 @@ using EventStore.Core.Bus;
 using EventStore.Core.Messages;
 
 namespace EventStore.Core.Tests.Http.PersistentSubscription {
-	class when_parking_a_message : with_subscription_having_events {
+    public class when_parking_a_message : with_subscription_having_events {
 		private string _nackLink;
 		private Guid _eventIdToPark;
 		private Guid _parkedEventId;
@@ -31,7 +31,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				SubscriptionPath + "/1", "embed=rich",
 				ContentType.CompetingJson,
 				_admin);
-			Assert.AreEqual(HttpStatusCode.OK, _lastResponse.StatusCode);
+			Assert.Equal(HttpStatusCode.OK, _lastResponse.StatusCode);
 			_entries = json != null ? json["entries"].ToList() : new List<JToken>();
 			_nackLink = _entries[0]["links"][3]["uri"].ToString() + "?action=park";
 			_eventIdToPark = Guid.Parse(_entries[0]["eventId"].ToString());
@@ -49,17 +49,17 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				DefaultData.AdminCredentials);
 
 			var response = await MakePost(_nackLink, _admin);
-			Assert.AreEqual(HttpStatusCode.Accepted, response.StatusCode);
+			Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
 		}
 
-		[Test]
+		[Fact]
 		public async Task should_have_parked_the_event() {
 			await _eventParked.Task.WithTimeout(5000);
-			Assert.AreEqual(_eventIdToPark, _parkedEventId);
+			Assert.Equal(_eventIdToPark, _parkedEventId);
 		}
 	}
 
-	class when_replaying_parked_message : with_subscription_having_events {
+    public class when_replaying_parked_message : with_subscription_having_events {
 		private string _nackLink;
 		private Guid _eventIdToPark;
 		private Guid _receivedEventId;
@@ -86,7 +86,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				ContentType.CompetingJson,
 				_admin);
 
-			Assert.AreEqual(HttpStatusCode.OK, _lastResponse.StatusCode);
+			Assert.Equal(HttpStatusCode.OK, _lastResponse.StatusCode);
 
 			var _entries = json != null ? json["entries"].ToList() : new List<JToken>();
 			_nackLink = _entries[0]["links"][3]["uri"].ToString() + "?action=park";
@@ -94,7 +94,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 
 			//Park the message
 			var response = await MakePost(_nackLink, _admin);
-			Assert.AreEqual(HttpStatusCode.Accepted, response.StatusCode);
+			Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
 		}
 
 		private void Handle(StorageMessage.WritePrepares msg) {
@@ -113,7 +113,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 			await _eventParked.Task.WithTimeout(10000);
 
 			var response = await MakePost(SubscriptionPath + "/replayParked", _admin);
-			Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+			Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
 			for (var i = 0; i < 10; i++) {
 				var json = await GetJson2<JObject>(
@@ -121,7 +121,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 					ContentType.CompetingJson,
 					_admin);
 
-				Assert.AreEqual(HttpStatusCode.OK, _lastResponse.StatusCode);
+				Assert.Equal(HttpStatusCode.OK, _lastResponse.StatusCode);
 
 				var entries = json != null ? json["entries"].ToList() : new List<JToken>();
 				if (entries.Count != 0) {
@@ -134,9 +134,9 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void should_receive_the_replayed_event() {
-			Assert.AreEqual(_eventIdToPark, _receivedEventId);
+			Assert.Equal(_eventIdToPark, _receivedEventId);
 		}
 	}
 }

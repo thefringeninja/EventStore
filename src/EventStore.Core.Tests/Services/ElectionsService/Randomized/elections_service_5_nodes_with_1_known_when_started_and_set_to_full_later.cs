@@ -6,15 +6,13 @@ using EventStore.Core.Cluster;
 using EventStore.Core.Data;
 using EventStore.Core.Messages;
 using EventStore.Core.Tests.Infrastructure;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.ElectionsService.Randomized {
-	[TestFixture, Ignore("Not sure the finish criteria is correct")]
 	public class elections_service_5_nodes_with_1_known_when_started_and_set_to_full_later {
 		private RandomizedElectionsAndGossipTestCase _randomCase;
 
-		[SetUp]
-		public void SetUp() {
+		public elections_service_5_nodes_with_1_known_when_started_and_set_to_full_later() {
 			_randomCase = new RandomizedElectionsAndGossipTestCase(ElectionParams.MaxIterationCount,
 				instancesCnt: 5,
 				httpLossProbability: 0.3,
@@ -56,9 +54,12 @@ namespace EventStore.Core.Tests.Services.ElectionsService.Randomized {
 			return null;
 		}
 
-		[Test, Category("LongRunning"), Category("Network")]
-		public void should_complete_successfully([Range(0, ElectionParams.TestRunCount - 1)]
-			int run) {
+		public static IEnumerable<object[]> TestCases => Enumerable.Range(0, ElectionParams.TestRunCount - 1)
+			.Select(run => new object[] {run});
+
+		[Theory(Skip = "Not sure the finish criteria is correct"), MemberData(nameof(TestCases)),
+		 Trait("Category", "LongRunning"), Trait("Category", "Network")]
+		public void should_complete_successfully(int run) {
 			var success = _randomCase.Run();
 			if (!success)
 				_randomCase.Logger.LogMessages();

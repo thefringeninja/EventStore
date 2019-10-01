@@ -2,11 +2,10 @@
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Messages.Persisted.Commands;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager.command_writer {
-	[TestFixture]
-	class when_handling_dispose_message : specification_with_projection_manager_command_writer {
+	public class when_handling_dispose_message : specification_with_projection_manager_command_writer {
 		private Guid _projectionId;
 		private Guid _workerId;
 
@@ -19,10 +18,10 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.command
 			_sut.Handle(new CoreProjectionManagementMessage.Dispose(_projectionId, _workerId));
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_dispose_command() {
 			var command = AssertParsedSingleCommand<DisposeCommand>("$dispose", _workerId);
-			Assert.AreEqual(_projectionId.ToString("N"), command.Id);
+			Assert.Equal(_projectionId.ToString("N"), command.Id);
 		}
 	}
 }

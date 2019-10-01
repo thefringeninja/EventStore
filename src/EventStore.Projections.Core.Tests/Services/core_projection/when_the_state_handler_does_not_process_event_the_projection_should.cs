@@ -1,12 +1,11 @@
 using System;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Projections.Core.Services.Processing.ResolvedEvent;
 using EventStore.Projections.Core.Services;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection {
-	[TestFixture]
 	public class when_the_state_handler_does_not_process_event_the_projection_should :
 		TestFixtureWithCoreProjectionStarted {
 		protected override void Given() {
@@ -29,9 +28,9 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 					_subscriptionId, 0));
 		}
 
-		[Test]
+		[Fact]
 		public void not_update_state_snapshot() {
-			Assert.AreEqual(0, _writeEventHandler.HandledMessages.Count);
+			Assert.Equal(0, _writeEventHandler.HandledMessages.Count);
 		}
 	}
 }

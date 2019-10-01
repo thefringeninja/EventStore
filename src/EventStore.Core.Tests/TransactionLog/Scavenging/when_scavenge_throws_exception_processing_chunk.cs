@@ -3,11 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using EventStore.Core.Tests.TransactionLog.Scavenging.Helpers;
 using EventStore.Core.TransactionLog.Chunks;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog.Scavenging {
-	[TestFixture]
-	class when_scavenge_throws_exception_processing_chunk : ScavengeLifeCycleScenario {
+	public class when_scavenge_throws_exception_processing_chunk : ScavengeLifeCycleScenario {
 		protected override Task When() {
 			var cancellationTokenSource = new CancellationTokenSource();
 
@@ -19,15 +18,15 @@ namespace EventStore.Core.Tests.TransactionLog.Scavenging {
 			return TfChunkScavenger.Scavenge(true, true, 0, cancellationTokenSource.Token);
 		}
 
-		[Test]
+		[Fact]
 		public void no_exception_is_thrown_to_caller() {
-			Assert.That(Log.Completed);
-			Assert.That(Log.Result, Is.EqualTo(ScavengeResult.Failed));
+			Assert.True(Log.Completed);
+			Assert.Equal(Log.Result, ScavengeResult.Failed);
 		}
 
-		[Test]
+		[Fact]
 		public void doesnt_call_scavenge_on_the_table_index() {
-			Assert.That(FakeTableIndex.ScavengeCount, Is.EqualTo(0));
+			Assert.Equal(FakeTableIndex.ScavengeCount, 0);
 		}
 	}
 }

@@ -4,16 +4,14 @@ using EventStore.Common.Utils;
 using EventStore.Core.Services.Transport.Http;
 using EventStore.Transport.Http;
 using EventStore.Transport.Http.Codecs;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Transport.Http {
-	[TestFixture]
 	public class naive_uri_router_should : uri_router_should {
 		public naive_uri_router_should() : base(() => new NaiveUriRouter()) {
 		}
 	}
 
-	[TestFixture]
 	public class trie_uri_router_should : uri_router_should {
 		public trie_uri_router_should()
 			: base(() => new TrieUriRouter()) {
@@ -28,10 +26,6 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 		protected uri_router_should(Func<IUriRouter> uriRouterFactory) {
 			Ensure.NotNull(uriRouterFactory, "uriRouterFactory");
 			_uriRouterFactory = uriRouterFactory;
-		}
-
-		[SetUp]
-		public void SetUp() {
 			_router = _uriRouterFactory();
 
 			var p = new RequestParams(TimeSpan.Zero);
@@ -96,123 +90,123 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 					FakeController.SupportedCodecs, AuthorizationLevel.None), (x, y) => p);
 		}
 
-		[Test]
+		[Fact]
 		public void detect_duplicate_route() {
-			Assert.That(() =>
+			var ex = Assert.Throws<ArgumentException>(() =>
 					_router.RegisterAction(
 						new ControllerAction("/halt", HttpMethod.Get, Codec.NoCodecs, FakeController.SupportedCodecs, AuthorizationLevel.None),
-						(x, y) => new RequestParams(TimeSpan.Zero)),
-				Throws.Exception.InstanceOf<ArgumentException>().With.Message.EqualTo("Duplicate route."));
+						(x, y) => new RequestParams(TimeSpan.Zero)));
+				Assert.Equal("Duplicate route.", ex.Message);
 		}
 
-		[Test]
+		[Fact]
 		public void match_root() {
 			var match = _router.GetAllUriMatches(Uri("/"));
-			Assert.AreEqual(1, match.Count);
-			Assert.AreEqual("/", match[0].ControllerAction.UriTemplate);
-			Assert.AreEqual(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
+			Assert.Single(match);
+			Assert.Equal("/", match[0].ControllerAction.UriTemplate);
+			Assert.Equal(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
 		}
 
-		[Test]
+		[Fact]
 		public void match_single_segment_path() {
 			var match = _router.GetAllUriMatches(Uri("/halt"));
-			Assert.AreEqual(2, match.Count);
-			Assert.AreEqual("/{placeholder}", match[0].ControllerAction.UriTemplate);
-			Assert.AreEqual(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
-			Assert.AreEqual("/halt", match[1].ControllerAction.UriTemplate);
-			Assert.AreEqual(HttpMethod.Get, match[1].ControllerAction.HttpMethod);
+			Assert.Equal(2, match.Count);
+			Assert.Equal("/{placeholder}", match[0].ControllerAction.UriTemplate);
+			Assert.Equal(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
+			Assert.Equal("/halt", match[1].ControllerAction.UriTemplate);
+			Assert.Equal(HttpMethod.Get, match[1].ControllerAction.HttpMethod);
 		}
 
-		[Test, Ignore("ignore")]
+		[Fact(Skip = "ignore")]
 		public void not_care_about_trailing_slash() {
 			var match = _router.GetAllUriMatches(Uri("/streams/$all"));
-			Assert.AreEqual(1, match.Count);
-			Assert.AreEqual("/streams/$all/", match[0].ControllerAction.UriTemplate);
-			Assert.AreEqual(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
+			Assert.Single(match);
+			Assert.Equal("/streams/$all/", match[0].ControllerAction.UriTemplate);
+			Assert.Equal(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
 
 			match = _router.GetAllUriMatches(Uri("/streams/$all/"));
-			Assert.AreEqual(1, match.Count);
-			Assert.AreEqual("/streams/$all/", match[0].ControllerAction.UriTemplate);
-			Assert.AreEqual(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
+			Assert.Single(match);
+			Assert.Equal("/streams/$all/", match[0].ControllerAction.UriTemplate);
+			Assert.Equal(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
 		}
 
-		[Test, Ignore("ignore")]
+		[Fact(Skip = "ignore")]
 		public void not_care_about_trailing_slash2() {
 			var match = _router.GetAllUriMatches(Uri("/streams/$$all"));
-			Assert.AreEqual(1, match.Count);
-			Assert.AreEqual("/streams/$$all", match[0].ControllerAction.UriTemplate);
-			Assert.AreEqual(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
+			Assert.Single(match);
+			Assert.Equal("/streams/$$all", match[0].ControllerAction.UriTemplate);
+			Assert.Equal(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
 
 			match = _router.GetAllUriMatches(Uri("/streams/$$all/"));
-			Assert.AreEqual(1, match.Count);
-			Assert.AreEqual("/streams/$$all", match[0].ControllerAction.UriTemplate);
-			Assert.AreEqual(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
+			Assert.Single(match);
+			Assert.Equal("/streams/$$all", match[0].ControllerAction.UriTemplate);
+			Assert.Equal(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
 		}
 
-		[Test]
+		[Fact]
 		public void care_about_trailing_slash() {
 			var match = _router.GetAllUriMatches(Uri("/streams/$all/"));
-			Assert.AreEqual(1, match.Count);
-			Assert.AreEqual("/streams/$all/", match[0].ControllerAction.UriTemplate);
-			Assert.AreEqual(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
+			Assert.Single(match);
+			Assert.Equal("/streams/$all/", match[0].ControllerAction.UriTemplate);
+			Assert.Equal(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
 
 			match = _router.GetAllUriMatches(Uri("/streams/$all"));
-			Assert.AreEqual(0, match.Count);
+			Assert.Empty(match);
 		}
 
-		[Test]
+		[Fact]
 		public void care_about_trailing_slash2() {
 			var match = _router.GetAllUriMatches(Uri("/streams/$$all"));
-			Assert.AreEqual(1, match.Count);
-			Assert.AreEqual("/streams/$$all", match[0].ControllerAction.UriTemplate);
-			Assert.AreEqual(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
+			Assert.Single(match);
+			Assert.Equal("/streams/$$all", match[0].ControllerAction.UriTemplate);
+			Assert.Equal(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
 
 			match = _router.GetAllUriMatches(Uri("/streams/$$all/"));
-			Assert.AreEqual(0, match.Count);
+			Assert.Empty(match);
 		}
 
-		[Test]
+		[Fact]
 		public void match_route_with_dollar_sign() {
 			var match = _router.GetAllUriMatches(Uri("/streams/$mono"));
-			Assert.AreEqual(1, match.Count);
-			Assert.AreEqual("/streams/$mono?param={param}", match[0].ControllerAction.UriTemplate);
-			Assert.AreEqual(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
+			Assert.Single(match);
+			Assert.Equal("/streams/$mono?param={param}", match[0].ControllerAction.UriTemplate);
+			Assert.Equal(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
 
 			match = _router.GetAllUriMatches(Uri("/streams/$mono?param=bla"));
-			Assert.AreEqual(1, match.Count);
-			Assert.AreEqual("/streams/$mono?param={param}", match[0].ControllerAction.UriTemplate);
-			Assert.AreEqual(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
+			Assert.Single(match);
+			Assert.Equal("/streams/$mono?param={param}", match[0].ControllerAction.UriTemplate);
+			Assert.Equal(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
 		}
 
-		[Test]
+		[Fact]
 		public void match_complex_route_with_placeholders_and_query_params() {
 			var match = _router.GetAllUriMatches(Uri("/streams/test-stream/10/backward/20?embed=true"));
-			Assert.AreEqual(1, match.Count);
-			Assert.AreEqual("/streams/{stream}/{event}/backward/{count}?embed={embed}",
+			Assert.Single(match);
+			Assert.Equal("/streams/{stream}/{event}/backward/{count}?embed={embed}",
 				match[0].ControllerAction.UriTemplate);
-			Assert.AreEqual(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
+			Assert.Equal(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
 		}
 
-		[Test]
+		[Fact]
 		public void match_complex_route_with_placeholders_and_query_params_when_no_query_params_are_set() {
 			var match = _router.GetAllUriMatches(Uri("/streams/test-stream/head/backward/20"));
-			Assert.AreEqual(1, match.Count);
-			Assert.AreEqual("/streams/{stream}/{event}/backward/{count}?embed={embed}",
+			Assert.Single(match);
+			Assert.Equal("/streams/{stream}/{event}/backward/{count}?embed={embed}",
 				match[0].ControllerAction.UriTemplate);
-			Assert.AreEqual(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
+			Assert.Equal(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
 		}
 
-		[Test]
+		[Fact]
 		public void not_match_partial_route_match() {
 			var match = _router.GetAllUriMatches(Uri("/projection/proj/something"));
-			Assert.AreEqual(0, match.Count);
+			Assert.Empty(match);
 		}
 
-		[Test]
+		[Fact]
 		public void match_all_possible_alternatives() {
 			var match = _router.GetAllUriMatches(Uri("/t/something/something/something"));
-			Assert.AreEqual(8, match.Count);
-			Assert.AreEqual(new[] {
+			Assert.Equal(8, match.Count);
+			Assert.Equal(new[] {
 					"/t/{placeholder1}/{placholder2}/{placeholder3}",
 					"/t/{placeholder1}/{placholder2}/something",
 					"/t/{placeholder1}/something/{placeholder3}",
@@ -225,44 +219,44 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 				match.Select(x => x.ControllerAction.UriTemplate).ToArray());
 		}
 
-		[Test]
+		[Fact]
 		public void match_same_routes_with_different_http_methods() {
 			var match = _router.GetAllUriMatches(Uri("/streams/test"));
-			Assert.AreEqual(2, match.Count);
-			Assert.AreEqual("/streams/test", match[0].ControllerAction.UriTemplate);
-			Assert.AreEqual(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
-			Assert.AreEqual("/streams/test", match[1].ControllerAction.UriTemplate);
-			Assert.AreEqual(HttpMethod.Post, match[1].ControllerAction.HttpMethod);
+			Assert.Equal(2, match.Count);
+			Assert.Equal("/streams/test", match[0].ControllerAction.UriTemplate);
+			Assert.Equal(HttpMethod.Get, match[0].ControllerAction.HttpMethod);
+			Assert.Equal("/streams/test", match[1].ControllerAction.UriTemplate);
+			Assert.Equal(HttpMethod.Post, match[1].ControllerAction.HttpMethod);
 		}
 
-		[Test]
+		[Fact]
 		public void match_greedy_route_with_bare_minimum_of_uri() {
 			var match = _router.GetAllUriMatches(Uri("/s/stats/test"));
-			Assert.AreEqual(1, match.Count);
-			Assert.AreEqual("/s/stats/{*statPath}", match[0].ControllerAction.UriTemplate);
+			Assert.Single(match);
+			Assert.Equal("/s/stats/{*statPath}", match[0].ControllerAction.UriTemplate);
 		}
 
-		[Test]
+		[Fact]
 		public void match_greedy_route_and_catch_long_uri() {
 			var match = _router.GetAllUriMatches(Uri("/s/stats/some/long/stat/path"));
-			Assert.AreEqual(1, match.Count);
-			Assert.AreEqual("/s/stats/{*statPath}", match[0].ControllerAction.UriTemplate);
+			Assert.Single(match);
+			Assert.Equal("/s/stats/{*statPath}", match[0].ControllerAction.UriTemplate);
 		}
 
-		[Test]
+		[Fact]
 		public void match_greedy_route_with_empty_path_part_starting_with_slash() {
 			var match = _router.GetAllUriMatches(Uri("/s/stats/"));
-			Assert.AreEqual(1, match.Count);
-			Assert.AreEqual("/s/stats/{*statPath}", match[0].ControllerAction.UriTemplate);
+			Assert.Single(match);
+			Assert.Equal("/s/stats/{*statPath}", match[0].ControllerAction.UriTemplate);
 		}
 
-		[Test]
+		[Fact]
 		public void not_match_greedy_route_with_empty_path_part_without_slash() {
 			var match = _router.GetAllUriMatches(Uri("/s/stats"));
-			Assert.AreEqual(0, match.Count);
+			Assert.Empty(match);
 		}
 
-		[Test]
+		[Fact]
 		public void match_greedy_route_in_the_root_to_any_path() {
 			var tmpRouter = _uriRouterFactory();
 			tmpRouter.RegisterAction(
@@ -270,12 +264,12 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 				(x, y) => new RequestParams(TimeSpan.Zero));
 
 			var match = tmpRouter.GetAllUriMatches(Uri("/"));
-			Assert.AreEqual(1, match.Count);
-			Assert.AreEqual("/{*greedy}", match[0].ControllerAction.UriTemplate);
+			Assert.Single(match);
+			Assert.Equal("/{*greedy}", match[0].ControllerAction.UriTemplate);
 
 			match = tmpRouter.GetAllUriMatches(Uri("/something"));
-			Assert.AreEqual(1, match.Count);
-			Assert.AreEqual("/{*greedy}", match[0].ControllerAction.UriTemplate);
+			Assert.Single(match);
+			Assert.Equal("/{*greedy}", match[0].ControllerAction.UriTemplate);
 		}
 
 		private Uri Uri(string relativePath) {

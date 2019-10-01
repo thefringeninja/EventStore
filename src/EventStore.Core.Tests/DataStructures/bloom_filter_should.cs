@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using EventStore.Core.DataStructures;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.DataStructures {
-	[TestFixture]
 	public class bloom_filter_should {
-		[Test]
+		[Fact]
 		public void always_return_true_if_an_item_was_added() {
 			for (int n = 1; n <= 1000; n++) {
 				for (double p = 0.1; p > 1.0e-7; p /= 10.0) {
@@ -14,7 +13,7 @@ namespace EventStore.Core.Tests.DataStructures {
 
 					//no items added yet
 					for (int i = 0; i <= n; i++) {
-						Assert.IsFalse(filter.MayExist(i));
+						Assert.False(filter.MayExist(i));
 					}
 
 					//add the items
@@ -24,13 +23,13 @@ namespace EventStore.Core.Tests.DataStructures {
 
 					//all the items should exist
 					for (int i = 0; i <= n; i++) {
-						Assert.IsTrue(filter.MayExist(i));
+						Assert.True(filter.MayExist(i));
 					}
 				}
 			}
 		}
 
-		[Test, Category("LongRunning")]
+		[Fact, Trait("Category", "LongRunning")]
 		public void always_return_true_if_an_item_was_added_for_large_n() {
 			int n = 1234567;
 			double p = 1.0e-6;
@@ -39,7 +38,7 @@ namespace EventStore.Core.Tests.DataStructures {
 
 			//no items added yet
 			for (int i = 0; i <= n; i++) {
-				Assert.IsFalse(filter.MayExist(i));
+				Assert.False(filter.MayExist(i));
 			}
 
 			//add the items
@@ -49,11 +48,11 @@ namespace EventStore.Core.Tests.DataStructures {
 
 			//all the items should exist
 			for (int i = 0; i <= n; i++) {
-				Assert.IsTrue(filter.MayExist(i));
+				Assert.True(filter.MayExist(i));
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void support_adding_large_values() {
 			int n = 1234567;
 			double p = 1.0e-6;
@@ -66,7 +65,7 @@ namespace EventStore.Core.Tests.DataStructures {
 
 			//no items added yet
 			for (int i = 0; i < items.Length; i++) {
-				Assert.IsFalse(filter.MayExist(items[i]));
+				Assert.False(filter.MayExist(items[i]));
 			}
 
 			//add the items
@@ -76,17 +75,17 @@ namespace EventStore.Core.Tests.DataStructures {
 
 			//all the items should exist
 			for (int i = 0; i < items.Length; i++) {
-				Assert.IsTrue(filter.MayExist(items[i]));
+				Assert.True(filter.MayExist(items[i]));
 			}
 
 			//all the neighbouring items should probably not exist
 			for (int i = 0; i < items.Length; i++) {
-				Assert.IsFalse(filter.MayExist(items[i] - 1));
-				Assert.IsFalse(filter.MayExist(items[i] + 1));
+				Assert.False(filter.MayExist(items[i] - 1));
+				Assert.False(filter.MayExist(items[i] + 1));
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void have_false_positives_with_probability_p() {
 			for (int n = 1; n <= 1000; n++) {
 				for (double p = 0.1; p > 1.0e-7; p /= 10.0) {
@@ -112,12 +111,12 @@ namespace EventStore.Core.Tests.DataStructures {
 						Console.Out.WriteLine("n: {0}, p:{1}. Found {2} false positives. Expected false positives: {3}",
 							n, p, falsePositives, expectedFalsePositives);
 
-					Assert.LessOrEqual(falsePositives, expectedFalsePositives);
+					Assert.True(falsePositives <= expectedFalsePositives);
 				}
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void have_false_positives_with_probability_p_for_large_n() {
 			int n = 1234567;
 
@@ -143,32 +142,32 @@ namespace EventStore.Core.Tests.DataStructures {
 				if (falsePositives > 0)
 					Console.Out.WriteLine("n: {0}, p:{1}. Found {2} false positives. Expected false positives: {3}", n,
 						p, falsePositives, expectedFalsePositives);
-				Assert.LessOrEqual(falsePositives, expectedFalsePositives);
+				Assert.True(falsePositives <= expectedFalsePositives);
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void throw_argumentoutofrangeexception_when_given_non_positive_n() {
 			Assert.Throws<ArgumentOutOfRangeException>(() => new BloomFilter(0, 0.1));
 			Assert.Throws<ArgumentOutOfRangeException>(() => new BloomFilter(-1, 0.1));
 		}
 
-		[Test]
+		[Fact]
 		public void throw_argumentoutofrangeexception_when_given_non_positive_p() {
 			Assert.Throws<ArgumentOutOfRangeException>(() => new BloomFilter(1, 0.0));
 			Assert.Throws<ArgumentOutOfRangeException>(() => new BloomFilter(1, -0.1));
 		}
 
-		[Test]
+		[Fact]
 		public void throw_argumentoutofrangeexception_when_number_of_bits_too_large() {
 			Assert.Throws<ArgumentOutOfRangeException>(() => new BloomFilter(123456789, 0.0000000001));
 		}
 
-		[Test]
+		[Fact]
 		public void correctly_convert_long_to_bytes() {
 			for (long i = -1000; i <= 1000; i++) {
 				byte[] bytes = BloomFilter.toBytes(i);
-				Assert.AreEqual(8, bytes.Length);
+				Assert.Equal(8, bytes.Length);
 				long v = 0;
 
 				for (int j = 7; j >= 0; j--) {
@@ -176,7 +175,7 @@ namespace EventStore.Core.Tests.DataStructures {
 					v |= bytes[j];
 				}
 
-				Assert.AreEqual(i, v);
+				Assert.Equal(i, v);
 			}
 
 			long[] nums = {
@@ -185,14 +184,14 @@ namespace EventStore.Core.Tests.DataStructures {
 			};
 			for (long i = 0; i < nums.Length; i++) {
 				byte[] bytes = BloomFilter.toBytes(nums[i]);
-				Assert.AreEqual(8, bytes.Length);
+				Assert.Equal(8, bytes.Length);
 				long v = 0;
 				for (int j = 7; j >= 0; j--) {
 					v <<= 8;
 					v |= bytes[j];
 				}
 
-				Assert.AreEqual(nums[i], v);
+				Assert.Equal(nums[i], v);
 			}
 		}
 	}

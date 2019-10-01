@@ -3,12 +3,11 @@ using System.Linq;
 using System.Text;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Projections.Core.Services.Processing.ResolvedEvent;
 using EventStore.Projections.Core.Services;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection {
-	[TestFixture]
 	public class when_the_projection_with_pending_writes_is_stopped : TestFixtureWithCoreProjectionStarted {
 		protected override void Given() {
 			_checkpointHandledThreshold = 2;
@@ -43,22 +42,22 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 			_coreProjection.Stop();
 		}
 
-		[Test]
+		[Fact]
 		public void a_projection_checkpoint_event_is_published() {
 			AllWriteComplete();
-			Assert.AreEqual(
+			Assert.Equal(
 				1,
 				_writeEventHandler.HandledMessages.Count(v =>
 					v.Events.Any(e => e.EventType == ProjectionEventTypes.ProjectionCheckpoint)));
 		}
 
-		[Test]
+		[Fact]
 		public void other_events_are_not_written_after_the_checkpoint_write() {
 			AllWriteComplete();
 			var index =
 				_writeEventHandler.HandledMessages.FindIndex(
 					v => v.Events.Any(e => e.EventType == ProjectionEventTypes.ProjectionCheckpoint));
-			Assert.AreEqual(index + 1, _writeEventHandler.HandledMessages.Count());
+			Assert.Equal(index + 1, _writeEventHandler.HandledMessages.Count());
 		}
 	}
 }

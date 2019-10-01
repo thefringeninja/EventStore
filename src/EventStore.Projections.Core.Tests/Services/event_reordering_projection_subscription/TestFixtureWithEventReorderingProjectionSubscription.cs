@@ -4,7 +4,7 @@ using EventStore.Core.Data;
 using EventStore.Core.Services.TimerService;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.projection_subscription;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reordering_projection_subscription {
 	public abstract class TestFixtureWithEventReorderingProjectionSubscription : TestFixtureWithProjectionSubscription {

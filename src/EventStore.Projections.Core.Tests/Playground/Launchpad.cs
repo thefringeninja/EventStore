@@ -4,11 +4,12 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using EventStore.Common.Utils;
-using NUnit.Framework;
+using EventStore.Core.Tests;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Playground {
-	[TestFixture, Explicit, Category("Manual")]
-	public class Launchpad : LaunchpadBase {
+	[Trait("Category", "Manual")]
+	public class Launchpad : LaunchpadBase, IDisposable {
 		private IDisposable _vnodeProcess;
 		private IDisposable _managerProcess;
 		private IDisposable _clientProcess;
@@ -18,8 +19,7 @@ namespace EventStore.Projections.Core.Tests.Playground {
 		private Dictionary<string, string> _environment;
 		private string _dbPath;
 
-		[SetUp]
-		public void Setup() {
+		public Launchpad() {
 			if (!OS.IsUnix)
 				AllocConsole(); // this is required to keep console open after executeassemly has exited
 
@@ -42,8 +42,7 @@ namespace EventStore.Projections.Core.Tests.Playground {
 			_vnodeProcess = _launch(vnodeExecutable, vnodeCommandLine, _environment);
 		}
 
-		[TearDown]
-		public void Teardown() {
+		public void Dispose() {
 			if (_managerProcess != null) _managerProcess.Dispose();
 			if (_vnodeProcess != null) _vnodeProcess.Dispose();
 			if (_clientProcess != null) _clientProcess.Dispose();
@@ -62,7 +61,7 @@ namespace EventStore.Projections.Core.Tests.Playground {
 			_projectionsProcess = _launch(clientExecutable, clientCommandLine, _environment);
 		}
 
-		[Test]
+		[Explicit]
 		public void WriteFloodAndProjections() {
 			Thread.Sleep(5000);
 			LaunchFlood();
@@ -73,7 +72,7 @@ namespace EventStore.Projections.Core.Tests.Playground {
 			Thread.Sleep(160000);
 		}
 
-		[Test]
+		[Explicit]
 		public void JustProjections() {
 			Thread.Sleep(3500);
 			LaunchProjections();

@@ -1,14 +1,13 @@
 using System;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
-using EventStore.Core.Tests;
 using EventStore.ClientAPI.Exceptions;
 using EventStore.Core.Tests.ClientAPI.Helpers;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Storage.HashCollisions {
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class append_to_stream_with_hash_collision : SpecificationWithDirectoryPerTestFixture {
 		private MiniNode _node;
 
@@ -16,7 +15,6 @@ namespace EventStore.Core.Tests.Services.Storage.HashCollisions {
 			return TestConnection.To(node, TcpType.Normal);
 		}
 
-		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 			_node = new MiniNode(PathName,
@@ -27,24 +25,23 @@ namespace EventStore.Core.Tests.Services.Storage.HashCollisions {
 			await _node.Start();
 		}
 
-		[OneTimeTearDown]
 		public override async Task TestFixtureTearDown() {
 			await _node.Shutdown();
 			await base.TestFixtureTearDown();
 		}
 
-		[Test]
+		[Fact]
 		public async Task should_throw_wrong_expected_version() {
 			const string stream1 = "account--696193173";
 			const string stream2 = "LPN-FC002_LPK51001";
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
 				//Write event to stream 1
-				Assert.AreEqual(0,  (await store.AppendToStreamAsync(stream1, ExpectedVersion.NoStream,
+				Assert.Equal(0,  (await store.AppendToStreamAsync(stream1, ExpectedVersion.NoStream,
 						new EventData(Guid.NewGuid(), "TestEvent", true, null, null))).NextExpectedVersion);
 				//Write 100 events to stream 2 which will have the same hash as stream 1.
 				for (int i = 0; i < 100; i++) {
-					Assert.AreEqual(i, (await store.AppendToStreamAsync(stream2, ExpectedVersion.Any,
+					Assert.Equal(i, (await store.AppendToStreamAsync(stream2, ExpectedVersion.Any,
 						new EventData(Guid.NewGuid(), "TestEvent", true, null, null))).NextExpectedVersion);
 				}
 			}
@@ -64,7 +61,7 @@ namespace EventStore.Core.Tests.Services.Storage.HashCollisions {
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
 
-                await AssertEx.ThrowsAsync<WrongExpectedVersionException>(
+                await Assert.ThrowsAsync<WrongExpectedVersionException>(
 	                () => store.AppendToStreamAsync(stream1, ExpectedVersion.Any,
 		                new EventData(Guid.NewGuid(), "TestEvent", true, null, null)));
 			}

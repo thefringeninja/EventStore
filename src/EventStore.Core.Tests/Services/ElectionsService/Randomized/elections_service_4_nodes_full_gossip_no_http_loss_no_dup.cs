@@ -1,14 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.ElectionsService.Randomized {
-	[TestFixture]
 	public class elections_service_4_nodes_full_gossip_no_http_loss_no_dup {
 		private RandomizedElectionsTestCase _randomCase;
 
-		[SetUp]
-		public void SetUp() {
+		public elections_service_4_nodes_full_gossip_no_http_loss_no_dup() {
 			_randomCase = new RandomizedElectionsTestCase(ElectionParams.MaxIterationCount,
 				instancesCnt: 6,
 				httpLossProbability: 0.0,
@@ -19,9 +18,12 @@ namespace EventStore.Core.Tests.Services.ElectionsService.Randomized {
 			_randomCase.Init();
 		}
 
-		[Test, Category("LongRunning"), Category("Network")]
-		public void should_always_arrive_at_coherent_results([Range(0, ElectionParams.TestRunCount - 1)]
-			int run) {
+		public static IEnumerable<object[]> TestCases => Enumerable.Range(0, ElectionParams.TestRunCount - 1)
+			.Select(run => new object[] {run});
+
+
+		[Theory, MemberData(nameof(TestCases)), Trait("Category", "LongRunning"), Trait("Category", "Network")]
+		public void should_always_arrive_at_coherent_results(int run) {
 			var success = _randomCase.Run();
 			if (!success)
 				_randomCase.Logger.LogMessages();

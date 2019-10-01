@@ -1,9 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using EventStore.Core.Tests;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.ClientAPI.event_by_type_index {
-	[TestFixture]
 	public class when_reverting_after_index_catches_up : specification_with_standard_projections_runnning {
 		protected override bool GivenStandardProjectionsRunning() {
 			return false;
@@ -41,7 +41,7 @@ fromAll().foreachStream().when({
 			WaitIdle();
 		}
 
-		[Test, Category("Network")]
+		[DebugFact, Trait("Category", "Network")]
 		public async Task receives_deleted_notification() {
 			await AssertStreamTail("$projections-test-projection-stream-1-result", "Result:{\"a\":1}", "Result:{\"a\":2}");
 			await AssertStreamTail("$projections-test-projection-stream-2-result", "Result:{\"a\":1}", "Result:{\"a\":2}");

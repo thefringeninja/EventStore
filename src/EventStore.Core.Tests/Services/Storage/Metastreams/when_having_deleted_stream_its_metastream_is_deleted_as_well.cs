@@ -1,11 +1,10 @@
 ﻿using EventStore.Core.Data;
 using EventStore.Core.Services.Storage.ReaderIndex;
 using EventStore.Core.Tests.TransactionLog.Scavenging.Helpers;
-using NUnit.Framework;
+using Xunit;
 using ReadStreamResult = EventStore.Core.Services.Storage.ReaderIndex.ReadStreamResult;
 
 namespace EventStore.Core.Tests.Services.Storage.Metastreams {
-	[TestFixture]
 	public class when_having_deleted_stream_its_metastream_is_deleted_as_well : SimpleDbTestScenario {
 		protected override DbResult CreateDb(TFChunkDbCreationHelper dbCreator) {
 			return dbCreator.Chunk(Rec.Prepare(0, "test"),
@@ -17,39 +16,39 @@ namespace EventStore.Core.Tests.Services.Storage.Metastreams {
 				.CreateDb();
 		}
 
-		[Test]
+		[Fact]
 		public void the_stream_is_deleted() {
-			Assert.IsTrue(ReadIndex.IsStreamDeleted("test"));
+			Assert.True(ReadIndex.IsStreamDeleted("test"));
 		}
 
-		[Test]
+		[Fact]
 		public void the_metastream_is_deleted() {
-			Assert.IsTrue(ReadIndex.IsStreamDeleted("$$test"));
+			Assert.True(ReadIndex.IsStreamDeleted("$$test"));
 		}
 
-		[Test]
+		[Fact]
 		public void get_last_event_number_reports_deleted_metastream() {
-			Assert.AreEqual(EventNumber.DeletedStream, ReadIndex.GetStreamLastEventNumber("$$test"));
+			Assert.Equal(EventNumber.DeletedStream, ReadIndex.GetStreamLastEventNumber("$$test"));
 		}
 
-		[Test]
+		[Fact]
 		public void single_event_read_reports_deleted_metastream() {
-			Assert.AreEqual(ReadEventResult.StreamDeleted, ReadIndex.ReadEvent("$$test", 0).Result);
+			Assert.Equal(ReadEventResult.StreamDeleted, ReadIndex.ReadEvent("$$test", 0).Result);
 		}
 
-		[Test]
+		[Fact]
 		public void last_event_read_reports_deleted_metastream() {
-			Assert.AreEqual(ReadEventResult.StreamDeleted, ReadIndex.ReadEvent("$$test", -1).Result);
+			Assert.Equal(ReadEventResult.StreamDeleted, ReadIndex.ReadEvent("$$test", -1).Result);
 		}
 
-		[Test]
+		[Fact]
 		public void read_stream_events_forward_reports_deleted_metastream() {
-			Assert.AreEqual(ReadStreamResult.StreamDeleted, ReadIndex.ReadStreamEventsForward("$$test", 0, 100).Result);
+			Assert.Equal(ReadStreamResult.StreamDeleted, ReadIndex.ReadStreamEventsForward("$$test", 0, 100).Result);
 		}
 
-		[Test]
+		[Fact]
 		public void read_stream_events_backward_reports_deleted_metastream() {
-			Assert.AreEqual(ReadStreamResult.StreamDeleted,
+			Assert.Equal(ReadStreamResult.StreamDeleted,
 				ReadIndex.ReadStreamEventsBackward("$$test", 0, 100).Result);
 		}
 	}

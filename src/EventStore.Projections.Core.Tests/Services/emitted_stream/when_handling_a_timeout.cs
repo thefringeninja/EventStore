@@ -3,11 +3,11 @@ using System.Linq;
 using EventStore.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 using System.Collections.Generic;
+using EventStore.Core.Services.TimerService;
 
 namespace EventStore.Projections.Core.Tests.Services.emitted_stream.another_epoch {
-	[TestFixture]
 	public class when_handling_a_timeout : TestFixtureWithExistingEvents {
 		private EmittedStream _stream;
 		private TestCheckpointManagerMessageHandler _readyHandler;
@@ -35,8 +35,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream.another_epoc
 			};
 		}
 
-		[SetUp]
-		public void setup() {
+		public when_handling_a_timeout() {
 			_readyHandler = new TestCheckpointManagerMessageHandler();
 			_stream = new EmittedStream(
 				"test_stream",
@@ -50,28 +49,25 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream.another_epoc
 			CompleteWriteWithResult(OperationResult.CommitTimeout);
 		}
 
-		[Test]
+		[Fact]
 		public void should_retry_the_write_with_the_same_events() {
-			var current = _consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Last();
-			while (_consumer.HandledMessages.Last().GetType() ==
-			       typeof(EventStore.Core.Services.TimerService.TimerMessage.Schedule)) {
+			var current = Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Last();
+			while (Consumer.HandledMessages.Last() is TimerMessage.Schedule) {
 				var message =
-					_consumer.HandledMessages.Last() as EventStore.Core.Services.TimerService.TimerMessage.Schedule;
+					Consumer.HandledMessages.Last() as TimerMessage.Schedule;
 				message.Envelope.ReplyWith(message.ReplyMessage);
 
 				CompleteWriteWithResult(OperationResult.CommitTimeout);
 
-				var last = _consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Last();
+				var last = Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Last();
 
-				Assert.AreEqual(current.EventStreamId, last.EventStreamId);
-				Assert.AreEqual(current.Events, last.Events);
+				Assert.Equal(current.EventStreamId, last.EventStreamId);
+				Assert.Equal(current.Events, last.Events);
 
 				current = last;
 			}
 
-			Assert.AreEqual(1,
-				_readyHandler.HandledFailedMessages.OfType<CoreProjectionProcessingMessage.Failed>().Count(),
-				"Should fail the projection after exhausting all the write retries");
+			Assert.Single(_readyHandler.HandledFailedMessages.OfType<CoreProjectionProcessingMessage.Failed>());
 		}
 	}
 }

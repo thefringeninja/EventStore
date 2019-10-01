@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using EventStore.Core.Messages;
 using EventStore.Core.Data;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager.projection_manager_response_reader {
-	[TestFixture]
 	public class when_read_results_in_an_error : specification_with_projection_manager_response_reader_started {
 		private Guid _projectionId;
 		private Guid _readStreamEventsCorrelationId;
@@ -14,7 +13,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.project
 
 		protected override IEnumerable<WhenStep> When() {
 			AllReadsTimeOut();
-			_consumer.HandledMessages.Clear();
+			Consumer.HandledMessages.Clear();
 
 			_projectionId = Guid.NewGuid();
 			yield return
@@ -26,9 +25,9 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.project
                     }",
 					null,
 					true);
-			var readStreamMessage = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			var readStreamMessage = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.LastOrDefault(x => x.EventStreamId == _projectionsMasterStream);
-			Assert.IsNotNull(readStreamMessage, "Initial read was not issued");
+			Assert.NotNull(readStreamMessage);
 
 			_readStreamEventsCorrelationId = readStreamMessage.CorrelationId;
 			readStreamMessage.Envelope.ReplyWith(new ClientMessage.ReadStreamEventsForwardCompleted(
@@ -37,12 +36,12 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.project
 				-1, -1, true, 0));
 		}
 
-		[Test]
+		[Fact]
 		public void issues_a_new_read() {
 			var response = HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Last(x => x.EventStreamId == _projectionsMasterStream);
-			Assert.IsNotNull(response);
-			Assert.AreNotEqual(_readStreamEventsCorrelationId, response.CorrelationId);
+			Assert.NotNull(response);
+			Assert.NotEqual(_readStreamEventsCorrelationId, response.CorrelationId);
 		}
 	}
 }

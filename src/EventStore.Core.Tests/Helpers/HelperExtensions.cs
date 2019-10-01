@@ -1,7 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using EventStore.Common.Utils;
-using NUnit.Framework;
+using Xunit;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using System.Reflection;
@@ -29,29 +30,27 @@ namespace EventStore.Core.Tests.Helpers {
 					propertyName = "$" + propertyName.Substring(3);
 				if (propertyName.EndsWith("___")) {
 					if (response.TryGetValue(propertyName.Substring(0, propertyName.Length - "___".Length), out vv)) {
-						Assert.Fail("{0}/{1} found, but it is explicitly forbidden", path, propertyName);
+						throw new Exception($"{path}/{propertyName} found, but it is explicitly forbidden");
 					}
 				} else if (propertyName.EndsWith("___exists")) {
 					if (!response.TryGetValue(propertyName.Substring(0, propertyName.Length - "___exists".Length),
 						out vv)) {
-						Assert.Fail("{0}/{1} not found, but it is explicitly required", path, propertyName);
+						throw new Exception($"{path}/{propertyName} not found, but it is explicitly required");
 					}
 				} else if (!response.TryGetValue(propertyName, out vv)) {
-					Assert.Fail("{0}/{1} not found in '{2}'", path, propertyName, response.ToString());
+					throw new Exception($"{path}/{propertyName} not found in '{response}'");
 				} else {
-					Assert.AreEqual(
-						v.Value.Type, vv.Type, "{0}/{1} type is {2}, but {3} is expected", path, propertyName, vv.Type,
-						v.Value.Type);
+					Assert.Equal(
+						v.Value.Type, vv.Type);
 					if (v.Value.Type == JTokenType.Object) {
 						AssertJObject(v.Value as JObject, vv as JObject, path + "/" + propertyName);
 					} else if (v.Value.Type == JTokenType.Array) {
 						AssertJArray(v.Value as JArray, vv as JArray, path + "/" + propertyName);
 					} else if (v.Value is JValue) {
-						Assert.AreEqual(
-							((JValue)(v.Value)).Value, ((JValue)vv).Value,
-							"{0}/{1} value is '{2}' but '{3}' is expected", path, propertyName, vv, v.Value);
+						Assert.Equal(
+							((JValue)(v.Value)).Value, ((JValue)vv).Value);
 					} else
-						Assert.Fail();
+						throw new Exception();
 				}
 			}
 		}
@@ -60,19 +59,16 @@ namespace EventStore.Core.Tests.Helpers {
 			for (int index = 0; index < expected.Count; index++) {
 				JToken v = expected.Count > index ? expected[index] : new JValue((object)null);
 				JToken vv = response.Count > index ? response[index] : new JValue((object)null);
-				Assert.AreEqual(
-					v.Type, vv.Type, "{0}/{1} type is {2}, but {3} is expected", path, index, vv.Type,
-					v.Type);
+				Assert.Equal(v.Type, vv.Type);
 				if (v.Type == JTokenType.Object) {
 					AssertJObject(v as JObject, vv as JObject, path + "/" + index);
 				} else if (v.Type == JTokenType.Array) {
 					AssertJArray(v as JArray, vv as JArray, path + "/" + index);
 				} else if (v is JValue) {
-					Assert.AreEqual(
-						((JValue)v).Value, ((JValue)vv).Value, "{0}/{1} value is '{2}' but '{3}' is expected", path,
-						index, vv, v);
+					Assert.Equal(
+						((JValue)v).Value, ((JValue)vv).Value);
 				} else
-					Assert.Fail();
+					throw new Exception();
 			}
 		}
 

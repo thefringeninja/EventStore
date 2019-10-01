@@ -5,10 +5,9 @@ using EventStore.Core.Messages;
 using EventStore.Core.Messaging;
 using EventStore.Core.Services.RequestManager.Managers;
 using EventStore.Core.Tests.Fakes;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Replication.WriteStream {
-	[TestFixture]
 	public class when_write_stream_gets_commit_timeout_after_commit_replicated : RequestManagerSpecification {
 		protected override TwoPhaseRequestManagerBase OnManager(FakePublisher publisher) {
 			return new WriteStreamTwoPhaseRequestManager(publisher, 3, PrepareTimeout, CommitTimeout, false);
@@ -24,9 +23,9 @@ namespace EventStore.Core.Tests.Services.Replication.WriteStream {
 			return new StorageMessage.RequestManagerTimerTick(DateTime.UtcNow + CommitTimeout + CommitTimeout);
 		}
 
-		[Test]
+		[Fact]
 		public void no_messages_are_published() {
-			Assert.That(Produced.Count == 0);
+			Assert.True(Produced.Count == 0);
 		}
 	}
 }

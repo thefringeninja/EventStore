@@ -7,13 +7,13 @@ using EventStore.ClientAPI;
 using EventStore.Common.Utils;
 using EventStore.Core.Services;
 using EventStore.Core.Tests.Http.Users;
-using NUnit.Framework;
+using Xunit;
 using Newtonsoft.Json.Linq;
 
 namespace EventStore.Core.Tests.Http.StreamSecurity {
 	namespace stream_access {
-		[TestFixture, Category("LongRunning")]
-		class when_creating_a_secured_stream_by_posting_metadata : SpecificationWithUsers {
+		[Trait("Category", "LongRunning")]
+		public class when_creating_a_secured_stream_by_posting_metadata : SpecificationWithUsers {
 			private HttpResponseMessage _response;
 
 			protected override async Task When() {
@@ -36,24 +36,24 @@ namespace EventStore.Core.Tests.Http.StreamSecurity {
 					}, _admin);
 			}
 
-			[Test]
+			[Fact]
 			public void returns_ok_status_code() {
-				Assert.AreEqual(HttpStatusCode.Created, _response.StatusCode);
+				Assert.Equal(HttpStatusCode.Created, _response.StatusCode);
 			}
 
-			[Test]
+			[Fact]
 			public async Task refuses_to_post_event_as_anonymous() {
 				var response = await PostEvent(new {Some = "Data"});
-				Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+				Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 			}
 
-			[Test]
+			[Fact]
 			public async Task accepts_post_event_as_authorized_user() {
 				var response = await PostEvent(new {Some = "Data"}, GetCorrectCredentialsFor("user1"));
-				Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
+				Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 			}
 
-			[Test]
+			[Fact]
 			public async Task accepts_post_event_as_authorized_user_by_trusted_auth() {
 				var uri = MakeUrl(TestStream);
 
@@ -68,7 +68,7 @@ namespace EventStore.Core.Tests.Http.StreamSecurity {
 					}
 				};
 				var response = await GetRequestResponse(request);
-				Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
+				Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 			}
 		}
 	}

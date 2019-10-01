@@ -139,7 +139,7 @@ namespace EventStore.Core.Services.Replication {
 		}
 
 		private void ConnectToMaster(VNodeInfo master) {
-			Debug.Assert(_state == VNodeState.PreReplica || _state == VNodeState.PreReadOnlyReplica);
+			ESDebug.Assert(_state == VNodeState.PreReplica || _state == VNodeState.PreReadOnlyReplica);
 
 			var masterEndPoint = GetMasterEndPoint(master, _useSsl);
 
@@ -206,14 +206,14 @@ namespace EventStore.Core.Services.Replication {
 
 		public void Handle(StorageMessage.PrepareAck message) {
 			if (_state == VNodeState.Slave) {
-				Debug.Assert(_connection != null, "_connection == null");
+				ESDebug.Assert(_connection != null, "_connection == null");
 				SendTcpMessage(_connection, message);
 			}
 		}
 
 		public void Handle(StorageMessage.CommitAck message) {
 			if (_state == VNodeState.Slave) {
-				Debug.Assert(_connection != null, "_connection == null");
+				ESDebug.Assert(_connection != null, "_connection == null");
 				SendTcpMessage(_connection, message);
 			}
 		}
@@ -234,7 +234,7 @@ namespace EventStore.Core.Services.Replication {
 				case VNodeState.Clone:
 				case VNodeState.Slave:
 				case VNodeState.ReadOnlyReplica:  {
-					Debug.Assert(_connection != null, "Connection manager is null in slave/clone/catching up state");
+					ESDebug.Assert(_connection != null, "Connection manager is null in slave/clone/catching up state");
 					SendTcpMessage(_connection, message.Message);
 					break;
 				}

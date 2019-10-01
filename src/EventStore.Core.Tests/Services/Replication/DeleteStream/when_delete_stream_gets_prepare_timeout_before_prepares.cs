@@ -6,10 +6,9 @@ using EventStore.Core.Messaging;
 using EventStore.Core.Services.RequestManager.Managers;
 using EventStore.Core.Tests.Fakes;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Replication.DeleteStream {
-	[Ignore("DeleteStream operation is not 2-phase now, it does not expect PrepareAck anymore.")]
 	public class when_delete_stream_gets_prepare_timeout_before_prepares : RequestManagerSpecification {
 		protected override TwoPhaseRequestManagerBase OnManager(FakePublisher publisher) {
 			return new DeleteStreamTwoPhaseRequestManager(publisher, 3, PrepareTimeout, CommitTimeout, false);
@@ -25,15 +24,15 @@ namespace EventStore.Core.Tests.Services.Replication.DeleteStream {
 				DateTime.UtcNow + PrepareTimeout + TimeSpan.FromMinutes(5));
 		}
 
-		[Test]
+		[Fact(Skip = "DeleteStream operation is not 2-phase now, it does not expect PrepareAck anymore.")]
 		public void failed_request_message_is_published() {
-			Assert.That(Produced.ContainsSingle<StorageMessage.RequestCompleted>(
+			Assert.True(Produced.ContainsSingle<StorageMessage.RequestCompleted>(
 				x => x.CorrelationId == InternalCorrId && x.Success == false));
 		}
 
-		[Test]
+		[Fact(Skip = "DeleteStream operation is not 2-phase now, it does not expect PrepareAck anymore.")]
 		public void the_envelope_is_replied_to_with_failure() {
-			Assert.That(Envelope.Replies.ContainsSingle<ClientMessage.DeleteStreamCompleted>(
+			Assert.True(Envelope.Replies.ContainsSingle<ClientMessage.DeleteStreamCompleted>(
 				x => x.CorrelationId == ClientCorrId && x.Result == OperationResult.PrepareTimeout));
 		}
 	}

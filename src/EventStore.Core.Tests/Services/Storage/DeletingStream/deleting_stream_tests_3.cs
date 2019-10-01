@@ -1,7 +1,6 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Storage.DeletingStream {
-	[TestFixture]
 	public class
 		when_deleting_streams_with_same_hash_spanning_through_multiple_chunks_in_db_with_1_stream_with_different_hash_read_index_should :
 			ReadIndexTestScenario {
@@ -26,25 +25,25 @@ namespace EventStore.Core.Tests.Services.Storage.DeletingStream {
 			WriteDelete("ES2");
 		}
 
-		[Test]
+		[Fact]
 		public void indicate_that_streams_are_deleted() {
-			Assert.That(ReadIndex.IsStreamDeleted("ES1"));
-			Assert.That(ReadIndex.IsStreamDeleted("ES2"));
+			Assert.True(ReadIndex.IsStreamDeleted("ES1"));
+			Assert.True(ReadIndex.IsStreamDeleted("ES2"));
 		}
 
-		[Test]
+		[Fact]
 		public void indicate_that_nonexisting_stream_with_same_hash_is_not_deleted() {
-			Assert.That(ReadIndex.IsStreamDeleted("XXX"), Is.False);
+			Assert.False(ReadIndex.IsStreamDeleted("XXX"));
 		}
 
-		[Test]
+		[Fact]
 		public void indicate_that_nonexisting_stream_with_different_hash_is_not_deleted() {
-			Assert.That(ReadIndex.IsStreamDeleted("XXXX"), Is.False);
+			Assert.False(ReadIndex.IsStreamDeleted("XXXX"));
 		}
 
-		[Test]
+		[Fact]
 		public void indicate_that_existing_stream_with_different_hash_is_not_deleted() {
-			Assert.That(ReadIndex.IsStreamDeleted("ES"), Is.False);
+			Assert.False(ReadIndex.IsStreamDeleted("ES"));
 		}
 	}
 }

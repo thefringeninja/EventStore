@@ -5,16 +5,14 @@ using EventStore.Core.Tests.Helpers;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.projections_manager.managed_projection;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.heading_event_reader {
-	[TestFixture]
 	public class when_heading_event_reader_has_been_created : TestFixtureWithReadWriteDispatchers {
 		private HeadingEventReader _point;
 		private Exception _exception;
 
-		[SetUp]
-		public void setup() {
+		public when_heading_event_reader_has_been_created() {
 			_exception = null;
 			try {
 				_point = new HeadingEventReader(10, _bus);
@@ -23,29 +21,29 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.heading_event_
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void it_has_been_created() {
-			Assert.IsNull(_exception, ((object)_exception ?? "").ToString());
+			Assert.Null(_exception);
 		}
 
-		[Test]
+		[Fact]
 		public void stop_throws_invalid_operation_exception() {
 			Assert.Throws<InvalidOperationException>(() => { _point.Stop(); });
 		}
 
-		[Test]
+		[Fact]
 		public void try_subscribe_throws_invalid_operation_exception() {
 			Assert.Throws<InvalidOperationException>(() => {
 				_point.TrySubscribe(Guid.NewGuid(), new FakeReaderSubscription(), 10);
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void usubscribe_throws_invalid_operation_exception() {
 			Assert.Throws<InvalidOperationException>(() => { _point.Unsubscribe(Guid.NewGuid()); });
 		}
 
-		[Test]
+		[Fact]
 		public void handle_throws_invalid_operation_exception() {
 			Assert.Throws<InvalidOperationException>(() => {
 				_point.Handle(
@@ -55,7 +53,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.heading_event_
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void can_be_started() {
 			var eventReaderId = Guid.NewGuid();
 			_point.Start(

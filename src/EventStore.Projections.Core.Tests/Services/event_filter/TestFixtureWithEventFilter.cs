@@ -1,7 +1,7 @@
 using System;
 using EventStore.Core.Services.TimerService;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.event_filter {
 	public class TestFixtureWithEventFilter {
@@ -9,8 +9,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_filter {
 		protected EventFilter _ef;
 		protected Exception _exception;
 
-		[SetUp]
-		public void Setup() {
+		public TestFixtureWithEventFilter() {
 			_builder = new SourceDefinitionBuilder();
 			Given();
 			When();

@@ -16,7 +16,7 @@ using EventStore.Projections.Core.Messaging;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Management;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using TestFixtureWithExistingEvents =
 	EventStore.Projections.Core.Tests.Services.core_projection.TestFixtureWithExistingEvents;
 
@@ -45,10 +45,9 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 			return new ManualQueue(_bus, _timeProvider);
 		}
 
-		[SetUp]
-		public void Setup() {
+		public TestFixtureWithProjectionCoreAndManagementServices() {
 			//TODO: this became an integration test - proper ProjectionCoreService and ProjectionManager testing is required as well
-			_bus.Subscribe(_consumer);
+			_bus.Subscribe(Consumer);
 
 			_processingQueues = GivenProcessingQueues();
 			var queues = _processingQueues.ToDictionary(v => v.Item5, v => (IPublisher)v.Item1);
@@ -104,7 +103,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 			_bus.Subscribe<ProjectionManagementMessage.ReaderReady>(_manager);
 			_bus.Subscribe(
 				CallbackSubscriber.Create<ProjectionManagementMessage.Starting>(
-					starting => _queue.Publish(new ProjectionManagementMessage.ReaderReady())));
+					starting => Queue.Publish(new ProjectionManagementMessage.ReaderReady())));
 
 			_bus.Subscribe<SystemMessage.StateChangeMessage>(_coordinator);
 			_bus.Subscribe<SystemMessage.SystemCoreReady>(_coordinator);

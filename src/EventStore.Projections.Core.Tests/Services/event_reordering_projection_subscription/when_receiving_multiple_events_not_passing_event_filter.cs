@@ -1,10 +1,9 @@
 ﻿using System;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reordering_projection_subscription {
-	[TestFixture]
 	public class when_receiving_multiple_events_not_passing_event_filter :
 		TestFixtureWithEventReorderingProjectionSubscription {
 		private DateTime _timestamp;
@@ -39,11 +38,11 @@ namespace EventStore.Projections.Core.Tests.Services.event_reordering_projection
 					_projectionCorrelationId, _timestamp.AddMilliseconds(1100)));
 		}
 
-		[Test]
+		[Fact]
 		public void checkpoint_suggested_message_is_published_once_for_interval() {
-			Assert.AreEqual(1, _checkpointHandler.HandledMessages.Count);
-			Assert.AreEqual(2, _checkpointHandler.HandledMessages[0].CheckpointTag.Streams["a"]);
-			Assert.AreEqual(1, _checkpointHandler.HandledMessages[0].CheckpointTag.Streams["b"]);
+			Assert.Equal(1, _checkpointHandler.HandledMessages.Count);
+			Assert.Equal(2, _checkpointHandler.HandledMessages[0].CheckpointTag.Streams["a"]);
+			Assert.Equal(1, _checkpointHandler.HandledMessages[0].CheckpointTag.Streams["b"]);
 		}
 	}
 }

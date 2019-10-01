@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Net;
-using System.Threading;
 using EventStore.ClientAPI;
 using EventStore.ClientAPI.SystemData;
 using EventStore.Core.Bus;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -49,7 +48,6 @@ namespace EventStore.Core.Tests.Integration {
 			return port;
 		}
 
-		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 
@@ -85,11 +83,11 @@ namespace EventStore.Core.Tests.Integration {
 
 			BeforeNodesStart();
 
-			_nodes[0].Start();
-			_nodes[1].Start();
-			_nodes[2].Start();
+			await Task.WhenAll(
+				_nodes[0].Start(),
+				_nodes[1].Start(),
+				_nodes[2].Start());
 
-			WaitHandle.WaitAll(new[] {_nodes[0].StartedEvent, _nodes[1].StartedEvent, _nodes[2].StartedEvent});
 			QueueStatsCollector.WaitIdle(waitForNonEmptyTf: true);
 
 			_conn = CreateConnection();
@@ -124,7 +122,6 @@ namespace EventStore.Core.Tests.Integration {
 			return node;
 		}
 
-		[OneTimeTearDown]
 		public override async Task TestFixtureTearDown() {
 			_conn.Close();
 			await Task.WhenAll(

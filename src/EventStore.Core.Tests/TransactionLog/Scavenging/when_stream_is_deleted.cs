@@ -1,10 +1,9 @@
 ﻿using System.Linq;
 using EventStore.Core.Tests.TransactionLog.Scavenging.Helpers;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog.Scavenging {
-	[TestFixture]
 	public class when_stream_is_deleted : ScavengeTestScenario {
 		protected override DbResult CreateDb(TFChunkDbCreationHelper dbCreator) {
 			return dbCreator
@@ -21,13 +20,11 @@ namespace EventStore.Core.Tests.TransactionLog.Scavenging {
 			};
 		}
 
-		[Test]
+		[Fact]
 		public void stream_created_and_delete_tombstone_with_corresponding_commits_are_kept() {
-			CheckRecords();
 		}
 	}
 
-	[TestFixture]
 	public class when_stream_is_deleted_with_ignore_hard_deletes : ScavengeTestScenario {
 		protected override bool UnsafeIgnoreHardDelete() {
 			return true;
@@ -48,9 +45,8 @@ namespace EventStore.Core.Tests.TransactionLog.Scavenging {
 			};
 		}
 
-		[Test]
+		[Fact]
 		public void stream_created_and_delete_tombstone_with_corresponding_commits_are_kept() {
-			CheckRecords();
 		}
 	}
 }

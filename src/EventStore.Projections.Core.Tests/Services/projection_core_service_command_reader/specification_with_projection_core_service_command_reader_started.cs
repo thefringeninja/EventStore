@@ -4,7 +4,7 @@ using EventStore.ClientAPI.Common.Utils;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
 using Newtonsoft.Json.Linq;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Projections.Core.Services.Processing;
 using System;
 
@@ -20,13 +20,12 @@ namespace EventStore.Projections.Core.Tests.Services.projection_core_service_com
 			var startReader = CreateWriteEvent(ProjectionNamesBuilder.BuildControlStreamName(_uniqueStreamId),
 				"$response-reader-started", "{}");
 			yield return new WhenStep(startCore, startReader);
-			List<EventRecord> stream;
-			_streams.TryGetValue("$projections-$master", out stream);
-			Assume.That(stream != null);
+			Assert.True(_streams.TryGetValue("$projections-$master", out var stream));
+			Assert.NotNull(stream);
 			var lastEvent = stream.Last();
 			var parsed = lastEvent.Data.ParseJson<JObject>();
 			_serviceId = (string)((JValue)parsed.GetValue("id")).Value;
-			Assume.That(!string.IsNullOrEmpty(_serviceId));
+			Assert.False(string.IsNullOrEmpty(_serviceId));
 		}
 	}
 }

@@ -7,7 +7,7 @@ using EventStore.Core.Services.AwakeReaderService;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Messaging;
 using EventStore.Projections.Core.Services;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection {
 	public abstract class TestFixtureWithExistingEvents : EventStore.Core.Tests.Helpers.TestFixtureWithExistingEvents,
@@ -25,8 +25,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 			_ticksAreHandledImmediately = false;
 		}
 
-		[SetUp]
-		public void SetUp() {
+		public TestFixtureWithExistingEvents() {
 			_subscriptionDispatcher =
 				new ReaderSubscriptionDispatcher
 					(_bus);

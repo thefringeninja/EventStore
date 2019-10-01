@@ -2,7 +2,7 @@ using System;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_manager {
 	public class TestFixtureWithCoreProjectionCheckpointManager : TestFixtureWithExistingEvents {
@@ -30,8 +30,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 		protected string _projectionName;
 		protected ProjectionVersion _projectionVersion;
 
-		[SetUp]
-		public void setup() {
+		public TestFixtureWithCoreProjectionCheckpointManager() {
 			Given();
 			_namingBuilder = ProjectionNamesBuilder.CreateForTest("projection");
 			_config = new ProjectionConfig(null, _checkpointHandledThreshold, _checkpointUnhandledBytesThreshold,

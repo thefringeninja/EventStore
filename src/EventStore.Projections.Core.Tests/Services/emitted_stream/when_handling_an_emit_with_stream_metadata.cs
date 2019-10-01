@@ -3,10 +3,9 @@ using System.Linq;
 using EventStore.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
-	[TestFixture]
 	public class when_handling_an_emit_with_stream_metadata_to_empty_stream : TestFixtureWithExistingEvents {
 		private EmittedStream _stream;
 		private TestCheckpointManagerMessageHandler _readyHandler;
@@ -21,8 +20,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 				_streamMetadata, null, maxWriteBatchLength: 50);
 		}
 
-		[SetUp]
-		public void setup() {
+		public when_handling_an_emit_with_stream_metadata_to_empty_stream() {
 			_readyHandler = new TestCheckpointManagerMessageHandler();
 			_stream = new EmittedStream(
 				"test_stream", _writerConfiguration, new ProjectionVersion(1, 0, 0),
@@ -37,13 +35,13 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 				});
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_write_stream_metadata() {
-			Assert.AreEqual(
-				1, _consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().ToStream("$$test_stream").Count());
+			Assert.Equal(
+				1, Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().ToStream("$$test_stream").Count());
 		}
 
-		[Test]
+		[Fact]
 		public void does_not_write_stream_metadata_second_time() {
 			OneWriteCompletes();
 			OneWriteCompletes();
@@ -53,27 +51,27 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 						"test_stream", Guid.NewGuid(), "type", true, "data", null,
 						CheckpointTag.FromPosition(0, 400, 350), null)
 				});
-			Assert.AreEqual(
-				1, _consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().ToStream("$$test_stream").Count());
+			Assert.Equal(
+				1, Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().ToStream("$$test_stream").Count());
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_write_emitted_event_on_write_stream_metadata_completed() {
 			OneWriteCompletes();
-			Assert.AreEqual(
-				1, _consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().ToStream("test_stream").Count());
+			Assert.Equal(
+				1, Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().ToStream("test_stream").Count());
 		}
 
-		[Test]
+		[Fact]
 		public void does_not_reply_with_write_completed_message() {
-			Assert.AreEqual(0, _readyHandler.HandledWriteCompletedMessage.Count);
+			Assert.Equal(0, _readyHandler.HandledWriteCompletedMessage.Count);
 		}
 
-		[Test]
+		[Fact]
 		public void reply_with_write_completed_message_when_write_completes() {
 			OneWriteCompletes();
 			OneWriteCompletes();
-			Assert.IsTrue(_readyHandler.HandledWriteCompletedMessage.Any(v => v.StreamId == "test_stream"));
+			Assert.True(_readyHandler.HandledWriteCompletedMessage.Any(v => v.StreamId == "test_stream"));
 			// more than one is ok
 		}
 	}

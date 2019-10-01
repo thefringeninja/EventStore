@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using EventStore.Core.Tests;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.ClientAPI.query_result.with_long_from_all_query {
-	[TestFixture]
 	public class when_getting_result : specification_with_standard_projections_runnning {
 		protected override async Task Given() {
 			await base.Given();
@@ -15,7 +15,7 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.query_result.with_long_fro
 			WaitIdle();
 		}
 
-		[Test, Category("Network")]
+		[DebugFact, Trait("Category", "Network")]
 		public async Task waits_for_results() {
 			const string query = @"
 fromAll().when({
@@ -32,7 +32,7 @@ fromAll().when({
 			var result = await _queryManager
 				.ExecuteAsync("query", query, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(5000), _admin)
 ;
-			Assert.AreEqual("{\"count\":3}", result);
+			Assert.Equal("{\"count\":3}", result);
 		}
 	}
 }

@@ -1,27 +1,25 @@
 using System;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.position_tagging.prepare_position_tagger {
-	[TestFixture]
 	public class when_creating_prepare_postion_tracker {
 		private PositionTagger _tagger;
 		private PositionTracker _positionTracker;
 
-		[SetUp]
-		public void when() {
+		public when_creating_prepare_postion_tracker() {
 			_tagger = new PreparePositionTagger(0);
 			_positionTracker = new PositionTracker(_tagger);
 		}
 
-		[Test]
+		[Fact]
 		public void it_can_be_updated() {
 			// even not initialized (UpdateToZero can be removed)
 			var newTag = CheckpointTag.FromPreparePosition(0, 50);
 			_positionTracker.UpdateByCheckpointTagInitial(newTag);
 		}
 
-		[Test]
+		[Fact]
 		public void initial_position_cannot_be_set_twice() {
 			Assert.Throws<InvalidOperationException>(() => {
 				var newTag = CheckpointTag.FromPreparePosition(0, 50);
@@ -30,12 +28,12 @@ namespace EventStore.Projections.Core.Tests.Services.position_tagging.prepare_po
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void it_can_be_updated_to_zero() {
 			_positionTracker.UpdateByCheckpointTagInitial(_tagger.MakeZeroCheckpointTag());
 		}
 
-		[Test]
+		[Fact]
 		public void it_cannot_be_updated_forward() {
 			Assert.Throws<InvalidOperationException>(() => {
 				var newTag = CheckpointTag.FromPreparePosition(0, 50);

@@ -1,10 +1,9 @@
 using System;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projection_subscription {
-	[TestFixture]
 	public class when_handling_duplicate_events : TestFixtureWithProjectionSubscription {
 		protected override void When() {
 			_subscription.Handle(
@@ -21,9 +20,9 @@ namespace EventStore.Projections.Core.Tests.Services.projection_subscription {
 					"bad-event-type", false, new byte[0], new byte[0]));
 		}
 
-		[Test]
+		[Fact]
 		public void duplicates_are_not_passed_to_downstream_handler() {
-			Assert.AreEqual(1, _eventHandler.HandledMessages.Count);
+			Assert.Equal(1, _eventHandler.HandledMessages.Count);
 		}
 	}
 }

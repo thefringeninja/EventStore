@@ -8,11 +8,10 @@ using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Services.AwakeReaderService;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.transaction_file_reader {
-	[TestFixture]
 	public class when_handling_eof_and_idle_eof : TestFixtureWithExistingEvents {
 		private TransactionFileEventReader _edp;
 		private Guid _distibutionPointCorrelationId;
@@ -25,8 +24,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.transaction_fi
 
 		private FakeTimeProvider _fakeTimeProvider;
 
-		[SetUp]
-		public new void When() {
+		public when_handling_eof_and_idle_eof() {
 			_distibutionPointCorrelationId = Guid.NewGuid();
 			_fakeTimeProvider = new FakeTimeProvider();
 			_edp = new TransactionFileEventReader(_bus, _distibutionPointCorrelationId, null, new TFPos(100, 50),
@@ -35,7 +33,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.transaction_fi
 			_edp.Resume();
 			_firstEventId = Guid.NewGuid();
 			_secondEventId = Guid.NewGuid();
-			var correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadAllEventsForward>().Last()
+			var correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadAllEventsForward>().Last()
 				.CorrelationId;
 			_edp.Handle(
 				new ClientMessage.ReadAllEventsForwardCompleted(
@@ -55,14 +53,14 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.transaction_fi
 								"event_type1", new byte[] {1}, new byte[] {2}), 200),
 					}, null, false, 100,
 					new TFPos(200, 150), new TFPos(500, -1), new TFPos(100, 50), 500));
-			correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadAllEventsForward>().Last().CorrelationId;
+			correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadAllEventsForward>().Last().CorrelationId;
 			_edp.Handle(
 				new ClientMessage.ReadAllEventsForwardCompleted(
 					correlationId, ReadAllResult.Success, null,
 					new EventStore.Core.Data.ResolvedEvent[0], null, false, 100, new TFPos(), new TFPos(), new TFPos(),
 					500));
 			_fakeTimeProvider.AddTime(TimeSpan.FromMilliseconds(500));
-			correlationId = ((ClientMessage.ReadAllEventsForward)(_consumer.HandledMessages
+			correlationId = ((ClientMessage.ReadAllEventsForward)(Consumer.HandledMessages
 				.OfType<AwakeServiceMessage.SubscribeAwake>().Last().ReplyWithMessage)).CorrelationId;
 			_edp.Handle(
 				new ClientMessage.ReadAllEventsForwardCompleted(
@@ -71,21 +69,21 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.transaction_fi
 					500));
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_event_distribution_idle_messages() {
-			Assert.AreEqual(
-				2, _consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderIdle>().Count());
+			Assert.Equal(
+				2, Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderIdle>().Count());
 			var first =
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderIdle>().First();
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderIdle>().First();
 			var second =
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderIdle>()
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderIdle>()
 					.Skip(1)
 					.First();
 
-			Assert.AreEqual(first.CorrelationId, _distibutionPointCorrelationId);
-			Assert.AreEqual(second.CorrelationId, _distibutionPointCorrelationId);
+			Assert.Equal(first.CorrelationId, _distibutionPointCorrelationId);
+			Assert.Equal(second.CorrelationId, _distibutionPointCorrelationId);
 
-			Assert.AreEqual(TimeSpan.FromMilliseconds(500), second.IdleTimestampUtc - first.IdleTimestampUtc);
+			Assert.Equal(TimeSpan.FromMilliseconds(500), second.IdleTimestampUtc - first.IdleTimestampUtc);
 		}
 	}
 }

@@ -1,51 +1,42 @@
-using NUnit.Framework;
+using Xunit;
 using System;
 using System.Net;
 using EventStore.Common.Utils;
 
 namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
-	[TestFixture]
 	public class with_cluster_dns_name : ClusterMemberScenario {
 		public override void Given() {
 			_builder.WithClusterDnsName("ClusterDns");
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_discover_via_dns_to_true() {
-			Assert.IsTrue(_settings.DiscoverViaDns);
+			Assert.True(_settings.DiscoverViaDns);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_cluster_dns_name() {
-			Assert.AreEqual("ClusterDns", _settings.ClusterDns);
+			Assert.Equal("ClusterDns", _settings.ClusterDns);
 		}
 	}
 
-	[TestFixture]
 	public class with_dns_discovery_disabled_and_no_gossip_seeds {
 		private Exception _caughtException;
 		protected VNodeBuilder _builder;
 
-		[OneTimeSetUp]
-		public void TestFixtureSetUp() {
+		public with_dns_discovery_disabled_and_no_gossip_seeds() {
 			_builder = TestVNodeBuilder.AsClusterMember(3)
 				.RunInMemory()
 				.OnDefaultEndpoints()
 				.DisableDnsDiscovery();
-			try {
-				_builder.Build();
-			} catch (Exception e) {
-				_caughtException = e;
-			}
 		}
 
-		[Test]
-		public void should_throw_an_exception() {
-			Assert.IsNotNull(_caughtException);
+		[Fact]
+		public void should_not_throw_an_exception() {
+			_builder.Build();
 		}
 	}
 
-	[TestFixture]
 	public class with_dns_discovery_disabled_and_gossip_seeds_defined : ClusterMemberScenario {
 		private IPEndPoint[] _gossipSeeds;
 
@@ -59,78 +50,72 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 				.WithGossipSeeds(_gossipSeeds);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_discover_via_dns_to_false() {
-			Assert.IsFalse(_settings.DiscoverViaDns);
+			Assert.False(_settings.DiscoverViaDns);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_gossip_seeds() {
-			CollectionAssert.AreEqual(_gossipSeeds, _settings.GossipSeeds);
+			Assert.Equal(_gossipSeeds, _settings.GossipSeeds);
 		}
 	}
 
-	[TestFixture]
 	public class with_prepare_ack_count_set_higher_than_the_quorum : ClusterMemberScenario {
 		public override void Given() {
 			_builder.WithPrepareCount(_quorumSize + 1);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_prepare_count_to_the_given_value() {
-			Assert.AreEqual(_quorumSize + 1, _settings.PrepareAckCount);
+			Assert.Equal(_quorumSize + 1, _settings.PrepareAckCount);
 		}
 	}
 
-	[TestFixture]
 	public class with_commit_ack_count_set_higher_than_the_quorum : ClusterMemberScenario {
 		public override void Given() {
 			_builder.WithCommitCount(_quorumSize + 1);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_commit_count_to_the_given_value() {
-			Assert.AreEqual(_quorumSize + 1, _settings.CommitAckCount);
+			Assert.Equal(_quorumSize + 1, _settings.CommitAckCount);
 		}
 	}
 
-	[TestFixture]
 	public class with_prepare_ack_count_set_lower_than_the_quorum : ClusterMemberScenario {
 		public override void Given() {
 			_builder.WithPrepareCount(_quorumSize - 1);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_prepare_count_to_the_quorum_size() {
-			Assert.AreEqual(_quorumSize, _settings.PrepareAckCount);
+			Assert.Equal(_quorumSize, _settings.PrepareAckCount);
 		}
 	}
 
-	[TestFixture]
 	public class with_commit_ack_count_set_lower_than_the_quorum : ClusterMemberScenario {
 		public override void Given() {
 			_builder.WithCommitCount(_quorumSize - 1);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_commit_count_to_the_quorum_size() {
-			Assert.AreEqual(_quorumSize, _settings.CommitAckCount);
+			Assert.Equal(_quorumSize, _settings.CommitAckCount);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_node_priority : ClusterMemberScenario {
 		public override void Given() {
 			_builder.WithNodePriority(5);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_node_priority() {
-			Assert.AreEqual(5, _settings.NodePriority);
+			Assert.Equal(5, _settings.NodePriority);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_gossip_seeds : ClusterMemberScenario {
 		private IPEndPoint[] _gossipSeeds;
 
@@ -140,54 +125,50 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 			_builder.WithGossipSeeds(_gossipSeeds);
 		}
 
-		[Test]
+		[Fact]
 		public void should_turn_off_discovery_by_dns() {
-			Assert.IsFalse(_settings.DiscoverViaDns);
+			Assert.False(_settings.DiscoverViaDns);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_gossip_seeds() {
-			CollectionAssert.AreEqual(_gossipSeeds, _settings.GossipSeeds);
+			Assert.Equal(_gossipSeeds, _settings.GossipSeeds);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_gossip_interval : ClusterMemberScenario {
 		public override void Given() {
 			_builder.WithGossipInterval(TimeSpan.FromMilliseconds(1300));
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_gossip_interval() {
-			Assert.AreEqual(1300, _settings.GossipInterval.TotalMilliseconds);
+			Assert.Equal(1300, _settings.GossipInterval.TotalMilliseconds);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_gossip_allowed_time_difference : ClusterMemberScenario {
 		public override void Given() {
 			_builder.WithGossipAllowedTimeDifference(TimeSpan.FromMilliseconds(1300));
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_allowed_gossip_time_difference() {
-			Assert.AreEqual(1300, _settings.GossipAllowedTimeDifference.TotalMilliseconds);
+			Assert.Equal(1300, _settings.GossipAllowedTimeDifference.TotalMilliseconds);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_gossip_timeout : ClusterMemberScenario {
 		public override void Given() {
 			_builder.WithGossipTimeout(TimeSpan.FromMilliseconds(1300));
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_gossip_timeout() {
-			Assert.AreEqual(1300, _settings.GossipTimeout.TotalMilliseconds);
+			Assert.Equal(1300, _settings.GossipTimeout.TotalMilliseconds);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_external_ip_address_as_advertise_info : ClusterMemberScenario {
 		public override void Given() {
 			_builder.WithExternalTcpOn(new IPEndPoint(IPAddress.Loopback, 1113))
@@ -195,22 +176,21 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 				.AdvertiseExternalIPAs(IPAddress.Parse("196.168.1.1"));
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_custom_advertise_info_for_external() {
-			Assert.AreEqual(new IPEndPoint(IPAddress.Parse("196.168.1.1"), 1113),
+			Assert.Equal(new IPEndPoint(IPAddress.Parse("196.168.1.1"), 1113),
 				_settings.GossipAdvertiseInfo.ExternalTcp);
-			Assert.AreEqual(new IPEndPoint(IPAddress.Parse("196.168.1.1"), 2113),
+			Assert.Equal(new IPEndPoint(IPAddress.Parse("196.168.1.1"), 2113),
 				_settings.GossipAdvertiseInfo.ExternalHttp);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_loopback_address_as_advertise_info_for_internal() {
-			Assert.AreEqual(new IPEndPoint(IPAddress.Loopback, 1112), _settings.GossipAdvertiseInfo.InternalTcp);
-			Assert.AreEqual(new IPEndPoint(IPAddress.Loopback, 2112), _settings.GossipAdvertiseInfo.InternalHttp);
+			Assert.Equal(new IPEndPoint(IPAddress.Loopback, 1112), _settings.GossipAdvertiseInfo.InternalTcp);
+			Assert.Equal(new IPEndPoint(IPAddress.Loopback, 2112), _settings.GossipAdvertiseInfo.InternalHttp);
 		}
 	}
 
-	[TestFixture]
 	public class with_0_0_0_0_as_external_ip_address_and_custom_advertise_info : ClusterMemberScenario {
 		public override void Given() {
 			_builder.WithExternalTcpOn(new IPEndPoint(IPAddress.Parse("0.0.0.0"), 1113))
@@ -218,44 +198,42 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 				.AdvertiseExternalIPAs(IPAddress.Parse("10.0.0.1"));
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_custom_advertise_info_for_external() {
-			Assert.AreEqual(new IPEndPoint(IPAddress.Parse("10.0.0.1"), 1113),
+			Assert.Equal(new IPEndPoint(IPAddress.Parse("10.0.0.1"), 1113),
 				_settings.GossipAdvertiseInfo.ExternalTcp);
-			Assert.AreEqual(new IPEndPoint(IPAddress.Parse("10.0.0.1"), 2113),
+			Assert.Equal(new IPEndPoint(IPAddress.Parse("10.0.0.1"), 2113),
 				_settings.GossipAdvertiseInfo.ExternalHttp);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_loopback_address_as_advertise_info_for_internal() {
-			Assert.AreEqual(new IPEndPoint(IPAddress.Loopback, 1112), _settings.GossipAdvertiseInfo.InternalTcp);
-			Assert.AreEqual(new IPEndPoint(IPAddress.Loopback, 2112), _settings.GossipAdvertiseInfo.InternalHttp);
+			Assert.Equal(new IPEndPoint(IPAddress.Loopback, 1112), _settings.GossipAdvertiseInfo.InternalTcp);
+			Assert.Equal(new IPEndPoint(IPAddress.Loopback, 2112), _settings.GossipAdvertiseInfo.InternalHttp);
 		}
 	}
 
-	[TestFixture]
 	public class with_0_0_0_0_as_external_ip_address_with_no_explicit_advertise_info_set : ClusterMemberScenario {
 		public override void Given() {
 			_builder.WithExternalTcpOn(new IPEndPoint(IPAddress.Parse("0.0.0.0"), 1113))
 				.WithInternalTcpOn(new IPEndPoint(IPAddress.Loopback, 1112));
 		}
 
-		[Test]
+		[Fact]
 		public void should_use_the_non_default_loopback_ip_as_advertise_info_for_external() {
-			Assert.AreEqual(new IPEndPoint(IPFinder.GetNonLoopbackAddress(), 1113),
+			Assert.Equal(new IPEndPoint(IPFinder.GetNonLoopbackAddress(), 1113),
 				_settings.GossipAdvertiseInfo.ExternalTcp);
-			Assert.AreEqual(new IPEndPoint(IPFinder.GetNonLoopbackAddress(), 2113),
+			Assert.Equal(new IPEndPoint(IPFinder.GetNonLoopbackAddress(), 2113),
 				_settings.GossipAdvertiseInfo.ExternalHttp);
 		}
 
-		[Test]
+		[Fact]
 		public void should_use_loopback_ip_as_advertise_info_for_internal() {
-			Assert.AreEqual(new IPEndPoint(IPAddress.Loopback, 1112), _settings.GossipAdvertiseInfo.InternalTcp);
-			Assert.AreEqual(new IPEndPoint(IPAddress.Loopback, 2112), _settings.GossipAdvertiseInfo.InternalHttp);
+			Assert.Equal(new IPEndPoint(IPAddress.Loopback, 1112), _settings.GossipAdvertiseInfo.InternalTcp);
+			Assert.Equal(new IPEndPoint(IPAddress.Loopback, 2112), _settings.GossipAdvertiseInfo.InternalHttp);
 		}
 	}
 
-	[TestFixture]
 	public class
 		with_0_0_0_0_for_internal_and_external_ips_with_advertise_info_set_for_external : ClusterMemberScenario {
 		public override void Given() {
@@ -264,19 +242,19 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 				.AdvertiseExternalIPAs(IPAddress.Parse("10.0.0.1"));
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_custom_advertise_info_for_external() {
-			Assert.AreEqual(new IPEndPoint(IPAddress.Parse("10.0.0.1"), 1113),
+			Assert.Equal(new IPEndPoint(IPAddress.Parse("10.0.0.1"), 1113),
 				_settings.GossipAdvertiseInfo.ExternalTcp);
-			Assert.AreEqual(new IPEndPoint(IPAddress.Parse("10.0.0.1"), 2113),
+			Assert.Equal(new IPEndPoint(IPAddress.Parse("10.0.0.1"), 2113),
 				_settings.GossipAdvertiseInfo.ExternalHttp);
 		}
 
-		[Test]
+		[Fact]
 		public void should_use_the_non_default_loopback_ip_as_advertise_info_for_internal() {
-			Assert.AreEqual(new IPEndPoint(IPFinder.GetNonLoopbackAddress(), 1112),
+			Assert.Equal(new IPEndPoint(IPFinder.GetNonLoopbackAddress(), 1112),
 				_settings.GossipAdvertiseInfo.InternalTcp);
-			Assert.AreEqual(new IPEndPoint(IPFinder.GetNonLoopbackAddress(), 2112),
+			Assert.Equal(new IPEndPoint(IPFinder.GetNonLoopbackAddress(), 2112),
 				_settings.GossipAdvertiseInfo.InternalHttp);
 		}
 	}

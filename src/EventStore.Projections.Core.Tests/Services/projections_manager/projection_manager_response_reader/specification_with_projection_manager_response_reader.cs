@@ -1,7 +1,7 @@
 ﻿using EventStore.Core.Tests.Helpers;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Management;
-using NUnit.Framework;
+using Xunit;
 using TestFixtureWithExistingEvents =
 	EventStore.Projections.Core.Tests.Services.core_projection.TestFixtureWithExistingEvents;
 
@@ -19,8 +19,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.project
 			_bus.Subscribe<ProjectionManagementMessage.Starting>(_commandReader);
 		}
 
-		[SetUp]
-		public new void SetUp() {
+		public specification_with_projection_manager_response_reader() {
 			WhenLoop();
 		}
 

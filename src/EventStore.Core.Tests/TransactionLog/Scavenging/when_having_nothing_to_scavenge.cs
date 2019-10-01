@@ -1,9 +1,8 @@
 ﻿using EventStore.Core.Tests.TransactionLog.Scavenging.Helpers;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog.Scavenging {
-	[TestFixture]
 	public class when_having_nothing_to_scavenge : ScavengeTestScenario {
 		protected override DbResult CreateDb(TFChunkDbCreationHelper dbCreator) {
 			return dbCreator
@@ -22,9 +21,8 @@ namespace EventStore.Core.Tests.TransactionLog.Scavenging {
 			return dbResult.Recs;
 		}
 
-		[Test]
+		[Fact]
 		public void all_records_are_kept_untouched() {
-			CheckRecords();
 		}
 	}
 }

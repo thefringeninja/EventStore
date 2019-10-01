@@ -9,7 +9,7 @@ using EventStore.Core.Services;
 using EventStore.Core.Services.UserManagement;
 using EventStore.Core.Tests.ClientAPI.Helpers;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI.Security {
 	public abstract class AuthenticationTestBase : SpecificationWithDirectoryPerTestFixture {
@@ -26,7 +26,6 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 			return TestConnection.Create(node.TcpEndPoint, TcpType.Normal, _userCredentials);
 		}
 
-		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 			_node = new MiniNode(PathName, enableTrustedAuth: true);
@@ -37,9 +36,9 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 				new UserManagementMessage.Create(
 					new CallbackEnvelope(
 						m => {
-							Assert.IsTrue(m is UserManagementMessage.UpdateResult);
+							Assert.True(m is UserManagementMessage.UpdateResult);
 							var msg = (UserManagementMessage.UpdateResult)m;
-							Assert.IsTrue(msg.Success);
+							Assert.True(msg.Success);
 
 							userCreateEvent1.SetResult(true);
 						}),
@@ -54,9 +53,9 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 				new UserManagementMessage.Create(
 					new CallbackEnvelope(
 						m => {
-							Assert.IsTrue(m is UserManagementMessage.UpdateResult);
+							Assert.True(m is UserManagementMessage.UpdateResult);
 							var msg = (UserManagementMessage.UpdateResult)m;
-							Assert.IsTrue(msg.Success);
+							Assert.True(msg.Success);
 
 							userCreateEvent2.SetResult(true);
 						}),
@@ -71,9 +70,9 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 				new UserManagementMessage.Create(
 					new CallbackEnvelope(
 						m => {
-							Assert.IsTrue(m is UserManagementMessage.UpdateResult);
+							Assert.True(m is UserManagementMessage.UpdateResult);
 							var msg = (UserManagementMessage.UpdateResult)m;
-							Assert.IsTrue(msg.Success);
+							Assert.True(msg.Success);
 
 							adminCreateEvent2.SetResult(true);
 						}),
@@ -83,9 +82,9 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 					new[] {SystemRoles.Admins},
 					"admpa$$"));
 
-			Assert.IsTrue(await userCreateEvent1.Task.WithTimeout(10000), "User 1 creation failed");
-			Assert.IsTrue(await userCreateEvent2.Task.WithTimeout(10000), "User 2 creation failed");
-			Assert.IsTrue(await adminCreateEvent2.Task.WithTimeout(10000), "Administrator User creation failed");
+			Assert.True(await userCreateEvent1.Task.WithTimeout(10000), "User 1 creation failed");
+			Assert.True(await userCreateEvent2.Task.WithTimeout(10000), "User 2 creation failed");
+			Assert.True(await adminCreateEvent2.Task.WithTimeout(10000), "Administrator User creation failed");
 
 			Connection = SetupConnection(_node);
 			await Connection.ConnectAsync();
@@ -152,7 +151,6 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 				new UserCredentials("adm", "admpa$$"));
 		}
 
-		[OneTimeTearDown]
 		public override async Task TestFixtureTearDown() {
 			await _node.Shutdown();
 			Connection.Close();
@@ -224,8 +222,8 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		protected async Task<string> CreateStreamWithMeta(StreamMetadata metadata, string streamPrefix = null) {
-			var stream = (streamPrefix ?? string.Empty) + TestContext.CurrentContext.Test.Name;
-			await Connection.SetStreamMetadataAsync(stream, ExpectedVersion.NoStream,
+			var stream = (streamPrefix ?? string.Empty) + Guid.NewGuid().ToString("n");
+            await Connection.SetStreamMetadataAsync(stream, ExpectedVersion.NoStream,
 				metadata, new UserCredentials("adm", "admpa$$"));
 			return stream;
 		}

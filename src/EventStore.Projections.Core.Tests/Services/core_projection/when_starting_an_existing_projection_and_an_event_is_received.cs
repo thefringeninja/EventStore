@@ -2,12 +2,11 @@ using System;
 using System.Text;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Projections.Core.Services.Processing.ResolvedEvent;
 using EventStore.Projections.Core.Services;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection {
-	[TestFixture]
 	public class when_starting_an_existing_projection_and_an_event_is_received : TestFixtureWithCoreProjectionStarted {
 		private string _testProjectionState = @"{""test"":1}";
 
@@ -38,10 +37,10 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 		}
 
 
-		[Test]
+		[Fact]
 		public void should_load_projection_state_handler() {
-			Assert.AreEqual(1, _stateHandler._loadCalled);
-			Assert.AreEqual(_testProjectionState + "data", _stateHandler._loadedState);
+			Assert.Equal(1, _stateHandler._loadCalled);
+			Assert.Equal(_testProjectionState + "data", _stateHandler._loadedState);
 		}
 	}
 }

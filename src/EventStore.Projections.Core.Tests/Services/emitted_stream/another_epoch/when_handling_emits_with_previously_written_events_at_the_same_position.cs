@@ -7,12 +7,11 @@ using EventStore.Core.Tests.Helpers;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
 using Newtonsoft.Json.Linq;
-using NUnit.Framework;
+using Xunit;
 using TestFixtureWithExistingEvents =
 	EventStore.Projections.Core.Tests.Services.core_projection.TestFixtureWithExistingEvents;
 
 namespace EventStore.Projections.Core.Tests.Services.emitted_stream.another_epoch {
-	[TestFixture]
 	public class
 		when_handling_emits_with_previously_written_events_at_the_same_position : TestFixtureWithExistingEvents {
 		private EmittedStream _stream;
@@ -47,8 +46,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream.another_epoc
 			};
 		}
 
-		[SetUp]
-		public void setup() {
+		public when_handling_emits_with_previously_written_events_at_the_same_position() {
 			_readyHandler = new TestCheckpointManagerMessageHandler();
 			_stream = new EmittedStream(
 				"test_stream",
@@ -62,42 +60,42 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream.another_epoc
 			OneWriteCompletes();
 		}
 
-		[Test]
+		[Fact]
 		public void truncates_existing_stream_at_correct_position() {
 			var writes =
 				HandledMessages.OfType<ClientMessage.WriteEvents>()
 					.OfEventType(SystemEventTypes.StreamMetadata)
 					.ToArray();
-			Assert.AreEqual(1, writes.Length);
+			Assert.Equal(1, writes.Length);
 			HelperExtensions.AssertJson(new {___tb = 2}, writes[0].Data.ParseJson<JObject>());
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_all_events() {
 			var writtenEvents =
-				_consumer.HandledMessages.OfType<ClientMessage.WriteEvents>()
+				Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>()
 					.ExceptOfEventType(SystemEventTypes.StreamMetadata)
 					.ToArray();
-			Assert.AreEqual(3, writtenEvents.Length);
-			Assert.AreEqual("type1", writtenEvents[0].EventType);
-			Assert.AreEqual("type2", writtenEvents[1].EventType);
-			Assert.AreEqual("type3", writtenEvents[2].EventType);
+			Assert.Equal(3, writtenEvents.Length);
+			Assert.Equal("type1", writtenEvents[0].EventType);
+			Assert.Equal("type2", writtenEvents[1].EventType);
+			Assert.Equal("type3", writtenEvents[2].EventType);
 		}
 
-		[Test]
+		[Fact]
 		public void updates_stream_metadata() {
 			var writes =
 				HandledMessages.OfType<ClientMessage.WriteEvents>()
 					.OfEventType(SystemEventTypes.StreamMetadata)
 					.ToArray();
-			Assert.AreEqual(1, writes.Length);
+			Assert.Equal(1, writes.Length);
 		}
 
-		[Test]
+		[Fact]
 		public void reports_correct_event_numbers() {
-			Assert.AreEqual(2, _1);
-			Assert.AreEqual(3, _2);
-			Assert.AreEqual(4, _3);
+			Assert.Equal(2, _1);
+			Assert.Equal(3, _2);
+			Assert.Equal(4, _3);
 		}
 	}
 }

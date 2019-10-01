@@ -5,12 +5,11 @@ using EventStore.Core.Bus;
 using EventStore.Core.Messages;
 using EventStore.Core.Messaging;
 using EventStore.Core.Tests.Bus.Helpers;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Bus {
-	[TestFixture, Ignore("Long running")]
 	public class QueueSpeedTest {
-		[Test, Category("LongRunning"), Explicit]
+		[Trait("Category", "LongRunning"), Explicit]
 		public void autoreset_mpsc_queued_handler_2_producers_50mln_messages() {
 			QueuedHandlerAutoResetWithMpsc queue = null;
 			SpeedTest(consumer => {
@@ -21,7 +20,7 @@ namespace EventStore.Core.Tests.Bus {
 			queue.Stop();
 		}
 
-		[Test, Category("LongRunning"), Explicit]
+		[Trait("Category", "LongRunning"), Explicit]
 		public void autoreset_mpsc_queued_handler_10_producers_50mln_messages() {
 			QueuedHandlerAutoResetWithMpsc queue = null;
 			SpeedTest(consumer => {
@@ -32,7 +31,7 @@ namespace EventStore.Core.Tests.Bus {
 			queue.Stop();
 		}
 
-		[Test, Category("LongRunning"), Explicit]
+		[Trait("Category", "LongRunning"), Explicit]
 		public void autoreset_queued_handler_2_producers_50mln_messages() {
 			QueuedHandlerAutoReset queue = null;
 			SpeedTest(consumer => {
@@ -43,7 +42,7 @@ namespace EventStore.Core.Tests.Bus {
 			queue.Stop();
 		}
 
-		[Test, Category("LongRunning"), Explicit]
+		[Trait("Category", "LongRunning"), Explicit]
 		public void autoreset_queued_handler_10_producers_50mln_messages() {
 			QueuedHandlerAutoReset queue = null;
 			SpeedTest(consumer => {
@@ -54,7 +53,7 @@ namespace EventStore.Core.Tests.Bus {
 			queue.Stop();
 		}
 
-		[Test, Category("LongRunning"), Explicit]
+		[Trait("Category", "LongRunning"), Explicit]
 		public void sleep_queued_handler_2_producers_50mln_messages() {
 			QueuedHandlerSleep queue = null;
 			SpeedTest(consumer => {
@@ -65,7 +64,7 @@ namespace EventStore.Core.Tests.Bus {
 			queue.Stop();
 		}
 
-		[Test, Category("LongRunning"), Explicit]
+		[Trait("Category", "LongRunning"), Explicit]
 		public void sleep_queued_handler_10_producers_50mln_messages() {
 			QueuedHandlerSleep queue = null;
 			SpeedTest(consumer => {
@@ -76,7 +75,7 @@ namespace EventStore.Core.Tests.Bus {
 			queue.Stop();
 		}
 
-		[Test, Category("LongRunning"), Explicit]
+		[Trait("Category", "LongRunning"), Explicit]
 		public void pulse_queued_handler_2_producers_50mln_messages() {
 			QueuedHandlerPulse queue = null;
 			SpeedTest(consumer => {
@@ -87,7 +86,7 @@ namespace EventStore.Core.Tests.Bus {
 			queue.Stop();
 		}
 
-		[Test, Category("LongRunning"), Explicit]
+		[Trait("Category", "LongRunning"), Explicit]
 		public void pulse_queued_handler_10_producers_50mln_messages() {
 			QueuedHandlerPulse queue = null;
 			SpeedTest(consumer => {
@@ -98,7 +97,7 @@ namespace EventStore.Core.Tests.Bus {
 			queue.Stop();
 		}
 
-		[Test, Category("LongRunning"), Explicit]
+		[Trait("Category", "LongRunning"), Explicit]
 		public void mres_mpsc_queued_handler_2_producers_50mln_messages() {
 			QueuedHandlerMresWithMpsc queue = null;
 			SpeedTest(consumer => {
@@ -109,7 +108,7 @@ namespace EventStore.Core.Tests.Bus {
 			queue.Stop();
 		}
 
-		[Test, Category("LongRunning"), Explicit]
+		[Trait("Category", "LongRunning"), Explicit]
 		public void mres_mpsc_queued_handler_10_producers_50mln_messages() {
 			QueuedHandlerMresWithMpsc queue = null;
 			SpeedTest(consumer => {
@@ -120,7 +119,7 @@ namespace EventStore.Core.Tests.Bus {
 			queue.Stop();
 		}
 
-		[Test, Category("LongRunning"), Explicit]
+		[Trait("Category", "LongRunning"), Explicit]
 		public void mres_queued_handler_2_producers_50mln_messages() {
 			QueuedHandlerMRES queue = null;
 			SpeedTest(consumer => {
@@ -131,7 +130,7 @@ namespace EventStore.Core.Tests.Bus {
 			queue.Stop();
 		}
 
-		[Test, Category("LongRunning"), Explicit]
+		[Trait("Category", "LongRunning"), Explicit]
 		public void mres_queued_handler_10_producers_50mln_messages() {
 			QueuedHandlerMRES queue = null;
 			SpeedTest(consumer => {

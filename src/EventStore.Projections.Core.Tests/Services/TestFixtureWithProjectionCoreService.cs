@@ -13,7 +13,7 @@ using EventStore.Projections.Core.Messages.ParallelQueryProcessingMessages;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Management;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Projections.Core.Services.Processing.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services {
@@ -57,8 +57,7 @@ namespace EventStore.Projections.Core.Tests.Services {
 		private ISingletonTimeoutScheduler _timeoutScheduler;
 		protected Guid _workerId;
 
-		[SetUp]
-		public void Setup() {
+		public TestFixtureWithProjectionCoreService() {
 			_consumer = new TestHandler<Message>();
 			_bus = new InMemoryBus("temp");
 			_bus.Subscribe(_consumer);

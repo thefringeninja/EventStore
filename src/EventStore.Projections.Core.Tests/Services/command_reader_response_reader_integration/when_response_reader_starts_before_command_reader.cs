@@ -1,5 +1,5 @@
 ﻿using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,9 +19,9 @@ namespace EventStore.Projections.Core.Tests.Services.command_reader_response_rea
 				new ProjectionCoreServiceMessage.StartCore(uniqueId));
 		}
 
-		[Test]
+		[Fact]
 		public void should_send_reader_ready() {
-			Assert.AreEqual(1, _consumer.HandledMessages.OfType<ProjectionManagementMessage.ReaderReady>().Count());
+			Assert.Equal(1, Consumer.HandledMessages.OfType<ProjectionManagementMessage.ReaderReady>().Count());
 		}
 	}
 
@@ -41,9 +41,9 @@ namespace EventStore.Projections.Core.Tests.Services.command_reader_response_rea
 				new ProjectionCoreServiceMessage.StartCore(uniqueId));
 		}
 
-		[Test]
+		[Fact]
 		public void should_send_reader_ready() {
-			Assert.AreEqual(1, _consumer.HandledMessages.OfType<ProjectionManagementMessage.ReaderReady>().Count());
+			Assert.Equal(1, Consumer.HandledMessages.OfType<ProjectionManagementMessage.ReaderReady>().Count());
 		}
 	}
 }

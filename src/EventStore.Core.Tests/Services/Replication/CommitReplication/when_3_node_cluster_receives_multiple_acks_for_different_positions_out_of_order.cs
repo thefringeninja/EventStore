@@ -2,10 +2,9 @@ using System;
 using System.Threading;
 using EventStore.Core.Bus;
 using EventStore.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Replication.CommitReplication {
-	[TestFixture]
 	public class
 		when_3_node_cluster_receives_multiple_acks_for_different_positions_out_of_order : with_index_committer_service {
 		private CountdownEvent _eventsReplicated = new CountdownEvent(2);
@@ -28,27 +27,27 @@ namespace EventStore.Core.Tests.Services.Replication.CommitReplication {
 			_service.Handle(new StorageMessage.CommitAck(_correlationId2, _logPosition2, _logPosition2, 0, 0));
 
 			if (!_eventsReplicated.Wait(TimeSpan.FromSeconds(_timeoutSeconds))) {
-				Assert.Fail("Timed out waiting for commit replicated messages to be published");
+				throw new Exception("Timed out waiting for commit replicated messages to be published");
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void replication_checkpoint_should_have_been_updated() {
-			Assert.AreEqual(_logPosition2, _replicationCheckpoint.ReadNonFlushed());
+			Assert.Equal(_logPosition2, _replicationCheckpoint.ReadNonFlushed());
 		}
 
-		[Test]
+		[Fact]
 		public void commit_replicated_message_should_have_been_published_for_first_two_events() {
-			Assert.AreEqual(2, _handledMessages.Count);
-			Assert.AreEqual(_correlationId1, _handledMessages[0].CorrelationId);
-			Assert.AreEqual(_correlationId2, _handledMessages[1].CorrelationId);
+			Assert.Equal(2, _handledMessages.Count);
+			Assert.Equal(_correlationId1, _handledMessages[0].CorrelationId);
+			Assert.Equal(_correlationId2, _handledMessages[1].CorrelationId);
 		}
 
-		[Test]
+		[Fact]
 		public void index_should_have_been_updated() {
-			Assert.AreEqual(2, _indexCommitter.CommittedPrepares.Count);
-			Assert.AreEqual(_logPosition1, _indexCommitter.CommittedPrepares[0].LogPosition);
-			Assert.AreEqual(_logPosition2, _indexCommitter.CommittedPrepares[1].LogPosition);
+			Assert.Equal(2, _indexCommitter.CommittedPrepares.Count);
+			Assert.Equal(_logPosition1, _indexCommitter.CommittedPrepares[0].LogPosition);
+			Assert.Equal(_logPosition2, _indexCommitter.CommittedPrepares[1].LogPosition);
 		}
 	}
 }

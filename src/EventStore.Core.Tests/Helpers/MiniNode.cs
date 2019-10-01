@@ -241,8 +241,10 @@ namespace EventStore.Core.Tests.Helpers {
 			try {
 				Directory.Delete(directory, true);
 			} catch (Exception e) {
-				Debug.WriteLine("Failed to remove directory {0}", directory);
-				Debug.WriteLine(e);
+#if DEBUG
+				ESDebug.WriteLine("Failed to remove directory {0}", directory);
+				ESDebug.WriteLine(e);
+#endif
 			}
 		}
 

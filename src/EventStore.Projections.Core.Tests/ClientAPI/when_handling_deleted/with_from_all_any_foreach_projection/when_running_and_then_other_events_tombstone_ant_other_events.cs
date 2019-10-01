@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
-using NUnit.Framework;
+using EventStore.Core.Tests;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.ClientAPI.when_handling_deleted.with_from_all_any_foreach_projection {
-	[TestFixture]
 	public class
 		when_running_and_then_other_events_tombstone_ant_other_events :
 			specification_with_standard_projections_runnning {
@@ -36,7 +36,7 @@ fromAll().foreachStream().when({
 			WaitIdle();
 		}
 
-		[Test, Category("Network")]
+		[DebugFact, Trait("Category", "Network")]
 		public async Task receives_deleted_notification() {
 			await AssertStreamTail(
 				"$projections-test-projection-stream-1-result", "Result:{\"a\":2}", "Result:{\"a\":2,\"deleted\":1}");

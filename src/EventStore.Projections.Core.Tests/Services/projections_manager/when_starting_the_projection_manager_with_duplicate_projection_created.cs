@@ -13,10 +13,9 @@ using EventStore.Projections.Core.Services.Management;
 using EventStore.Projections.Core.Tests.Services.core_projection;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Services;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager {
-	[TestFixture]
 	public class
 		when_starting_the_projection_manager_with_duplicate_projection_created : TestFixtureWithExistingEvents {
 		private new ITimeProvider _timeProvider;
@@ -34,8 +33,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 				@"{""Query"":""fromAll(); on_any(function(){});log('hello-from-projection-definition');"", ""Mode"":""3"", ""Enabled"":true, ""HandlerType"":""JS""}");
 		}
 
-		[SetUp]
-		public void setup() {
+		public when_starting_the_projection_manager_with_duplicate_projection_created() {
 			_timeProvider = new FakeTimeProvider();
 			var queues = new Dictionary<Guid, IPublisher> {{_workerId, _bus}};
 			_manager = new ProjectionManager(
@@ -53,30 +51,30 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 			_manager.Handle(new ProjectionManagementMessage.ReaderReady());
 		}
 
-		[TearDown]
-		public void TearDown() {
+		public override void Dispose() {
 			_manager.Dispose();
+			base.Dispose();
 		}
 
-		[Test]
+		[Fact]
 		public void projection_status_is_preparing() {
 			_manager.Handle(
 				new ProjectionManagementMessage.Command.GetStatistics(new PublishEnvelope(_bus), null, "projection1",
 					true));
-			Assert.AreEqual(
+			Assert.Equal(
 				ManagedProjectionState.Preparing,
-				_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().SingleOrDefault(
+				Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().SingleOrDefault(
 					v => v.Projections[0].Name == "projection1").Projections[0].MasterStatus);
 		}
 
-		[Test]
+		[Fact]
 		public void projection_id_is_latest() {
 			_manager.Handle(
 				new ProjectionManagementMessage.Command.GetStatistics(new PublishEnvelope(_bus), null, "projection1",
 					true));
-			Assert.AreEqual(
+			Assert.Equal(
 				1,
-				_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().SingleOrDefault(
+				Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().SingleOrDefault(
 					v => v.Projections[0].Name == "projection1").Projections[0].ProjectionId);
 		}
 	}

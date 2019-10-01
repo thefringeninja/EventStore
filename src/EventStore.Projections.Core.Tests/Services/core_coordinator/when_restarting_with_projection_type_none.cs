@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Services.Management;
 using EventStore.Common.Options;
@@ -13,7 +13,6 @@ using EventStore.Core.Tests.Services.Replication;
 using System.Collections.Generic;
 
 namespace EventStore.Projections.Core.Tests.Services.core_coordinator {
-	[TestFixture]
 	public class when_restarting_with_projection_type_none {
 		private FakePublisher[] queues;
 		private FakePublisher publisher;
@@ -21,8 +20,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_coordinator {
 		private TimeoutScheduler[] timeoutScheduler = { };
 		private FakeEnvelope envelope = new FakeEnvelope();
 
-		[SetUp]
-		public void Setup() {
+		public when_restarting_with_projection_type_none() {
 			queues = new List<FakePublisher>() {new FakePublisher()}.ToArray();
 			publisher = new FakePublisher();
 
@@ -53,38 +51,38 @@ namespace EventStore.Projections.Core.Tests.Services.core_coordinator {
 			_coordinator.Handle(new ProjectionCoreServiceMessage.SubComponentStopped("EventReaderCoreService"));
 		}
 
-		[Test]
+		[Fact]
 		public void should_not_start_if_subcomponents_not_stopped() {
 			AllSubComponentsStarted();
 
 			BecomeReady();
-			Assert.AreEqual(0, queues[0].Messages.FindAll(x => x is ReaderCoreServiceMessage.StartReader).Count);
+			Assert.Empty(queues[0].Messages.FindAll(x => x is ReaderCoreServiceMessage.StartReader));
 		}
 
-		[Test]
+		[Fact]
 		public void should_start_if_subcomponents_stopped_before_becoming_ready() {
 			AllSubComponentsStarted();
 
 			AllSubComponentsStopped();
 			BecomeReady();
-			Assert.AreEqual(1, queues[0].Messages.FindAll(x => x is ReaderCoreServiceMessage.StartReader).Count);
+			Assert.Single(queues[0].Messages.FindAll(x => x is ReaderCoreServiceMessage.StartReader));
 		}
 
-		[Test]
+		[Fact]
 		public void should_start_if_subcomponents_stopped_after_becoming_ready() {
 			AllSubComponentsStarted();
 
 			BecomeReady();
 			AllSubComponentsStopped();
-			Assert.AreEqual(1, queues[0].Messages.FindAll(x => x is ReaderCoreServiceMessage.StartReader).Count);
+			Assert.Single(queues[0].Messages.FindAll(x => x is ReaderCoreServiceMessage.StartReader));
 		}
 
-		[Test]
+		[Fact]
 		public void should_start_if_subcomponents_started_and_stopped_late_after_becoming_ready() {
 			BecomeReady();
 			AllSubComponentsStarted();
 			AllSubComponentsStopped();
-			Assert.AreEqual(1, queues[0].Messages.FindAll(x => x is ReaderCoreServiceMessage.StartReader).Count);
+			Assert.Single(queues[0].Messages.FindAll(x => x is ReaderCoreServiceMessage.StartReader));
 		}
 	}
 }

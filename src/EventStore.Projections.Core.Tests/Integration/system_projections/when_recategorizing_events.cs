@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using EventStore.Core.Services;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Integration.system_projections {
-	[TestFixture]
 	public class when_recategorizing_events : specification_with_a_v8_query_posted {
 		protected override void GivenEvents() {
 			ExistingEvent("account-01", "test", "", "{\"a\":1}", isJson: true);
@@ -31,18 +30,18 @@ namespace EventStore.Projections.Core.Tests.Integration.system_projections {
 			return "";
 		}
 
-		[Test]
+		[Fact]
 		public void streams_are_categorized() {
 			AssertStreamTail("$category-account", "account-01", "account-02");
 			AssertStreamTail("$category-categorized", "categorized-0", "categorized-1");
 		}
 
-		[Test]
+		[Fact]
 		public void events_are_categorized() {
 			AssertStreamTail("$ce-account", "0@account-01", "1@account-01", "0@account-02");
 		}
 
-		[Test]
+		[Fact]
 		public void links_are_categorized() {
 			AssertStreamTail("$ce-categorized", "1@account-01", "0@account-02", "0@account-01");
 		}

@@ -1,10 +1,9 @@
 using System;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
-	[TestFixture]
 	public class when_handling_emits_in_invalid_order : TestFixtureWithExistingEvents {
 		private EmittedStream _stream;
 		private TestCheckpointManagerMessageHandler _readyHandler;
@@ -13,8 +12,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 			ExistingEvent("test_stream", "type", @"{""c"": 100, ""p"": 50}", "data");
 		}
 
-		[SetUp]
-		public void setup() {
+		public when_handling_emits_in_invalid_order() {
 			_readyHandler = new TestCheckpointManagerMessageHandler();
 			_stream = new EmittedStream(
 				"test_stream",
@@ -32,7 +30,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 				});
 		}
 
-		[Test]
+		[Fact]
 		public void throws_if_position_is_prior_to_the_last_event_position() {
 			Assert.Throws<InvalidOperationException>(() => {
 				_stream.EmitEvents(

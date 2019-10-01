@@ -2,11 +2,10 @@
 using System.Threading.Tasks;
 using EventStore.Core.Tests.TransactionLog.Scavenging.Helpers;
 using EventStore.Core.TransactionLog.Chunks;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog.Scavenging {
-	[TestFixture]
-	class when_scavenge_cancelled_after_started : ScavengeLifeCycleScenario {
+	public class when_scavenge_cancelled_after_started : ScavengeLifeCycleScenario {
 		protected override async Task When() {
 			var cancellationTokenSource = new CancellationTokenSource();
 
@@ -14,20 +13,20 @@ namespace EventStore.Core.Tests.TransactionLog.Scavenging {
             await TfChunkScavenger.Scavenge(false, true, 0, cancellationTokenSource.Token);
 		}
 
-		[Test]
+		[Fact]
 		public void completed_logged_with_stopped_result() {
-			Assert.That(Log.Completed);
-			Assert.That(Log.Result, Is.EqualTo(ScavengeResult.Stopped));
+			Assert.True(Log.Completed);
+			Assert.Equal(Log.Result, ScavengeResult.Stopped);
 		}
 
-		[Test]
+		[Fact]
 		public void no_chunks_scavenged() {
-			Assert.That(Log.Scavenged, Is.Empty);
+			Assert.Empty(Log.Scavenged);
 		}
 
-		[Test]
+		[Fact]
 		public void doesnt_call_scavenge_on_the_table_index() {
-			Assert.That(FakeTableIndex.ScavengeCount, Is.EqualTo(0));
+			Assert.Equal(FakeTableIndex.ScavengeCount, 0);
 		}
 	}
 }

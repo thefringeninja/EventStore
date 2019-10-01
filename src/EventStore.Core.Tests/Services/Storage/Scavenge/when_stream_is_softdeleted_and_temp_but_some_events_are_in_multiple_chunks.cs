@@ -2,11 +2,10 @@
 using EventStore.Core.Data;
 using EventStore.Core.Tests.TransactionLog.Scavenging.Helpers;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 using ReadStreamResult = EventStore.Core.Services.Storage.ReaderIndex.ReadStreamResult;
 
 namespace EventStore.Core.Tests.Services.Storage.Scavenge {
-	[TestFixture]
 	public class when_stream_is_softdeleted_and_temp_but_some_events_are_in_multiple_chunks : ScavengeTestScenario {
 		protected override DbResult CreateDb(TFChunkDbCreationHelper dbCreator) {
 			return dbCreator.Chunk(Rec.Prepare(0, "test"),
@@ -32,44 +31,43 @@ namespace EventStore.Core.Tests.Services.Storage.Scavenge {
 			};
 		}
 
-		[Test]
+		[Fact]
 		public void scavenging_goes_as_expected() {
-			CheckRecords();
 		}
 
-		[Test]
+		[Fact]
 		public void the_stream_is_absent_logically() {
-			Assert.AreEqual(ReadEventResult.NoStream, ReadIndex.ReadEvent("test", 0).Result);
-			Assert.AreEqual(ReadStreamResult.NoStream, ReadIndex.ReadStreamEventsForward("test", 0, 100).Result);
-			Assert.AreEqual(ReadStreamResult.NoStream, ReadIndex.ReadStreamEventsBackward("test", -1, 100).Result);
+			Assert.Equal(ReadEventResult.NoStream, ReadIndex.ReadEvent("test", 0).Result);
+			Assert.Equal(ReadStreamResult.NoStream, ReadIndex.ReadStreamEventsForward("test", 0, 100).Result);
+			Assert.Equal(ReadStreamResult.NoStream, ReadIndex.ReadStreamEventsBackward("test", -1, 100).Result);
 		}
 
-		[Test]
+		[Fact]
 		public void the_metastream_is_present_logically() {
-			Assert.AreEqual(ReadEventResult.Success, ReadIndex.ReadEvent("$$test", -1).Result);
-			Assert.AreEqual(ReadStreamResult.Success, ReadIndex.ReadStreamEventsForward("$$test", 0, 100).Result);
-			Assert.AreEqual(1, ReadIndex.ReadStreamEventsForward("$$test", 0, 100).Records.Length);
-			Assert.AreEqual(ReadStreamResult.Success, ReadIndex.ReadStreamEventsBackward("$$test", -1, 100).Result);
-			Assert.AreEqual(1, ReadIndex.ReadStreamEventsBackward("$$test", -1, 100).Records.Length);
+			Assert.Equal(ReadEventResult.Success, ReadIndex.ReadEvent("$$test", -1).Result);
+			Assert.Equal(ReadStreamResult.Success, ReadIndex.ReadStreamEventsForward("$$test", 0, 100).Result);
+			Assert.Equal(1, ReadIndex.ReadStreamEventsForward("$$test", 0, 100).Records.Length);
+			Assert.Equal(ReadStreamResult.Success, ReadIndex.ReadStreamEventsBackward("$$test", -1, 100).Result);
+			Assert.Equal(1, ReadIndex.ReadStreamEventsBackward("$$test", -1, 100).Records.Length);
 		}
 
-		[Test]
+		[Fact]
 		public void the_stream_is_present_physically() {
 			var headOfTf = new TFPos(Db.Config.WriterCheckpoint.Read(), Db.Config.WriterCheckpoint.Read());
-			Assert.AreEqual(1,
+			Assert.Equal(1,
 				ReadIndex.ReadAllEventsForward(new TFPos(0, 0), 1000).Records
 					.Count(x => x.Event.EventStreamId == "test"));
-			Assert.AreEqual(1,
+			Assert.Equal(1,
 				ReadIndex.ReadAllEventsBackward(headOfTf, 1000).Records.Count(x => x.Event.EventStreamId == "test"));
 		}
 
-		[Test]
+		[Fact]
 		public void the_metastream_is_present_physically() {
 			var headOfTf = new TFPos(Db.Config.WriterCheckpoint.Read(), Db.Config.WriterCheckpoint.Read());
-			Assert.AreEqual(1,
+			Assert.Equal(1,
 				ReadIndex.ReadAllEventsForward(new TFPos(0, 0), 1000).Records
 					.Count(x => x.Event.EventStreamId == "$$test"));
-			Assert.AreEqual(1,
+			Assert.Equal(1,
 				ReadIndex.ReadAllEventsBackward(headOfTf, 1000).Records.Count(x => x.Event.EventStreamId == "$$test"));
 		}
 	}

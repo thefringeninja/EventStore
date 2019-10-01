@@ -4,12 +4,11 @@ using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Messages.ParallelQueryProcessingMessages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Projections.Core.Services.Processing.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.parallel_query {
-	[TestFixture]
-	class when_handling_reordered_partition_processing_result_messages : specification_with_parallel_query {
+	public class when_handling_reordered_partition_processing_result_messages : specification_with_parallel_query {
 		protected override void Given() {
 			base.Given();
 			_eventId = Guid.NewGuid();
@@ -74,13 +73,13 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.parallel_qu
 					"{\"data\":1}"));
 		}
 
-		[Test]
+		[Fact]
 		public void writes_state_for_each_partition() {
-			Assert.AreEqual(2, _writeEventHandler.HandledMessages.OfEventType("Result").Count);
+			Assert.Equal(2, _writeEventHandler.HandledMessages.OfEventType("Result").Count);
 			var message = _writeEventHandler.HandledMessages.WithEventType("Result")[0];
-			Assert.AreEqual("$projections-projection-account-00-result", message.EventStreamId);
+			Assert.Equal("$projections-projection-account-00-result", message.EventStreamId);
 			var message2 = _writeEventHandler.HandledMessages.WithEventType("Result")[1];
-			Assert.AreEqual("$projections-projection-account-01-result", message2.EventStreamId);
+			Assert.Equal("$projections-projection-account-01-result", message2.EventStreamId);
 		}
 	}
 }

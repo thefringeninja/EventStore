@@ -1,9 +1,8 @@
 ﻿using EventStore.Core.Services.Storage.ReaderIndex;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Storage.CheckCommitStartingAt {
-	[TestFixture]
 	public class when_writing_single_prepare : ReadIndexTestScenario {
 		private PrepareLogRecord _prepare;
 
@@ -11,16 +10,16 @@ namespace EventStore.Core.Tests.Services.Storage.CheckCommitStartingAt {
 			_prepare = WritePrepare("ES", -1);
 		}
 
-		[Test]
+		[Fact]
 		public void check_commmit_should_return_ok_decision() {
 			var res = ReadIndex.IndexWriter.CheckCommitStartingAt(_prepare.LogPosition,
 				WriterCheckpoint.ReadNonFlushed());
 
-			Assert.AreEqual(CommitDecision.Ok, res.Decision);
-			Assert.AreEqual("ES", res.EventStreamId);
-			Assert.AreEqual(-1, res.CurrentVersion);
-			Assert.AreEqual(-1, res.StartEventNumber);
-			Assert.AreEqual(-1, res.EndEventNumber);
+			Assert.Equal(CommitDecision.Ok, res.Decision);
+			Assert.Equal("ES", res.EventStreamId);
+			Assert.Equal(-1, res.CurrentVersion);
+			Assert.Equal(-1, res.StartEventNumber);
+			Assert.Equal(-1, res.EndEventNumber);
 		}
 	}
 }

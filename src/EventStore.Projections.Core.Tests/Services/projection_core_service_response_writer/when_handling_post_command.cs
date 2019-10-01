@@ -2,11 +2,10 @@
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Messages.Persisted.Responses;
 using EventStore.Projections.Core.Services;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projection_core_service_response_writer {
-	[TestFixture]
-	class when_handling_post_command : specification_with_projection_core_service_response_writer {
+	public class when_handling_post_command : specification_with_projection_core_service_response_writer {
 		private string _name;
 		private ProjectionManagementMessage.RunAs _runAs;
 		private ProjectionMode _mode;
@@ -47,19 +46,19 @@ namespace EventStore.Projections.Core.Tests.Services.projection_core_service_res
 					_enableRunAs));
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_post_command() {
 			var command = AssertParsedSingleCommand<PostCommand>("$post");
-			Assert.AreEqual(_name, command.Name);
-			Assert.AreEqual(_runAs, (ProjectionManagementMessage.RunAs)command.RunAs);
-			Assert.AreEqual(_mode, command.Mode);
-			Assert.AreEqual(_handlerType, command.HandlerType);
-			Assert.AreEqual(_query, command.Query);
-			Assert.AreEqual(_enabled, command.Enabled);
-			Assert.AreEqual(_checkpointsEnabled, command.CheckpointsEnabled);
-			Assert.AreEqual(_emitEnabled, command.EmitEnabled);
-			Assert.AreEqual(_trackEmittedStreams, command.TrackEmittedStreams);
-			Assert.AreEqual(_enableRunAs, command.EnableRunAs);
+			Assert.Equal(_name, command.Name);
+			Assert.Equal(_runAs, (ProjectionManagementMessage.RunAs)command.RunAs);
+			Assert.Equal(_mode, command.Mode);
+			Assert.Equal(_handlerType, command.HandlerType);
+			Assert.Equal(_query, command.Query);
+			Assert.Equal(_enabled, command.Enabled);
+			Assert.Equal(_checkpointsEnabled, command.CheckpointsEnabled);
+			Assert.Equal(_emitEnabled, command.EmitEnabled);
+			Assert.Equal(_trackEmittedStreams, command.TrackEmittedStreams);
+			Assert.Equal(_enableRunAs, command.EnableRunAs);
 		}
 	}
 }

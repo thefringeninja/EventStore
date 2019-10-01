@@ -4,10 +4,9 @@ using System.Linq;
 using EventStore.Core.Messages;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager.projection_manager_response_reader {
-	[TestFixture]
 	public class
 		when_timeout_received_after_read_succeeds : specification_with_projection_manager_response_reader_started {
 		private Guid _projectionId;
@@ -16,7 +15,7 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.project
 
 		protected override IEnumerable<WhenStep> When() {
 			AllReadsTimeOut();
-			_consumer.HandledMessages.Clear();
+			Consumer.HandledMessages.Clear();
 
 			_projectionId = Guid.NewGuid();
 			yield return
@@ -28,9 +27,9 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.project
                     }",
 					null,
 					true);
-			var readStreamMessage = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			var readStreamMessage = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.LastOrDefault(x => x.EventStreamId == _projectionsMasterStream);
-			Assert.IsNotNull(readStreamMessage, "Initial read was not issued");
+			Assert.NotNull(readStreamMessage);
 
 			_readStreamEventsCorrelationId = readStreamMessage.CorrelationId;
 			readStreamMessage.Envelope.ReplyWith(new ClientMessage.ReadStreamEventsForwardCompleted(
@@ -41,15 +40,15 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.project
 				true, 1000));
 		}
 
-		[Test]
+		[Fact]
 		public void does_not_issue_a_new_read() {
 			_commandReader.Handle(new ProjectionManagementMessage.Internal.ReadTimeout(_readStreamEventsCorrelationId,
 				_projectionsMasterStream));
 
 			var response = HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Last(x => x.EventStreamId == _projectionsMasterStream);
-			Assert.IsNotNull(response);
-			Assert.AreEqual(_readStreamEventsCorrelationId, response.CorrelationId);
+			Assert.NotNull(response);
+			Assert.Equal(_readStreamEventsCorrelationId, response.CorrelationId);
 		}
 	}
 }

@@ -2,7 +2,7 @@
 using System.Net;
 using System.Text.RegularExpressions;
 using EventStore.Core.Tests.Http.Users.users;
-using NUnit.Framework;
+using Xunit;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -16,7 +16,7 @@ using EventStore.Transport.Http;
 // ReSharper disable InconsistentNaming
 
 namespace EventStore.Core.Tests.Http.PersistentSubscription {
-	class when_acking_a_message : with_subscription_having_events {
+    public class when_acking_a_message : with_subscription_having_events, IDisposable {
 		private HttpResponseMessage _response;
 		private string _ackLink;
 
@@ -26,27 +26,27 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				SubscriptionPath + "/1",
 				ContentType.CompetingJson,
 				_admin);
-			Assert.AreEqual(HttpStatusCode.OK, _lastResponse.StatusCode);
+			Assert.Equal(HttpStatusCode.OK, _lastResponse.StatusCode);
 			_ackLink = json["entries"].Children().First()["links"].Children()
 				.First(x => x.Value<string>("relation") == "ack").Value<string>("uri");
-		}
-
-		[TearDown]
-		public void TearDown() {
-			_response.Dispose();
 		}
 
 		protected override async Task When() {
 			_response = await MakePost(_ackLink, _admin);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_accepted() {
-			Assert.AreEqual(HttpStatusCode.Accepted, _response.StatusCode);
+			Assert.Equal(HttpStatusCode.Accepted, _response.StatusCode);
+		}
+
+		public void Dispose()
+		{
+			_response?.Dispose();
 		}
 	}
 
-	class when_acking_messages : with_subscription_having_events {
+    public class when_acking_messages : with_subscription_having_events, IDisposable {
 		private HttpResponseMessage _response;
 		private string _ackAllLink;
 
@@ -56,23 +56,23 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				SubscriptionPath + "/" + Events.Count,
 				ContentType.CompetingJson,
 				_admin);
-			Assert.AreEqual(HttpStatusCode.OK, _lastResponse.StatusCode);
+			Assert.Equal(HttpStatusCode.OK, _lastResponse.StatusCode);
 			_ackAllLink = json["links"].Children().First(x => x.Value<string>("relation") == "ackAll")
 				.Value<string>("uri");
 		}
 
-		[TearDown]
-		public void TearDown() {
-			_response.Dispose();
+		public void Dispose()
+		{
+			_response?.Dispose();
 		}
 
 		protected override async Task When() {
 			_response = await MakePost(_ackAllLink, _admin);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_accepted() {
-			Assert.AreEqual(HttpStatusCode.Accepted, _response.StatusCode);
+			Assert.Equal(HttpStatusCode.Accepted, _response.StatusCode);
 		}
 	}
 }

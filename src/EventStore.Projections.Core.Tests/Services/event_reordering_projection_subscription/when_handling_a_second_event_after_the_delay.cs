@@ -1,10 +1,9 @@
 ﻿using System;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reordering_projection_subscription {
-	[TestFixture]
 	public class when_handling_a_second_event_after_the_delay : TestFixtureWithEventReorderingProjectionSubscription {
 		private Guid _firstEventId;
 		private DateTime _firstEventTimestamp;
@@ -27,9 +26,9 @@ namespace EventStore.Projections.Core.Tests.Services.event_reordering_projection
 					new byte[0], new byte[0], _firstEventTimestamp.AddMilliseconds(_timeBetweenEvents)));
 		}
 
-		[Test]
+		[Fact]
 		public void no_events_are_passed_to_downstream_handler_immediately() {
-			Assert.AreEqual(1, _eventHandler.HandledMessages.Count);
+			Assert.Equal(1, _eventHandler.HandledMessages.Count);
 		}
 	}
 }

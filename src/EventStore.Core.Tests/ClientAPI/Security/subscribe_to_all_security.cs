@@ -1,31 +1,32 @@
 ﻿using System.Threading.Tasks;
 using EventStore.ClientAPI.Exceptions;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI.Security {
-	[TestFixture, Category("ClientAPI"), Category("LongRunning"), Category("Network")]
+	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning"), Trait("Category", "Network")]
 	public class subscribe_to_all_security : AuthenticationTestBase {
-		[Test]
+
+		[Fact]
 		public async Task subscribing_to_all_with_not_existing_credentials_is_not_authenticated() {
-			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => SubscribeToAll("badlogin", "badpass"));
+			await Assert.ThrowsAsync<NotAuthenticatedException>(() => SubscribeToAll("badlogin", "badpass"));
 		}
 
-		[Test]
+		[Fact]
 		public async Task subscribing_to_all_with_no_credentials_is_denied() {
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => SubscribeToAll(null, null));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => SubscribeToAll(null, null));
 		}
 
-		[Test]
+		[Fact]
 		public async Task subscribing_to_all_with_not_authorized_user_credentials_is_denied() {
-			await AssertEx.ThrowsAsync<AccessDeniedException>(() => SubscribeToAll("user2", "pa$$2"));
+			await Assert.ThrowsAsync<AccessDeniedException>(() => SubscribeToAll("user2", "pa$$2"));
 		}
 
-		[Test]
+		[Fact]
 		public async Task subscribing_to_all_with_authorized_user_credentials_succeeds() {
 			await SubscribeToAll("user1", "pa$$1");
 		}
 
-		[Test]
+		[Fact]
 		public async Task subscribing_to_all_with_admin_user_credentials_succeeds() {
 			await SubscribeToAll("adm", "admpa$$");
 		}

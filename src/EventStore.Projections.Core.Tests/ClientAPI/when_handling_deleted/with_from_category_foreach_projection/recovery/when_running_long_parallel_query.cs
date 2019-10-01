@@ -1,12 +1,15 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
-using NUnit.Framework;
+using EventStore.Core.Tests;
+using Xunit;
+
 
 namespace EventStore.Projections.Core.Tests.ClientAPI.when_handling_deleted.with_from_category_foreach_projection.
 	recovery {
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class when_running_long_parallel_query : specification_with_standard_projections_runnning {
 		protected override int GivenWorkerThreadCount() {
 			return 2;
@@ -35,7 +38,7 @@ fromCategory('stream').foreachStream().when({
 			WaitIdle(multiplier: 10);
 		}
 
-		[Test, Category("Network"), Category("LongRunning")]
+		[DebugFact, Trait("Category", "Network"), Trait("Category", "LongRunning")]
 		public async Task produces_correct_result() {
 			await AssertStreamTail("$projections-query-stream-1-result", "Result:{\"a\":10}");
 			await AssertStreamTail("$projections-query-stream-2-result", "Result:{\"a\":10}");

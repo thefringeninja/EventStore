@@ -1,9 +1,8 @@
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.another_epoch {
-	[TestFixture]
 	public class when_starting_an_existing_projection : TestFixtureWithCoreProjectionStarted {
 		private string _testProjectionState = @"{""test"":1}";
 
@@ -27,11 +26,11 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.another_epo
 		}
 
 
-		[Test]
+		[Fact]
 		public void should_subscribe_from_the_beginning() {
-			Assert.AreEqual(1, _subscribeProjectionHandler.HandledMessages.Count);
-			Assert.AreEqual(0, _subscribeProjectionHandler.HandledMessages[0].FromPosition.Position.CommitPosition);
-			Assert.AreEqual(-1, _subscribeProjectionHandler.HandledMessages[0].FromPosition.Position.PreparePosition);
+			Assert.Equal(1, _subscribeProjectionHandler.HandledMessages.Count);
+			Assert.Equal(0, _subscribeProjectionHandler.HandledMessages[0].FromPosition.Position.CommitPosition);
+			Assert.Equal(-1, _subscribeProjectionHandler.HandledMessages[0].FromPosition.Position.PreparePosition);
 		}
 	}
 }

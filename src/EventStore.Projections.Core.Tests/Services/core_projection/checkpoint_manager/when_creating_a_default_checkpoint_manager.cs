@@ -1,9 +1,8 @@
 ﻿using System;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_manager {
-	[TestFixture]
 	public class when_creating_a_default_checkpoint_manager : TestFixtureWithCoreProjectionCheckpointManager {
 		private CoreProjectionCheckpointWriter _coreProjectionCheckpointWriter;
 
@@ -15,7 +14,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 			_namingBuilder = ProjectionNamesBuilder.CreateForTest("projection");
 		}
 
-		[Test]
+		[Fact]
 		public void it_can_be_created() {
 			_manager = new DefaultCheckpointManager(
 				_bus, _projectionCorrelationId, new ProjectionVersion(1, 0, 0), null, _ioDispatcher, _config,
@@ -23,7 +22,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 				_producesResults, _definesFold, _coreProjectionCheckpointWriter);
 		}
 
-		[Test]
+		[Fact]
 		public void null_publisher_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				_manager = new DefaultCheckpointManager(
@@ -33,7 +32,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void null_io_dispatcher_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				_manager = new DefaultCheckpointManager(
@@ -43,7 +42,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void null_projection_config_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				_manager = new DefaultCheckpointManager(
@@ -54,7 +53,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void null_projection_name_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				_manager = new DefaultCheckpointManager(
@@ -64,7 +63,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void null_position_tagger_throws_argument_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				_manager = new DefaultCheckpointManager(
@@ -74,7 +73,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void empty_projection_checkpoint_stream_id_throws_argument_exception() {
 			Assert.Throws<ArgumentException>(() => {
 				_manager = new DefaultCheckpointManager(
@@ -84,7 +83,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.checkpoint_
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void empty_projection_name_throws_argument_exception() {
 			Assert.Throws<ArgumentException>(() => {
 				_manager = new DefaultCheckpointManager(

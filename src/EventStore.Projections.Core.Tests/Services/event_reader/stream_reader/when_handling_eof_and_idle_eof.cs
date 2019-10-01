@@ -9,13 +9,12 @@ using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 using ReadStreamResult = EventStore.Core.Data.ReadStreamResult;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 using EventStore.Core.Services.AwakeReaderService;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader {
-	[TestFixture]
 	public class when_handling_eof_and_idle_eof : TestFixtureWithExistingEvents {
 		private StreamEventReader _edp;
 
@@ -29,8 +28,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader 
 			TicksAreHandledImmediately();
 		}
 
-		[SetUp]
-		public new void When() {
+		public when_handling_eof_and_idle_eof() {
 			_distibutionPointCorrelationId = Guid.NewGuid();
 			_fakeTimeProvider = new FakeTimeProvider();
 			_edp = new StreamEventReader(_bus, _distibutionPointCorrelationId, null, "stream", 10, _fakeTimeProvider,
@@ -39,7 +37,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader 
 			_edp.Resume();
 			_firstEventId = Guid.NewGuid();
 			_secondEventId = Guid.NewGuid();
-			var correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Last()
+			var correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Last()
 				.CorrelationId;
 			_edp.Handle(
 				new ClientMessage.ReadStreamEventsForwardCompleted(
@@ -58,14 +56,14 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader 
 								PrepareFlags.SingleWrite | PrepareFlags.TransactionBegin | PrepareFlags.TransactionEnd,
 								"event_type2", new byte[] {3}, new byte[] {4}))
 					}, null, false, "", 12, 11, true, 200));
-			correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Last()
+			correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Last()
 				.CorrelationId;
 			_edp.Handle(
 				new ClientMessage.ReadStreamEventsForwardCompleted(
 					correlationId, "stream", 100, 100, ReadStreamResult.Success,
 					new ResolvedEvent[] { }, null, false, "", 12, 11, true, 400));
 			_fakeTimeProvider.AddTime(TimeSpan.FromMilliseconds(500));
-			correlationId = ((ClientMessage.ReadStreamEventsForward)(_consumer.HandledMessages
+			correlationId = ((ClientMessage.ReadStreamEventsForward)(Consumer.HandledMessages
 				.OfType<AwakeServiceMessage.SubscribeAwake>().Last().ReplyWithMessage)).CorrelationId;
 			_edp.Handle(
 				new ClientMessage.ReadStreamEventsForwardCompleted(
@@ -73,21 +71,21 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader 
 					new ResolvedEvent[] { }, null, false, "", 12, 11, true, 400));
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_event_distribution_idle_messages() {
-			Assert.AreEqual(
-				2, _consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderIdle>().Count());
+			Assert.Equal(
+				2, Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderIdle>().Count());
 			var first =
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderIdle>().First();
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderIdle>().First();
 			var second =
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderIdle>()
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderIdle>()
 					.Skip(1)
 					.First();
 
-			Assert.AreEqual(first.CorrelationId, _distibutionPointCorrelationId);
-			Assert.AreEqual(second.CorrelationId, _distibutionPointCorrelationId);
+			Assert.Equal(first.CorrelationId, _distibutionPointCorrelationId);
+			Assert.Equal(second.CorrelationId, _distibutionPointCorrelationId);
 
-			Assert.AreEqual(TimeSpan.FromMilliseconds(500), second.IdleTimestampUtc - first.IdleTimestampUtc);
+			Assert.Equal(TimeSpan.FromMilliseconds(500), second.IdleTimestampUtc - first.IdleTimestampUtc);
 		}
 	}
 }

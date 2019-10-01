@@ -57,7 +57,7 @@ namespace EventStore.Core.Bus {
 		public void Start() {
 			_totalTimeWatch.Start();
 #if DEBUG
-			Debug.Assert(!_started,
+			ESDebug.Assert(!_started,
 				string.Format("QueueStatsCollector [{0}] was already started when Start() entered", Name));
 			lock (_itemsUpdateLock) {
 				_started = true;
@@ -81,7 +81,7 @@ namespace EventStore.Core.Bus {
 
 		public void Stop() {
 #if DEBUG
-			Debug.Assert(_started,
+			ESDebug.Assert(_started,
 				string.Format("QueueStatsCollector [{0}] was not started when Stop() entered", Name));
 #endif
 			EnterIdle();
@@ -90,14 +90,14 @@ namespace EventStore.Core.Bus {
 			lock (_itemsUpdateLock) {
 				_started = false;
 				_totalLength -= _length;
-				Debug.Assert(_totalLength >= 0,
+				ESDebug.Assert(_totalLength >= 0,
 					string.Format("QueueStatsCollector [{0}] _totalLength = {1} < 0", Name, _totalLength));
 			}
 
 			if (_idleDetection) {
 				lock (_notifyStopLock) {
 					_totalStarted--;
-					Debug.Assert(_totalStarted >= 0,
+					ESDebug.Assert(_totalStarted >= 0,
 						string.Format("QueueStatsCollector [{0}] _totalStarted = {1} < 0", Name, _totalStarted));
 					if (_totalStarted == 0) {
 						Monitor.Pulse(_notifyStopLock);
@@ -126,7 +126,7 @@ namespace EventStore.Core.Bus {
 
 		public void EnterIdle() {
 #if DEBUG
-			Debug.Assert(_started,
+			ESDebug.Assert(_started,
 				string.Format("QueueStatsCollector [{0}] was not started when EnterIdle() entered", Name));
 #endif
 			if (_wasIdle)
@@ -136,7 +136,7 @@ namespace EventStore.Core.Bus {
 			if (_idleDetection) {
 				lock (_notifyIdleLock) {
 					_nonIdle--;
-					Debug.Assert(_nonIdle >= 0,
+					ESDebug.Assert(_nonIdle >= 0,
 						string.Format("QueueStatsCollector [{0}] _nonIdle = {1} < 0", Name, _nonIdle));
 					if (_nonIdle == 0) {
 						Monitor.Pulse(_notifyIdleLock);
@@ -158,7 +158,7 @@ namespace EventStore.Core.Bus {
 
 		public void EnterBusy() {
 #if DEBUG
-			Debug.Assert(_started,
+			ESDebug.Assert(_started,
 				string.Format("QueueStatsCollector [{0}] was not started when EnterBusy() entered", Name));
 #endif
 			if (!_wasIdle)
@@ -264,7 +264,7 @@ namespace EventStore.Core.Bus {
 		}
 
 		private static void WaitStop(int multiplier = 1) {
-			Debug.Assert(_idleDetectionEnabled, "_idleDetectionEnabled was false when WaitStop() entered");
+			ESDebug.Assert(_idleDetectionEnabled, "_idleDetectionEnabled was false when WaitStop() entered");
 			lock (_notifyStopLock) {
 				var counter = 0;
 				while (_totalStarted > 0) {
@@ -283,7 +283,7 @@ namespace EventStore.Core.Bus {
 		public static void WaitIdle(bool waitForCheckpoints = true, bool waitForNonEmptyTf = false,
 			int multiplier = 1) {
 #if DEBUG
-			Debug.Assert(_idleDetectionEnabled, "_idleDetectionEnabled was false when WaitIdle() entered");
+			ESDebug.Assert(_idleDetectionEnabled, "_idleDetectionEnabled was false when WaitIdle() entered");
 			var counter = 0;
 			lock (_notifyIdleLock) {
 				var successes = 0;
@@ -299,6 +299,8 @@ namespace EventStore.Core.Bus {
 							if (counter > 150 * multiplier)
 								throw new ApplicationException("Infinite WaitIdle() loop?");
 						}
+
+						Thread.Sleep(10);
 					}
 
 					Thread.Sleep(10);
@@ -354,15 +356,15 @@ namespace EventStore.Core.Bus {
 		[Conditional("DEBUG")]
 		public void Dequeued(Message msg) {
 #if DEBUG
-			Debug.Assert(_started,
+			ESDebug.Assert(_started,
 				string.Format("QueueStatsCollector [{0}] was not started when Dequeued() entered", Name));
 			lock (_itemsUpdateLock) {
 				if (_started) {
 					_length--;
 					_totalLength--;
-					Debug.Assert(_length >= 0,
+					ESDebug.Assert(_length >= 0,
 						string.Format("QueueStatsCollector [{0}] _length = {1} < 0", Name, _length));
-					Debug.Assert(_totalLength >= 0,
+					ESDebug.Assert(_totalLength >= 0,
 						string.Format("QueueStatsCollector [{0}] _totalLength = {1} < 0", Name, _totalLength));
 				}
 			}

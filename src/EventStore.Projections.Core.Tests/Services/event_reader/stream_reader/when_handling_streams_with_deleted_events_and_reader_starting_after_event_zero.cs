@@ -9,11 +9,10 @@ using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader {
-	[TestFixture]
 	public class
 		when_handling_streams_with_deleted_events_and_reader_starting_after_event_zero : TestFixtureWithExistingEvents {
 		private StreamEventReader _edp;
@@ -25,8 +24,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader 
 			_fromSequenceNumber = 10;
 		}
 
-		[SetUp]
-		public new void When() {
+		public when_handling_streams_with_deleted_events_and_reader_starting_after_event_zero() {
 			_edp = new StreamEventReader(_bus, Guid.NewGuid(), null, _streamName, _fromSequenceNumber,
 				new RealTimeProvider(), false,
 				produceStreamDeletes: false);
@@ -50,7 +48,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader 
 				);
 			}
 
-			var correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Last()
+			var correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Last()
 				.CorrelationId;
 
 			long start, end;
@@ -75,38 +73,41 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader 
 			HandleEvents(eventNumbers.ToArray());
 		}
 
-		[Test]
+		[Fact]
 		public void allows_first_event_to_be_equal_to_sequence_number() {
 			long eventSequenceNumber = _fromSequenceNumber;
 
-			Assert.DoesNotThrow(() => { HandleEvents(eventSequenceNumber, eventSequenceNumber); });
+			{
+				HandleEvents(eventSequenceNumber, eventSequenceNumber);
+			}
+			;
 		}
 
-		[Test]
+		[Fact]
 		public void should_not_allow_first_event_to_be_greater_than_sequence_number() {
 			long eventSequenceNumber = _fromSequenceNumber + 5;
 
 			HandleEvents(eventSequenceNumber, eventSequenceNumber);
 
-			Assert.AreEqual(1, HandledMessages.OfType<ReaderSubscriptionMessage.Faulted>().Count());
+			Assert.Equal(1, HandledMessages.OfType<ReaderSubscriptionMessage.Faulted>().Count());
 		}
 
-		[Test]
+		[Fact]
 		public void should_not_allow_first_event_to_be_less_than_sequence_number() {
 			long eventSequenceNumber = _fromSequenceNumber - 1;
 
 			HandleEvents(eventSequenceNumber, eventSequenceNumber);
 
-			Assert.AreEqual(1, HandledMessages.OfType<ReaderSubscriptionMessage.Faulted>().Count());
+			Assert.Equal(1, HandledMessages.OfType<ReaderSubscriptionMessage.Faulted>().Count());
 		}
 
-		[Test]
+		[Fact]
 		public void events_after_second_event_should_not_be_in_sequence() {
 			//_fromSequenceNumber+2 has been omitted
 			HandleEvents(new long[]
 				{_fromSequenceNumber, _fromSequenceNumber + 1, _fromSequenceNumber + 3, _fromSequenceNumber + 4});
 
-			Assert.AreEqual(2, HandledMessages.OfType<ReaderSubscriptionMessage.Faulted>().Count());
+			Assert.Equal(2, HandledMessages.OfType<ReaderSubscriptionMessage.Faulted>().Count());
 		}
 	}
 }

@@ -4,12 +4,11 @@ using System.Text;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Projections.Core.Services.Processing.ResolvedEvent;
 using EventStore.Projections.Core.Services;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection {
-	[TestFixture]
 	public class when_killing_a_projection_and_an_event_is_received : TestFixtureWithCoreProjectionStarted {
 		private Guid _lastEventIdBeforeKill;
 
@@ -46,11 +45,11 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 						"handle_this_type", false, "data3", "metadata"), _subscriptionId, 2));
 		}
 
-		[Test]
+		[Fact]
 		public void event_received_after_kill_is_not_processed() {
-			Assert.AreEqual(2, _stateHandler._eventsProcessed);
-			Assert.AreEqual(_lastEventIdBeforeKill, _stateHandler._lastProcessedEventId);
-			Assert.AreEqual("data2", _stateHandler._lastProcessedData);
+			Assert.Equal(2, _stateHandler._eventsProcessed);
+			Assert.Equal(_lastEventIdBeforeKill, _stateHandler._lastProcessedEventId);
+			Assert.Equal("data2", _stateHandler._lastProcessedData);
 		}
 	}
 }

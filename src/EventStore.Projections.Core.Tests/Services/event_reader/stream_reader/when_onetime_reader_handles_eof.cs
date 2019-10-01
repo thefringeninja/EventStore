@@ -8,12 +8,11 @@ using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 using ReadStreamResult = EventStore.Core.Data.ReadStreamResult;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader {
-	[TestFixture]
 	public class when_onetime_reader_handles_eof : TestFixtureWithExistingEvents {
 		private StreamEventReader _edp;
 
@@ -27,8 +26,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader 
 			TicksAreHandledImmediately();
 		}
 
-		[SetUp]
-		public new void When() {
+		public when_onetime_reader_handles_eof() {
 			//_publishWithCorrelationId = Guid.NewGuid();
 			_distibutionPointCorrelationId = Guid.NewGuid();
 			_fakeTimeProvider = new FakeTimeProvider();
@@ -37,7 +35,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader 
 			_edp.Resume();
 			_firstEventId = Guid.NewGuid();
 			_secondEventId = Guid.NewGuid();
-			var correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Last()
+			var correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Last()
 				.CorrelationId;
 			_edp.Handle(
 				new ClientMessage.ReadStreamEventsForwardCompleted(
@@ -56,7 +54,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader 
 								PrepareFlags.SingleWrite | PrepareFlags.TransactionBegin | PrepareFlags.TransactionEnd,
 								"event_type2", new byte[] {3}, new byte[] {4}))
 					}, null, false, "", 12, 11, true, 200));
-			correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Last()
+			correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Last()
 				.CorrelationId;
 			_edp.Handle(
 				new ClientMessage.ReadStreamEventsForwardCompleted(
@@ -64,16 +62,16 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader 
 					"", 12, 11, true, 400));
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_eof_message() {
-			Assert.AreEqual(1, _consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderEof>().Count());
-			var first = _consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderEof>().First();
-			Assert.AreEqual(first.CorrelationId, _distibutionPointCorrelationId);
+			Assert.Equal(1, Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderEof>().Count());
+			var first = Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderEof>().First();
+			Assert.Equal(first.CorrelationId, _distibutionPointCorrelationId);
 		}
 
-		[Test]
+		[Fact]
 		public void does_not_publish_read_messages_anymore() {
-			Assert.AreEqual(2, _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Count());
+			Assert.Equal(2, Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Count());
 		}
 	}
 }

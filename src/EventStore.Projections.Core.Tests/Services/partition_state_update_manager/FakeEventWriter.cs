@@ -3,7 +3,7 @@ using System.Linq;
 using EventStore.Projections.Core.Services.Processing;
 
 namespace EventStore.Projections.Core.Tests.Services.partition_state_update_manager {
-	class FakeEventWriter : IEventWriter {
+	public class FakeEventWriter : IEventWriter {
 		private readonly List<EmittedEvent[]> _writes = new List<EmittedEvent[]>();
 
 		public List<EmittedEvent[]> Writes {

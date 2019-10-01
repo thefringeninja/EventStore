@@ -12,7 +12,7 @@ using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Core.Tests.Helpers.IODispatcherTests;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.emitted_streams_deleter.when_deleting {
@@ -28,8 +28,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_streams_deleter.whe
 		protected string _testStreamName = "test_stream";
 		private bool _hasReadForward;
 
-		[OneTimeSetUp]
-		protected virtual void SetUp() {
+protected virtual void SetUp() {
 			_ioDispatcher = new IODispatcher(_bus, new PublishEnvelope(_bus));
 			_projectionNamesBuilder = ProjectionNamesBuilder.CreateForTest(_projectionName);
 			_checkpointName = _projectionNamesBuilder.GetEmittedStreamsCheckpointName();

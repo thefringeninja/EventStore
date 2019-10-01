@@ -1,10 +1,10 @@
 ﻿using EventStore.ClientAPI.Exceptions;
 using EventStore.ClientAPI.SystemData;
 using EventStore.Core.Tests.ClientAPI.Helpers;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI.Embedded.Security {
-	[TestFixture, Category("LongRunning"), Category("Network")]
+	[Trait("Category", "LongRunning"), Trait("Category", "Network")]
 	public class
 		authorized_default_credentials_security : EventStore.Core.Tests.ClientAPI.Security.
 			authorized_default_credentials_security {

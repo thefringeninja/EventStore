@@ -8,12 +8,11 @@ using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 using ReadStreamResult = EventStore.Core.Data.ReadStreamResult;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_reader {
-	[TestFixture]
 	public class when_handling_deleted_streams : TestFixtureWithExistingEvents {
 		private MultiStreamEventReader _edp;
 		private string[] _streamNames;
@@ -27,8 +26,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 			_streamPositions = new Dictionary<string, long> {{"stream1", 10}, {"stream2", _fromSequenceNumber}};
 		}
 
-		[SetUp]
-		public new void When() {
+		public when_handling_deleted_streams() {
 			_distibutionPointCorrelationId = Guid.NewGuid();
 
 			_edp = new MultiStreamEventReader(
@@ -64,7 +62,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 				end = _fromSequenceNumber;
 			}
 
-			var correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			var correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Last(x => x.EventStreamId == stream).CorrelationId;
 
 			_edp.Handle(
@@ -81,7 +79,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 		}
 
 		private void HandleDeletedStream(string stream, long sequenceNumber, ReadStreamResult result) {
-			var correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			var correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Last(x => x.EventStreamId == stream).CorrelationId;
 
 			_edp.Handle(
@@ -91,52 +89,52 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 			);
 		}
 
-		[Test]
+		[Fact]
 		public void when_no_stream_and_sequence_num_equal_to_minus_one_should_not_publish_partition_deleted_message() {
 			HandleDeletedStream(_streamNames[0], -1, ReadStreamResult.NoStream);
 			//trigger event delivery:
 			HandleEvents(_streamNames[1], _fromSequenceNumber, _fromSequenceNumber);
 
-			Assert.AreEqual(0,
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderPartitionDeleted>().Count());
+			Assert.Equal(0,
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderPartitionDeleted>().Count());
 		}
 
-		[Test]
+		[Fact]
 		public void when_no_stream_and_sequence_num_equal_to_zero_should_publish_partition_deleted_message() {
 			HandleDeletedStream(_streamNames[0], 0, ReadStreamResult.NoStream);
 			//trigger event delivery:
 			HandleEvents(_streamNames[1], _fromSequenceNumber, _fromSequenceNumber);
 
-			Assert.AreEqual(1,
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderPartitionDeleted>().Count());
-			Assert.AreEqual(_streamNames[0],
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderPartitionDeleted>().First()
+			Assert.Equal(1,
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderPartitionDeleted>().Count());
+			Assert.Equal(_streamNames[0],
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderPartitionDeleted>().First()
 					.Partition);
 		}
 
-		[Test]
+		[Fact]
 		public void when_no_stream_and_sequence_num_greater_than_zero_should_publish_partition_deleted_message() {
 			HandleDeletedStream(_streamNames[0], 100, ReadStreamResult.NoStream);
 			//trigger event delivery:
 			HandleEvents(_streamNames[1], _fromSequenceNumber, _fromSequenceNumber);
 
-			Assert.AreEqual(1,
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderPartitionDeleted>().Count());
-			Assert.AreEqual(_streamNames[0],
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderPartitionDeleted>().First()
+			Assert.Equal(1,
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderPartitionDeleted>().Count());
+			Assert.Equal(_streamNames[0],
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderPartitionDeleted>().First()
 					.Partition);
 		}
 
-		[Test]
+		[Fact]
 		public void when_stream_deleted_should_publish_partition_deleted_message() {
 			HandleDeletedStream(_streamNames[0], 0, ReadStreamResult.StreamDeleted);
 			//trigger event delivery:
 			HandleEvents(_streamNames[1], _fromSequenceNumber, _fromSequenceNumber);
 
-			Assert.AreEqual(1,
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderPartitionDeleted>().Count());
-			Assert.AreEqual(_streamNames[0],
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderPartitionDeleted>().First()
+			Assert.Equal(1,
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderPartitionDeleted>().Count());
+			Assert.Equal(_streamNames[0],
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.EventReaderPartitionDeleted>().First()
 					.Partition);
 		}
 	}

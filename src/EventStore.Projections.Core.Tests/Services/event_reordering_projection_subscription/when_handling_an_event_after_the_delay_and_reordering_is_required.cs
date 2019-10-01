@@ -1,10 +1,9 @@
 ﻿using System;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reordering_projection_subscription {
-	[TestFixture]
 	public class when_handling_an_event_after_the_delay_and_reordering_is_required :
 		TestFixtureWithEventReorderingProjectionSubscription {
 		private Guid _firstEventId;
@@ -30,13 +29,13 @@ namespace EventStore.Projections.Core.Tests.Services.event_reordering_projection
 					new byte[0], new byte[0], _firstEventTimestamp.AddMilliseconds(_timeBetweenEvents)));
 		}
 
-		[Test]
+		[Fact]
 		public void first_two_events_are_reordered() {
-			Assert.AreEqual(2, _eventHandler.HandledMessages.Count);
+			Assert.Equal(2, _eventHandler.HandledMessages.Count);
 			var first = _eventHandler.HandledMessages[0];
 			var second = _eventHandler.HandledMessages[1];
-			Assert.AreEqual(_firstEventId, first.Data.EventId);
-			Assert.AreEqual(_secondEventId, second.Data.EventId);
+			Assert.Equal(_firstEventId, first.Data.EventId);
+			Assert.Equal(_secondEventId, second.Data.EventId);
 		}
 	}
 }

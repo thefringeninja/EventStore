@@ -4,7 +4,7 @@ using System.Threading;
 using EventStore.Core.Messages;
 using EventStore.Core.Tests.Helpers;
 using EventStore.Transport.Http;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Common.Utils;
 using EventStore.Core.Tests.Fakes;
 using EventStore.Core.Tests.Http;
@@ -12,8 +12,8 @@ using System.Linq;
 using HttpStatusCode = System.Net.HttpStatusCode;
 
 namespace EventStore.Core.Tests.Services.Transport.Http {
-	[TestFixture, Category("LongRunning")]
-	public class http_service_should {
+	[Trait("Category", "LongRunning")]
+	public class http_service_should : IDisposable {
 		private readonly IPEndPoint _serverEndPoint;
 		private readonly PortableServer _portableServer;
 
@@ -21,53 +21,46 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			var port = PortsHelper.GetAvailablePort(IPAddress.Loopback);
 			_serverEndPoint = new IPEndPoint(IPAddress.Loopback, port);
 			_portableServer = new PortableServer(_serverEndPoint);
-		}
-
-		[SetUp]
-		public void SetUp() {
 			_portableServer.SetUp();
 		}
 
-		[TearDown]
-		public void TearDown() {
+		public void Dispose() {
 			_portableServer.TearDown();
+			PortsHelper.ReturnPort(_serverEndPoint.Port);
 		}
 
-		[OneTimeTearDown]
-		public void OneTimeTearDown() => PortsHelper.ReturnPort(_serverEndPoint.Port);
-
-		[Test]
-		[Category("Network")]
+		[Fact]
+		[Trait("Category", "Network")]
 		public void start_after_system_message_system_init_published() {
-			Assert.IsFalse(_portableServer.IsListening);
+			Assert.False(_portableServer.IsListening);
 			_portableServer.Publish(new SystemMessage.SystemInit());
-			Assert.IsTrue(_portableServer.IsListening);
+			Assert.True(_portableServer.IsListening);
 		}
 
-		[Test]
-		[Category("Network")]
+		[Fact]
+		[Trait("Category", "Network")]
 		public void ignore_shutdown_message_that_does_not_say_shut_down() {
 			_portableServer.Publish(new SystemMessage.SystemInit());
-			Assert.IsTrue(_portableServer.IsListening);
+			Assert.True(_portableServer.IsListening);
 
 			_portableServer.Publish(
 				new SystemMessage.BecomeShuttingDown(Guid.NewGuid(), exitProcess: false, shutdownHttp: false));
-			Assert.IsTrue(_portableServer.IsListening);
+			Assert.True(_portableServer.IsListening);
 		}
 
-		[Test]
-		[Category("Network")]
+		[Fact]
+		[Trait("Category", "Network")]
 		public void react_to_shutdown_message_that_cause_process_exit() {
 			_portableServer.Publish(new SystemMessage.SystemInit());
-			Assert.IsTrue(_portableServer.IsListening);
+			Assert.True(_portableServer.IsListening);
 
 			_portableServer.Publish(
 				new SystemMessage.BecomeShuttingDown(Guid.NewGuid(), exitProcess: true, shutdownHttp: true));
-			Assert.IsFalse(_portableServer.IsListening);
+			Assert.False(_portableServer.IsListening);
 		}
 
-		[Test]
-		[Category("Network")]
+		[Fact]
+		[Trait("Category", "Network")]
 		public void reply_with_404_to_every_request_when_there_are_no_registered_controllers() {
 			var requests = new[] {"/ping", "/streams", "/gossip", "/stuff", "/notfound", "/magic/url.exe"};
 			var successes = new bool[requests.Length];
@@ -96,24 +89,24 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			foreach (var signal in signals)
 				signal.WaitOne();
 
-			Assert.IsTrue(successes.All(x => x), string.Join(";", errors.Where(e => !string.IsNullOrEmpty(e))));
+			Assert.True(successes.All(x => x), string.Join(";", errors.Where(e => !string.IsNullOrEmpty(e))));
 		}
 
-		[Test]
-		[Category("Network")]
+		[Fact]
+		[Trait("Category", "Network")]
 		public void handle_invalid_characters_in_url() {
 			var url = _serverEndPoint.ToHttpUrl(EndpointExtensions.HTTP_SCHEMA, "/ping^\"");
 			Func<HttpResponse, bool> verifier = response => string.IsNullOrEmpty(response.Body) &&
 			                                                response.HttpStatusCode == (int)HttpStatusCode.NotFound;
 
 			var result = _portableServer.StartServiceAndSendRequest(HttpBootstrap.RegisterPing, url, verifier);
-			Assert.IsTrue(result.Item1, result.Item2);
+			Assert.True(result.Item1, result.Item2);
 		}
 	}
 
 
-	[TestFixture, Category("LongRunning")]
-	public class when_http_request_times_out {
+	[Trait("Category", "LongRunning")]
+	public class when_http_request_times_out : IDisposable {
 		private readonly IPEndPoint _serverEndPoint;
 		private readonly PortableServer _portableServer;
 		private int _timeout;
@@ -123,25 +116,16 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			var port = PortsHelper.GetAvailablePort(IPAddress.Loopback);
 			_serverEndPoint = new IPEndPoint(IPAddress.Loopback, port);
 			_portableServer = new PortableServer(_serverEndPoint, _timeout);
-		}
-
-		[OneTimeTearDown]
-		public void OneTimeTearDown() {
-			PortsHelper.ReturnPort(_serverEndPoint.Port);
-		}
-
-		[SetUp]
-		public void SetUp() {
 			_portableServer.SetUp();
 		}
 
-		[TearDown]
-		public void TearDown() {
+		public void Dispose() {
 			_portableServer.TearDown();
+			PortsHelper.ReturnPort(_serverEndPoint.Port);
 		}
 
-		[Test]
-		[Category("Network")]
+		[Fact]
+		[Trait("Category", "Network")]
 		public void should_throw_an_exception() {
 			var sleepFor = _timeout + 1000;
 			var url = _serverEndPoint.ToHttpUrl(EndpointExtensions.HTTP_SCHEMA,
@@ -149,8 +133,8 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			Func<HttpResponse, bool> verifier = response => { return true; };
 			var result = _portableServer.StartServiceAndSendRequest(service =>
 				service.SetupController(new TestController(new FakePublisher())), url, verifier);
-			Assert.IsFalse(result.Item1, "Should not have got a response"); // We should not have got a response
-			Assert.That(!string.IsNullOrEmpty(result.Item2), "Error was empty");
+			Assert.False(result.Item1, "Should not have got a response"); // We should not have got a response
+			Assert.True(!string.IsNullOrEmpty(result.Item2), "Error was empty");
 		}
 	}
 }

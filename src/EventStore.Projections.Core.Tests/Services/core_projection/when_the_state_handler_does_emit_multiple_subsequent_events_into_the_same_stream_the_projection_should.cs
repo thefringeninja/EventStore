@@ -3,12 +3,11 @@ using System.Linq;
 using EventStore.Common.Utils;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Projections.Core.Services.Processing.ResolvedEvent;
 using EventStore.Projections.Core.Services;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection {
-	[TestFixture]
 	public class
 		when_the_state_handler_does_emit_multiple_subsequent_events_into_the_same_stream_the_projection_should :
 			TestFixtureWithCoreProjectionStarted {
@@ -33,24 +32,24 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 		}
 
 
-		[Test]
+		[Fact]
 		public void write_events_in_a_single_transaction() {
-			Assert.IsTrue(_writeEventHandler.HandledMessages.Any(v => v.Events.Length == 2));
+			Assert.True(_writeEventHandler.HandledMessages.Any(v => v.Events.Length == 2));
 		}
 
-		[Test]
+		[Fact]
 		public void write_all_the_emitted_events() {
-			Assert.AreEqual(
+			Assert.Equal(
 				2, _writeEventHandler.HandledMessages.Single(v => v.EventStreamId == "/emit2").Events.Length);
 		}
 
-		[Test]
+		[Fact]
 		public void write_events_in_correct_order() {
-			Assert.AreEqual(
+			Assert.Equal(
 				FakeProjectionStateHandler._emit1Data,
 				Helper.UTF8NoBom.GetString(
 					_writeEventHandler.HandledMessages.Single(v => v.EventStreamId == "/emit2").Events[0].Data));
-			Assert.AreEqual(
+			Assert.Equal(
 				FakeProjectionStateHandler._emit2Data,
 				Helper.UTF8NoBom.GetString(
 					_writeEventHandler.HandledMessages.Single(v => v.EventStreamId == "/emit2").Events[1].Data));

@@ -7,10 +7,9 @@ using EventStore.Core.Messaging;
 using EventStore.Core.Services.AwakeReaderService;
 using EventStore.Core.Tests.Bus.Helpers;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.AwakeService {
-	[TestFixture]
 	public class when_handling_committed_event_with_subscribers {
 		private Core.Services.AwakeReaderService.AwakeService _it;
 		private EventRecord _eventRecord;
@@ -25,8 +24,7 @@ namespace EventStore.Core.Tests.AwakeService {
 		private TestMessage _reply4;
 		private TestMessage _reply5;
 
-		[SetUp]
-		public void SetUp() {
+		public when_handling_committed_event_with_subscribers() {
 			_exception = null;
 			Given();
 			When();
@@ -90,34 +88,34 @@ namespace EventStore.Core.Tests.AwakeService {
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void it_is_handled() {
-			Assert.IsNull(_exception, (_exception ?? (object)"").ToString());
+			Assert.Null(_exception);
 		}
 
-		[Test]
+		[Fact]
 		public void awakes_stream_subscriber_before_position() {
-			Assert.That(_handler.HandledMessages.Any(m => m.Kind == 1));
+			Assert.True(_handler.HandledMessages.Any(m => m.Kind == 1));
 		}
 
-		[Test]
+		[Fact]
 		public void does_not_awake_stream_subscriber_after_position() {
-			Assert.That(_handler.HandledMessages.All(m => m.Kind != 2));
+			Assert.True(_handler.HandledMessages.All(m => m.Kind != 2));
 		}
 
-		[Test]
+		[Fact]
 		public void awakes_all_subscriber_before_position() {
-			Assert.That(_handler.HandledMessages.Any(m => m.Kind == 4));
+			Assert.True(_handler.HandledMessages.Any(m => m.Kind == 4));
 		}
 
-		[Test]
+		[Fact]
 		public void does_not_awake_all_subscriber_after_position() {
-			Assert.That(_handler.HandledMessages.All(m => m.Kind != 5));
+			Assert.True(_handler.HandledMessages.All(m => m.Kind != 5));
 		}
 
-		[Test]
+		[Fact]
 		public void does_not_awake_another_stream_subscriber_before_position() {
-			Assert.That(_handler.HandledMessages.All(m => m.Kind != 3));
+			Assert.True(_handler.HandledMessages.All(m => m.Kind != 3));
 		}
 	}
 }

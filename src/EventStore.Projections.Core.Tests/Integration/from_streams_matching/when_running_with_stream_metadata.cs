@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Integration.from_streams_matching {
-	[TestFixture]
 	public class when_running_with_stream_metadata : specification_with_a_v8_query_posted {
 		protected override void GivenEvents() {
 			ExistingEvent("stream1", "event", "{}", "{\"data\":1}", isJson: true);
@@ -39,7 +38,7 @@ fromStreamsMatching(function(s, streamMeta){
 })";
 		}
 
-		[Test]
+		[Fact]
 		public void query_returns_correct_result() {
 			AssertStreamTailWithLinks(
 				"$projections-query-result", @"Result:{""data"":1}", @"Result:{""data"":3}", "$Eof:");

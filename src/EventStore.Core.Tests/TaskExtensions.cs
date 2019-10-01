@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace EventStore.Core.Tests {
 	public static class TaskExtensions {
@@ -28,6 +30,15 @@ namespace EventStore.Core.Tests {
 			if (await Task.WhenAny(task, Task.Delay(timeoutMs)) == task)
 				return await task;
 			throw new TimeoutException("Timed out waiting for task");
+		}
+	}
+
+	[AttributeUsage(AttributeTargets.Method)]
+	public class PlatformFactAttribute : FactAttribute {
+		public PlatformFactAttribute(string platform) {
+			if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create(platform))) {
+				Skip = $"Test only valid for platform {platform}";
+			}
 		}
 	}
 }

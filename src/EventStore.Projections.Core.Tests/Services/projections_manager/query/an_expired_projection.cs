@@ -6,7 +6,7 @@ using EventStore.Core.Messaging;
 using EventStore.Core.Services.TimerService;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager.query {
 	public class an_expired_projection {
@@ -21,9 +21,9 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.query {
 			protected override IEnumerable<WhenStep> When() {
 				foreach (var m in base.When()) yield return m;
 				var readerAssignedMessage =
-					_consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.ReaderAssignedReader>()
+					Consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.ReaderAssignedReader>()
 						.LastOrDefault();
-				Assert.IsNotNull(readerAssignedMessage);
+				Assert.NotNull(readerAssignedMessage);
 				_reader = readerAssignedMessage.ReaderId;
 
 				yield return
@@ -33,25 +33,24 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.query {
 						"type", false, new byte[0], new byte[0], 100, 33.3f));
 				_timeProvider.AddTime(TimeSpan.FromMinutes(6));
 				yield return Yield;
-				foreach (var m in _consumer.HandledMessages.OfType<TimerMessage.Schedule>().ToArray())
+				foreach (var m in Consumer.HandledMessages.OfType<TimerMessage.Schedule>().ToArray())
 					m.Envelope.ReplyWith(m.ReplyMessage);
 			}
 		}
 
-		[TestFixture]
 		public class when_retrieving_statistics : Base {
 			protected override IEnumerable<WhenStep> When() {
 				foreach (var s in base.When()) yield return s;
-				_consumer.HandledMessages.Clear();
+				Consumer.HandledMessages.Clear();
 				yield return (
 					new ProjectionManagementMessage.Command.GetStatistics(
 						new PublishEnvelope(_bus), null, _projectionName, false));
 			}
 
-			[Test]
+			[Fact]
 			public void projection_is_not_found() {
-				Assert.AreEqual(1, _consumer.HandledMessages.OfType<ProjectionManagementMessage.NotFound>().Count());
-				Assert.IsFalse(_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().Any());
+				Assert.Equal(1, Consumer.HandledMessages.OfType<ProjectionManagementMessage.NotFound>().Count());
+				Assert.False(Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().Any());
 			}
 		}
 	}

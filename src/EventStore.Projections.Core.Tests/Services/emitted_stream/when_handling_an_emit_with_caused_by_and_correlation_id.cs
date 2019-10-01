@@ -7,12 +7,11 @@ using EventStore.Core.Tests.Helpers;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
 using Newtonsoft.Json.Linq;
-using NUnit.Framework;
+using Xunit;
 using TestFixtureWithExistingEvents =
 	EventStore.Projections.Core.Tests.Services.core_projection.TestFixtureWithExistingEvents;
 
 namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
-	[TestFixture]
 	public class when_handling_an_emit_with_caused_by_and_correlation_id : TestFixtureWithExistingEvents {
 		private EmittedStream _stream;
 		private TestCheckpointManagerMessageHandler _readyHandler;
@@ -26,8 +25,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 			NoOtherStreams();
 		}
 
-		[SetUp]
-		public void setup() {
+		public when_handling_an_emit_with_caused_by_and_correlation_id() {
 			_causedBy = Guid.NewGuid();
 			_correlationId = "correlation_id";
 
@@ -51,13 +49,13 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 		}
 
 
-		[Test]
+		[Fact]
 		public void publishes_write_events() {
 			var writeEvents =
-				_consumer.HandledMessages.OfType<ClientMessage.WriteEvents>()
+				Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>()
 					.ExceptOfEventType(SystemEventTypes.StreamMetadata)
 					.ToArray();
-			Assert.AreEqual(1, writeEvents.Length);
+			Assert.Equal(1, writeEvents.Length);
 			var writeEvent = writeEvents.Single();
 			Assert.NotNull(writeEvent.Metadata);
 			var metadata = Helper.UTF8NoBom.GetString(writeEvent.Metadata);

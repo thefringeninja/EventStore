@@ -2,18 +2,18 @@ using System;
 using System.IO;
 using System.Threading;
 using EventStore.Common.Utils;
+using EventStore.Core.Tests;
 using EventStore.Projections.Core.v8;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.v8 {
-	[TestFixture]
 	public class v8_internals {
 		private static readonly string _jsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Prelude");
 		private Action<int, Action> _cancelCallbackFactory;
 		private Js1.CommandHandlerRegisteredDelegate _commandHandlerRegisteredCallback;
 		private Js1.ReverseCommandHandlerDelegate _reverseCommandHandlerDelegate;
 
-		[Test, Explicit, Category("v8"), Category("Manual")]
+		[Explicit, Trait("Category", "v8"), Trait("Category", "Manual")]
 		public void long_execution_of_non_v8_code_does_not_crash() {
 			Assert.Throws<Js1Exception>(() => {
 				_cancelCallbackFactory = (timeout, action) => ThreadPool.QueueUserWorkItem(state => {

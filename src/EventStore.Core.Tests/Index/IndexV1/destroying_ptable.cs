@@ -1,50 +1,49 @@
+using System.Collections.Generic;
 using System.IO;
 using EventStore.Core.Index;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Index.IndexV1 {
-	[TestFixture(PTableVersions.IndexV1, false)]
-	[TestFixture(PTableVersions.IndexV1, true)]
-	[TestFixture(PTableVersions.IndexV2, false)]
-	[TestFixture(PTableVersions.IndexV2, true)]
-	[TestFixture(PTableVersions.IndexV3, false)]
-	[TestFixture(PTableVersions.IndexV3, true)]
-	[TestFixture(PTableVersions.IndexV4, false)]
-	[TestFixture(PTableVersions.IndexV4, true)]
-	public class destroying_ptable : SpecificationWithFile {
-		private PTable _table;
-		protected byte _ptableVersion = PTableVersions.IndexV1;
-		private bool _skipIndexVerify;
-
-		public destroying_ptable(byte version, bool skipIndexVerify) {
-			_ptableVersion = version;
-			_skipIndexVerify = skipIndexVerify;
+	public class destroying_ptable {
+		public static IEnumerable<object[]> TestCases() {
+			yield return new object[] {PTableVersions.IndexV1, false};
+			yield return new object[] {PTableVersions.IndexV1, true};
+			yield return new object[] {PTableVersions.IndexV2, false};
+			yield return new object[] {PTableVersions.IndexV2, true};
+			yield return new object[] {PTableVersions.IndexV3, false};
+			yield return new object[] {PTableVersions.IndexV3, true};
+			yield return new object[] {PTableVersions.IndexV4, false};
+			yield return new object[] {PTableVersions.IndexV4, true};
 		}
 
-		[SetUp]
-		public void Setup() {
-			var mtable = new HashListMemTable(_ptableVersion, maxSize: 10);
-			mtable.Add(0x010100000000, 0x0001, 0x0001);
-			mtable.Add(0x010500000000, 0x0001, 0x0002);
-			_table = PTable.FromMemtable(mtable, Filename, skipIndexVerify: _skipIndexVerify);
-			_table.MarkForDestruction();
+		[Theory, MemberData(nameof(TestCases))]
+		public void the_file_is_deleted(byte version, bool skipIndexVerify) {
+			using var fixture = new Fixture(version, skipIndexVerify);
+			fixture.Table.WaitForDisposal(1000);
+			Assert.False(File.Exists(fixture.FileName));
 		}
 
-		[Test]
-		public void the_file_is_deleted() {
-			_table.WaitForDisposal(1000);
-			Assert.IsFalse(File.Exists(Filename));
+		[Theory, MemberData(nameof(TestCases))]
+		public void wait_for_destruction_returns(byte version, bool skipIndexVerify) {
+			using var fixture = new Fixture(version, skipIndexVerify);
+			fixture.Table.WaitForDisposal(1000);
 		}
 
-		[Test]
-		public void wait_for_destruction_returns() {
-			Assert.DoesNotThrow(() => _table.WaitForDisposal(1000));
-		}
+		class Fixture : FileFixture {
+			public readonly PTable Table;
 
-		[TearDown]
-		public void Teardown() {
-			_table.WaitForDisposal(1000);
-			File.Delete(Filename);
+			public Fixture(byte version, bool skipIndexVerify) {
+				var mtable = new HashListMemTable(version, maxSize: 10);
+				mtable.Add(0x010100000000, 0x0001, 0x0001);
+				mtable.Add(0x010500000000, 0x0001, 0x0002);
+				Table = PTable.FromMemtable(mtable, FileName, skipIndexVerify: skipIndexVerify);
+				Table.MarkForDestruction();
+			}
+
+			public override void Dispose() {
+				Table.WaitForDisposal(1000);
+				base.Dispose();
+			}
 		}
 	}
 }

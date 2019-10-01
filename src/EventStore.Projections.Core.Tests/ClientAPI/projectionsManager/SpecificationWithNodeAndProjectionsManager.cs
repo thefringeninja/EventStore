@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 using EventStore.ClientAPI;
 using EventStore.ClientAPI.Projections;
 using EventStore.ClientAPI.Common.Log;
@@ -23,7 +23,6 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.projectionsManager {
 		protected TimeSpan _timeout;
 		protected string _tag;
 
-		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 			_credentials = new UserCredentials(SystemUsers.Admin, SystemUsers.DefaultAdminPassword);
@@ -51,7 +50,6 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.projectionsManager {
 			}
 		}
 
-		[OneTimeTearDown]
 		public override async Task TestFixtureTearDown() {
 			_connection.Close();
 			await _node.Shutdown();

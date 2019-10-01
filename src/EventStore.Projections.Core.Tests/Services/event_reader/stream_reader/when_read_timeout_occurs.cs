@@ -7,12 +7,11 @@ using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 using ReadStreamResult = EventStore.Core.Data.ReadStreamResult;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader {
-	[TestFixture]
 	public class when_read_timeout_occurs : TestFixtureWithExistingEvents {
 		private StreamEventReader _eventReader;
 		private Guid _distributionCorrelationId;
@@ -23,15 +22,14 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader 
 			TicksAreHandledImmediately();
 		}
 
-		[SetUp]
-		public new void When() {
+		public when_read_timeout_occurs() {
 			_distributionCorrelationId = Guid.NewGuid();
 			_fakeTimeProvider = new FakeTimeProvider();
 			_eventReader = new StreamEventReader(_bus, _distributionCorrelationId, null, "stream", 10,
 				_fakeTimeProvider,
 				resolveLinkTos: false, stopOnEof: true, produceStreamDeletes: false);
 			_eventReader.Resume();
-			_readCorrelationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Last()
+			_readCorrelationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Last()
 				.CorrelationId;
 			_eventReader.Handle(
 				new ProjectionManagementMessage.Internal.ReadTimeout(_readCorrelationId, "stream"));
@@ -54,19 +52,19 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader 
 					}, null, false, "", 12, 11, true, 200));
 		}
 
-		[Test]
+		[Fact]
 		public void should_not_deliver_events() {
-			Assert.AreEqual(0,
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
+			Assert.Equal(0,
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
 		}
 
-		[Test]
+		[Fact]
 		public void should_attempt_another_read_for_the_timed_out_reads() {
-			var reads = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			var reads = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Where(x => x.EventStreamId == "stream");
 
-			Assert.AreEqual(reads.First().CorrelationId, _readCorrelationId);
-			Assert.AreEqual(1, reads.Skip(1).Count());
+			Assert.Equal(reads.First().CorrelationId, _readCorrelationId);
+			Assert.Equal(1, reads.Skip(1).Count());
 		}
 	}
 }

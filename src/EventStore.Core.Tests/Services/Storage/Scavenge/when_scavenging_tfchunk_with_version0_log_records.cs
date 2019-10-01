@@ -1,9 +1,8 @@
 using EventStore.Core.Tests.TransactionLog.Scavenging.Helpers;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Storage.Scavenge {
-	[TestFixture]
 	public class when_scavenging_tfchunk_with_version0_log_records_and_incomplete_chunk : ScavengeTestScenario {
 		private const byte _version = LogRecordVersion.LogRecordV0;
 
@@ -37,9 +36,8 @@ namespace EventStore.Core.Tests.Services.Storage.Scavenge {
 			};
 		}
 
-		[Test]
+		[Fact]
 		public void should_not_have_changed_any_records() {
-			CheckRecords();
 		}
 	}
 }

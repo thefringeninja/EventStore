@@ -2,10 +2,9 @@ using System;
 using EventStore.Core.Tests.Bus.Helpers;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.projection_checkpoint {
-	[TestFixture]
 	public class
 		when_emitting_events_in_backward_order_to_the_same_stream_the_projection_checkpoint :
 			TestFixtureWithExistingEvents {
@@ -13,8 +12,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.projection_
 		private Exception _lastException;
 		private TestCheckpointManagerMessageHandler _readyHandler;
 
-		[SetUp]
-		public void setup() {
+		public when_emitting_events_in_backward_order_to_the_same_stream_the_projection_checkpoint() {
 			_readyHandler = new TestCheckpointManagerMessageHandler();
 			_checkpoint = new ProjectionCheckpoint(
 				_bus, _ioDispatcher, new ProjectionVersion(1, 0, 0), null, _readyHandler,
@@ -39,7 +37,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.projection_
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void throws_invalid_operation_exception() {
 			Assert.Throws<InvalidOperationException>(() => {
 				if (_lastException != null) throw _lastException;

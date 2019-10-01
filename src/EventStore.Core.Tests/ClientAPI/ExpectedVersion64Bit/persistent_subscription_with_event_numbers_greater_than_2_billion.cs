@@ -1,14 +1,13 @@
 using System.Collections.Generic;
 using System;
 using EventStore.ClientAPI;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Data;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
-	[TestFixture]
-	[Category("ClientAPI"), Category("LongRunning")]
+	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
 	public class persistent_subscription_with_event_numbers_greater_than_2_billion : MiniNodeWithExistingRecords {
 		private const long intMaxValue = (long)int.MaxValue;
 
@@ -28,14 +27,14 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 				EventStore.ClientAPI.StreamMetadata.Create(truncateBefore: intMaxValue + 1));
 		}
 
-		[Test]
+		[Fact]
 		public async Task should_be_able_to_create_the_persistent_subscription() {
 			var groupId = "group-" + Guid.NewGuid().ToString();
 			var settings = PersistentSubscriptionSettings.Create().StartFrom(intMaxValue);
 			await _store.CreatePersistentSubscriptionAsync(_streamId, groupId, settings, DefaultData.AdminCredentials);
 		}
 
-		[Test]
+		[Fact]
 		public async Task should_be_able_to_update_the_persistent_subscription() {
 			var groupId = "group-" + Guid.NewGuid().ToString();
 			var settings = PersistentSubscriptionSettings.Create();
@@ -45,7 +44,7 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 			await _store.UpdatePersistentSubscriptionAsync(_streamId, groupId, settings, DefaultData.AdminCredentials);
 		}
 
-		[Test]
+		[Fact]
 		public async Task should_be_able_to_connect_to_persistent_subscription() {
 			var groupId = "group-" + Guid.NewGuid().ToString();
 			var settings = PersistentSubscriptionSettings.Create().StartFrom(intMaxValue);
@@ -62,11 +61,11 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 
             await _store.AppendToStreamAsync(_streamId, intMaxValue + 2, evnt);
 
-			Assert.That(countdown.Wait(TimeSpan.FromSeconds(5)), "Timed out waiting for events to appear");
+			Assert.True(countdown.Wait(TimeSpan.FromSeconds(5)), "Timed out waiting for events to appear");
 
-			Assert.AreEqual(_r1.EventId, receivedEvents[0].Event.EventId);
-			Assert.AreEqual(_r2.EventId, receivedEvents[1].Event.EventId);
-			Assert.AreEqual(evnt.EventId, receivedEvents[2].Event.EventId);
+			Assert.Equal(_r1.EventId, receivedEvents[0].Event.EventId);
+			Assert.Equal(_r2.EventId, receivedEvents[1].Event.EventId);
+			Assert.Equal(evnt.EventId, receivedEvents[2].Event.EventId);
 		}
 	}
 }

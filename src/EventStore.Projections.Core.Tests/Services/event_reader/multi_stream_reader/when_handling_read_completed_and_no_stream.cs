@@ -9,11 +9,10 @@ using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_reader {
-	[TestFixture]
 	public class when_handling_read_completed_and_no_stream : TestFixtureWithExistingEvents {
 		private MultiStreamEventReader _edp;
 		private Guid _distibutionPointCorrelationId;
@@ -27,8 +26,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 		private string[] _abStreams;
 		private Dictionary<string, long> _ab12Tag;
 
-		[SetUp]
-		public new void When() {
+		public when_handling_read_completed_and_no_stream() {
 			_ab12Tag = new Dictionary<string, long> {{"a", 1}, {"b", 0}};
 			_abStreams = new[] {"a", "b"};
 
@@ -39,7 +37,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 			_edp.Resume();
 			_firstEventId = Guid.NewGuid();
 			_secondEventId = Guid.NewGuid();
-			var correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			var correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Last(x => x.EventStreamId == "a").CorrelationId;
 			_edp.Handle(
 				new ClientMessage.ReadStreamEventsForwardCompleted(
@@ -57,7 +55,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 								PrepareFlags.SingleWrite | PrepareFlags.TransactionBegin | PrepareFlags.TransactionEnd,
 								"event_type2", new byte[] {3}, new byte[] {4}))
 					}, null, false, "", 3, 2, true, 200));
-			correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Last(x => x.EventStreamId == "b").CorrelationId;
 			_edp.Handle(
 				new ClientMessage.ReadStreamEventsForwardCompleted(
@@ -65,70 +63,70 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 					-1, ExpectedVersion.NoStream, true, 200));
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_read_events_from_beginning_with_correct_next_event_number() {
-			Assert.AreEqual(3, _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Count());
-			Assert.IsTrue(
-				_consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			Assert.Equal(3, Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Count());
+			Assert.True(
+				Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 					.Any(m => m.EventStreamId == "a"));
-			Assert.IsTrue(
-				_consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			Assert.True(
+				Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 					.Any(m => m.EventStreamId == "b"));
-			Assert.AreEqual(
+			Assert.Equal(
 				3,
-				_consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+				Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 					.Last(m => m.EventStreamId == "a")
 					.FromEventNumber);
-			Assert.AreEqual(
+			Assert.Equal(
 				0,
-				_consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+				Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 					.Last(m => m.EventStreamId == "b")
 					.FromEventNumber);
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_correct_committed_event_received_messages() {
-			Assert.AreEqual(
-				3, _consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
+			Assert.Equal(
+				3, Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
 			var first =
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().First();
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().First();
 			var second =
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>()
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>()
 					.Skip(1)
 					.First();
 			var third =
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>()
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>()
 					.Skip(2)
 					.First();
 
-			Assert.IsNull(third.Data);
-			Assert.AreEqual(100, third.SafeTransactionFileReaderJoinPosition);
+			Assert.Null(third.Data);
+			Assert.Equal(100, third.SafeTransactionFileReaderJoinPosition);
 
-			Assert.AreEqual("event_type1", first.Data.EventType);
-			Assert.AreEqual("event_type2", second.Data.EventType);
-			Assert.AreEqual(_firstEventId, first.Data.EventId);
-			Assert.AreEqual(_secondEventId, second.Data.EventId);
-			Assert.AreEqual(1, first.Data.Data[0]);
-			Assert.AreEqual(2, first.Data.Metadata[0]);
-			Assert.AreEqual(3, second.Data.Data[0]);
-			Assert.AreEqual(4, second.Data.Metadata[0]);
-			Assert.AreEqual("a", first.Data.EventStreamId);
-			Assert.AreEqual("a", second.Data.EventStreamId);
-			Assert.AreEqual(50, first.Data.Position.PreparePosition);
-			Assert.AreEqual(100, second.Data.Position.PreparePosition);
-			Assert.AreEqual(-1, first.Data.Position.CommitPosition);
-			Assert.AreEqual(-1, second.Data.Position.CommitPosition);
-			Assert.AreEqual(50, first.SafeTransactionFileReaderJoinPosition);
-			Assert.AreEqual(100, second.SafeTransactionFileReaderJoinPosition);
+			Assert.Equal("event_type1", first.Data.EventType);
+			Assert.Equal("event_type2", second.Data.EventType);
+			Assert.Equal(_firstEventId, first.Data.EventId);
+			Assert.Equal(_secondEventId, second.Data.EventId);
+			Assert.Equal(1, first.Data.Data[0]);
+			Assert.Equal(2, first.Data.Metadata[0]);
+			Assert.Equal(3, second.Data.Data[0]);
+			Assert.Equal(4, second.Data.Metadata[0]);
+			Assert.Equal("a", first.Data.EventStreamId);
+			Assert.Equal("a", second.Data.EventStreamId);
+			Assert.Equal(50, first.Data.Position.PreparePosition);
+			Assert.Equal(100, second.Data.Position.PreparePosition);
+			Assert.Equal(-1, first.Data.Position.CommitPosition);
+			Assert.Equal(-1, second.Data.Position.CommitPosition);
+			Assert.Equal(50, first.SafeTransactionFileReaderJoinPosition);
+			Assert.Equal(100, second.SafeTransactionFileReaderJoinPosition);
 		}
 
 
-		[Test]
+		[Fact]
 		public void publishes_subscribe_awake() {
-			Assert.AreEqual(2, _consumer.HandledMessages.OfType<AwakeServiceMessage.SubscribeAwake>().Count());
+			Assert.Equal(2, Consumer.HandledMessages.OfType<AwakeServiceMessage.SubscribeAwake>().Count());
 		}
 
-		[Test]
+		[Fact]
 		public void can_handle_following_read_events_completed() {
 			_edp.Handle(
 				new ClientMessage.ReadStreamEventsForwardCompleted(

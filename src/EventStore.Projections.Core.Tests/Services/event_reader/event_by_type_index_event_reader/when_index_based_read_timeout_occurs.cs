@@ -9,11 +9,10 @@ using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
 using EventStore.Common.Utils;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.event_by_type_index_event_reader {
-	[TestFixture]
 	public class when_index_based_read_timeout_occurs : EventByTypeIndexEventReaderTestFixture {
 		private EventByTypeIndexEventReader _eventReader;
 		private Guid _distributionCorrelationId;
@@ -26,8 +25,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.event_by_type_
 
 		private FakeTimeProvider _fakeTimeProvider;
 
-		[SetUp]
-		public new void When() {
+			public when_index_based_read_timeout_occurs() {
 			_distributionCorrelationId = Guid.NewGuid();
 			_fakeTimeProvider = new FakeTimeProvider();
 			var fromPositions = new Dictionary<string, long>();
@@ -83,25 +81,25 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.event_by_type_
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void should_not_deliver_events() {
-			Assert.AreEqual(0,
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
+			Assert.Equal(0,
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
 		}
 
-		[Test]
+		[Fact]
 		public void should_attempt_another_read_for_the_timed_out_reads() {
-			var eventTypeOneStreamReads = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			var eventTypeOneStreamReads = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Where(x => x.EventStreamId == "$et-eventTypeOne");
 
-			Assert.AreEqual(eventTypeOneStreamReads.First().CorrelationId, _eventTypeOneStreamReadCorrelationId);
-			Assert.AreEqual(1, eventTypeOneStreamReads.Skip(1).Count());
+			Assert.Equal(eventTypeOneStreamReads.First().CorrelationId, _eventTypeOneStreamReadCorrelationId);
+			Assert.Equal(1, eventTypeOneStreamReads.Skip(1).Count());
 
-			var eventTypeTwoStreamReads = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			var eventTypeTwoStreamReads = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Where(x => x.EventStreamId == "$et-eventTypeTwo");
 
-			Assert.AreEqual(eventTypeTwoStreamReads.First().CorrelationId, _eventTypeTwoStreamReadCorrelationId);
-			Assert.AreEqual(1, eventTypeTwoStreamReads.Skip(1).Count());
+			Assert.Equal(eventTypeTwoStreamReads.First().CorrelationId, _eventTypeTwoStreamReadCorrelationId);
+			Assert.Equal(1, eventTypeTwoStreamReads.Skip(1).Count());
 		}
 	}
 }

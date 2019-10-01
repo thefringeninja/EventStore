@@ -15,7 +15,7 @@ using EventStore.Core.TransactionLog;
 using EventStore.Core.TransactionLog.Checkpoint;
 using EventStore.Core.TransactionLog.Chunks;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Util;
 using EventStore.Core.Index.Hashes;
 using EventStore.Core.Tests.TransactionLog.Scavenging.Helpers;
@@ -134,7 +134,7 @@ namespace EventStore.Core.Tests.Services.Storage {
 			long pos;
 
 			if (!retryOnFail) {
-				Assert.IsTrue(Writer.Write(prepare, out pos));
+				Assert.True(Writer.Write(prepare, out pos));
 			} else {
 				long firstPos = prepare.LogPosition;
 				if (!Writer.Write(prepare, out pos)) {
@@ -148,14 +148,13 @@ namespace EventStore.Core.Tests.Services.Storage {
 						prepare.Metadata,
 						prepare.TimeStamp);
 					if (!Writer.Write(prepare, out pos))
-						Assert.Fail("Second write try failed when first writing prepare at {0}, then at {1}.", firstPos,
-							prepare.LogPosition);
+						throw new Exception($"Second write try failed when first writing prepare at {firstPos}, then at {prepare.LogPosition}.");
 				}
 			}
 
 			var commit = LogRecord.Commit(WriterCheckpoint.ReadNonFlushed(), prepare.CorrelationId, prepare.LogPosition,
 				eventNumber);
-			Assert.IsTrue(Writer.Write(commit, out pos));
+			Assert.True(Writer.Write(commit, out pos));
 
 			var eventRecord = new EventRecord(eventNumber, prepare);
 			return eventRecord;
@@ -174,11 +173,11 @@ namespace EventStore.Core.Tests.Services.Storage {
 				timestamp ?? DateTime.UtcNow,
 				PrepareFlags.IsJson);
 			long pos;
-			Assert.IsTrue(Writer.Write(prepare, out pos));
+			Assert.True(Writer.Write(prepare, out pos));
 
 			var commit = LogRecord.Commit(WriterCheckpoint.ReadNonFlushed(), prepare.CorrelationId, prepare.LogPosition,
 				eventNumber);
-			Assert.IsTrue(Writer.Write(commit, out pos));
+			Assert.True(Writer.Write(commit, out pos));
 
 			var eventRecord = new EventRecord(eventNumber, prepare);
 			return eventRecord;
@@ -198,7 +197,7 @@ namespace EventStore.Core.Tests.Services.Storage {
 				Helper.UTF8NoBom.GetBytes(eventData),
 				null);
 			long pos;
-			Assert.IsTrue(Writer.Write(prepare, out pos));
+			Assert.True(Writer.Write(prepare, out pos));
 			return new EventRecord(eventNumber, prepare);
 		}
 
@@ -206,7 +205,7 @@ namespace EventStore.Core.Tests.Services.Storage {
 			var prepare = LogRecord.TransactionBegin(WriterCheckpoint.ReadNonFlushed(), Guid.NewGuid(), eventStreamId,
 				expectedVersion);
 			long pos;
-			Assert.IsTrue(Writer.Write(prepare, out pos));
+			Assert.True(Writer.Write(prepare, out pos));
 			return prepare;
 		}
 
@@ -250,15 +249,14 @@ namespace EventStore.Core.Tests.Services.Storage {
 						prepare.Data,
 						prepare.Metadata);
 					if (!Writer.Write(prepare, out newPos))
-						Assert.Fail("Second write try failed when first writing prepare at {0}, then at {1}.", firstPos,
-							prepare.LogPosition);
+						throw new Exception($"Second write try failed when first writing prepare at {firstPos}, then at {prepare.LogPosition}.");
 				}
 
 				return new EventRecord(eventNumber, prepare);
 			}
 
 			long pos;
-			Assert.IsTrue(Writer.Write(prepare, out pos));
+			Assert.True(Writer.Write(prepare, out pos));
 			return new EventRecord(eventNumber, prepare);
 		}
 
@@ -269,7 +267,7 @@ namespace EventStore.Core.Tests.Services.Storage {
 				transactionId,
 				eventStreamId);
 			long pos;
-			Assert.IsTrue(Writer.Write(prepare, out pos));
+			Assert.True(Writer.Write(prepare, out pos));
 			return prepare;
 		}
 
@@ -288,7 +286,7 @@ namespace EventStore.Core.Tests.Services.Storage {
 				data.IsEmptyString() ? LogRecord.NoData : Helper.UTF8NoBom.GetBytes(data),
 				LogRecord.NoData,
 				DateTime.UtcNow);
-			Assert.IsTrue(Writer.Write(prepare, out pos));
+			Assert.True(Writer.Write(prepare, out pos));
 
 			return prepare;
 		}
@@ -296,14 +294,14 @@ namespace EventStore.Core.Tests.Services.Storage {
 		protected CommitLogRecord WriteCommit(long preparePos, string eventStreamId, long eventNumber) {
 			var commit = LogRecord.Commit(WriterCheckpoint.ReadNonFlushed(), Guid.NewGuid(), preparePos, eventNumber);
 			long pos;
-			Assert.IsTrue(Writer.Write(commit, out pos));
+			Assert.True(Writer.Write(commit, out pos));
 			return commit;
 		}
 
 		protected long WriteCommit(Guid correlationId, long transactionId, string eventStreamId, long eventNumber) {
 			var commit = LogRecord.Commit(WriterCheckpoint.ReadNonFlushed(), correlationId, transactionId, eventNumber);
 			long pos;
-			Assert.IsTrue(Writer.Write(commit, out pos));
+			Assert.True(Writer.Write(commit, out pos));
 			return commit.LogPosition;
 		}
 
@@ -311,12 +309,12 @@ namespace EventStore.Core.Tests.Services.Storage {
 			var prepare = LogRecord.DeleteTombstone(WriterCheckpoint.ReadNonFlushed(),
 				Guid.NewGuid(), Guid.NewGuid(), eventStreamId, ExpectedVersion.Any);
 			long pos;
-			Assert.IsTrue(Writer.Write(prepare, out pos));
+			Assert.True(Writer.Write(prepare, out pos));
 			var commit = LogRecord.Commit(WriterCheckpoint.ReadNonFlushed(),
 				prepare.CorrelationId,
 				prepare.LogPosition,
 				EventNumber.DeletedStream);
-			Assert.IsTrue(Writer.Write(commit, out pos));
+			Assert.True(Writer.Write(commit, out pos));
 
 			return new EventRecord(EventNumber.DeletedStream, prepare);
 		}
@@ -325,7 +323,7 @@ namespace EventStore.Core.Tests.Services.Storage {
 			var prepare = LogRecord.DeleteTombstone(WriterCheckpoint.ReadNonFlushed(),
 				Guid.NewGuid(), Guid.NewGuid(), eventStreamId, ExpectedVersion.Any);
 			long pos;
-			Assert.IsTrue(Writer.Write(prepare, out pos));
+			Assert.True(Writer.Write(prepare, out pos));
 
 			return prepare;
 		}
@@ -336,7 +334,7 @@ namespace EventStore.Core.Tests.Services.Storage {
 				prepare.CorrelationId,
 				prepare.LogPosition,
 				EventNumber.DeletedStream);
-			Assert.IsTrue(Writer.Write(commit, out pos));
+			Assert.True(Writer.Write(commit, out pos));
 
 			return commit;
 		}

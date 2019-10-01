@@ -1,14 +1,13 @@
 using System.Collections.Generic;
 using System;
 using EventStore.ClientAPI;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Data;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
-	[TestFixture]
-	[Category("ClientAPI"), Category("LongRunning")]
+	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
 	public class subscriptions_on_stream_with_event_numbers_greater_than_2_billion : MiniNodeWithExistingRecords {
 		private const long intMaxValue = (long)int.MaxValue;
 
@@ -40,7 +39,7 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 				EventStore.ClientAPI.StreamMetadata.Create(truncateBefore: intMaxValue + 1));
 		}
 
-		[Test]
+		[Fact]
 		public async Task should_be_able_to_subscribe_to_stream_with_volatile_subscription() {
 			var evnt = new EventData(Guid.NewGuid(), "EventType", false, new byte[10], new byte[15]);
 			EventStore.ClientAPI.ResolvedEvent receivedEvent = new EventStore.ClientAPI.ResolvedEvent();
@@ -52,12 +51,12 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 			});
 
             await _store.AppendToStreamAsync(_volatileStreamOne, intMaxValue + 2, evnt);
-			Assert.That(mre.WaitOne(TimeSpan.FromSeconds(5)), "Timed out waiting for events to appear");
+			Assert.True(mre.WaitOne(TimeSpan.FromSeconds(5)), "Timed out waiting for events to appear");
 
-			Assert.AreEqual(evnt.EventId, receivedEvent.Event.EventId);
+			Assert.Equal(evnt.EventId, receivedEvent.Event.EventId);
 		}
 
-		[Test]
+		[Fact]
 		public async Task should_be_able_to_subscribe_to_all_with_volatile_subscription() {
 			var evnt = new EventData(Guid.NewGuid(), "EventType", false, new byte[10], new byte[15]);
 			EventStore.ClientAPI.ResolvedEvent receivedEvent = new EventStore.ClientAPI.ResolvedEvent();
@@ -69,12 +68,12 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 			}, userCredentials: DefaultData.AdminCredentials);
 
             await _store.AppendToStreamAsync(_volatileStreamTwo, intMaxValue + 2, evnt);
-			Assert.That(mre.WaitOne(TimeSpan.FromSeconds(5)), "Timed out waiting for events to appear");
+			Assert.True(mre.WaitOne(TimeSpan.FromSeconds(5)), "Timed out waiting for events to appear");
 
-			Assert.AreEqual(evnt.EventId, receivedEvent.Event.EventId);
+			Assert.Equal(evnt.EventId, receivedEvent.Event.EventId);
 		}
 
-		[Test]
+		[Fact]
 		public async Task should_be_able_to_subscribe_to_stream_with_catchup_subscription() {
 			var evnt = new EventData(Guid.NewGuid(), "EventType", false, new byte[10], new byte[15]);
 			List<EventStore.ClientAPI.ResolvedEvent> receivedEvents = new List<EventStore.ClientAPI.ResolvedEvent>();
@@ -88,12 +87,12 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 
             await _store.AppendToStreamAsync(_catchupStreamOne, intMaxValue + 2, evnt);
 
-			Assert.That(countdown.Wait(TimeSpan.FromSeconds(5)), "Timed out waiting for events to appear");
+			Assert.True(countdown.Wait(TimeSpan.FromSeconds(5)), "Timed out waiting for events to appear");
 
-			Assert.AreEqual(3, receivedEvents.Count);
-			Assert.AreEqual(_c1.EventId, receivedEvents[0].Event.EventId);
-			Assert.AreEqual(_c2.EventId, receivedEvents[1].Event.EventId);
-			Assert.AreEqual(evnt.EventId, receivedEvents[2].Event.EventId);
+			Assert.Equal(3, receivedEvents.Count);
+			Assert.Equal(_c1.EventId, receivedEvents[0].Event.EventId);
+			Assert.Equal(_c2.EventId, receivedEvents[1].Event.EventId);
+			Assert.Equal(evnt.EventId, receivedEvents[2].Event.EventId);
 		}
 	}
 }

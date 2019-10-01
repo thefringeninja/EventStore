@@ -1,10 +1,9 @@
 using System;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.core_service {
-	[TestFixture]
 	public class when_unsubscribing_a_subscribed_projection : TestFixtureWithProjectionCoreService {
 		private TestCoreProjection _committedeventHandler;
 		private Guid _projectionCorrelationId;
@@ -12,8 +11,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_service {
 		//private TestCoreProjection _committedeventHandler2;
 		private Guid _projectionCorrelationId2;
 
-		[SetUp]
-		public new void Setup() {
+			public when_unsubscribing_a_subscribed_projection() {
 			_committedeventHandler = new TestCoreProjection();
 			//_committedeventHandler2 = new TestCoreProjection();
 			_projectionCorrelationId = Guid.NewGuid();
@@ -30,20 +28,20 @@ namespace EventStore.Projections.Core.Tests.Services.core_service {
 			_readerService.Handle(new ReaderSubscriptionManagement.Unsubscribe(_projectionCorrelationId));
 		}
 
-		[Test]
+		[Fact]
 		public void committed_events_are_no_longer_distributed_to_the_projection() {
 			_readerService.Handle(
 				new ReaderSubscriptionMessage.CommittedEventDistributed(_projectionCorrelationId, CreateEvent()));
-			Assert.AreEqual(0, _committedeventHandler.HandledMessages.Count);
+			Assert.Equal(0, _committedeventHandler.HandledMessages.Count);
 		}
 
-		[Test]
+		[Fact]
 		public void the_projection_cannot_be_resumed() {
 			Assert.Throws<InvalidOperationException>(() => {
 				_readerService.Handle(new ReaderSubscriptionManagement.Resume(_projectionCorrelationId));
 				_readerService.Handle(
 					new ReaderSubscriptionMessage.CommittedEventDistributed(_projectionCorrelationId, CreateEvent()));
-				Assert.AreEqual(0, _committedeventHandler.HandledMessages.Count);
+				Assert.Equal(0, _committedeventHandler.HandledMessages.Count);
 			});
 		}
 	}

@@ -5,7 +5,7 @@ using EventStore.ClientAPI;
 using EventStore.ClientAPI.SystemData;
 using EventStore.Core.Bus;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -15,7 +15,6 @@ namespace EventStore.Core.Tests.Integration {
 
 		protected virtual TimeSpan Timeout { get; } = TimeSpan.FromSeconds(3);
 
-		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 			_node = new MiniNode(PathName, dbPath: Path.Combine(PathName, "db"), inMemDb: false);
@@ -50,7 +49,6 @@ namespace EventStore.Core.Tests.Integration {
 			return _node.Start();
 		}
 
-		[OneTimeTearDown]
 		public override async Task TestFixtureTearDown() {
 			await _node.Shutdown();
 			_node = null;

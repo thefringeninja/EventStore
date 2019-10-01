@@ -659,15 +659,13 @@ namespace EventStore.Core {
 			_mainQueue.Publish(new SystemMessage.SystemInit());
 		}
 
-
 		public Task Stop() {
 			_mainQueue.Publish(new ClientMessage.RequestShutdown(false, true));
 
-			if (_subsystems != null) {
-				foreach (var subsystem in _subsystems) {
-					subsystem.Stop();
-				}
-			}
+			var subsystems = _subsystems;
+			if (subsystems == null) return Task.CompletedTask;
+			foreach (var subsystem in subsystems)
+				subsystem.Stop();
 
 			return _shutdownSource.Task;
 		}

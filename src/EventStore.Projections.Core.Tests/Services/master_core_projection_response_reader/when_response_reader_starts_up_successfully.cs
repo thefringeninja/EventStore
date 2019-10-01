@@ -2,17 +2,14 @@ using System.Threading;
 using EventStore.Core.Bus;
 using EventStore.Core.Messages;
 using EventStore.Projections.Core.Messages.ParallelQueryProcessingMessages;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.master_core_projection_response_reader {
-	[TestFixture]
 	public class when_response_reader_starts_up_successfully : with_master_core_response_reader,
 		IHandle<PartitionProcessingResult> {
 		public ManualResetEventSlim _mre = new ManualResetEventSlim();
 
-		[OneTimeSetUp]
-		protected override void TestFixtureSetUp() {
-			base.TestFixtureSetUp();
+		public when_response_reader_starts_up_successfully() {
 			_bus.Subscribe<PartitionProcessingResult>(this);
 
 			_reader.Start();
@@ -26,9 +23,9 @@ namespace EventStore.Projections.Core.Tests.Services.master_core_projection_resp
 			_mre.Set();
 		}
 
-		[Test]
+		[Fact]
 		public void should_publish_command() {
-			Assert.IsTrue(_mre.Wait(10000));
+			Assert.True(_mre.Wait(10000));
 		}
 	}
 }

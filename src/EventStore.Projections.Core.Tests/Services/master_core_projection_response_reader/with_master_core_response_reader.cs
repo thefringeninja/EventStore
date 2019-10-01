@@ -11,7 +11,7 @@ using EventStore.Projections.Core.Messages.Persisted.Responses.Slave;
 using EventStore.Projections.Core.Services.Management;
 using EventStore.Projections.Core.Services.Processing;
 using Newtonsoft.Json;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.master_core_projection_response_reader {
@@ -25,8 +25,7 @@ namespace EventStore.Projections.Core.Tests.Services.master_core_projection_resp
 		protected InMemoryBus _bus;
 		protected IODispatcher _ioDispatcher;
 
-		[OneTimeSetUp]
-		protected virtual void TestFixtureSetUp() {
+		protected with_master_core_response_reader() {
 			_streamId = "$projection-$" + _masterProjectionId.ToString("N");
 
 			_bus = InMemoryBus.CreateTest();

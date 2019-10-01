@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projection_core_service_command_reader {
-	[TestFixture]
 	public class
 		when_receiving_create_and_prepare_slave_command :
 			specification_with_projection_core_service_command_reader_started {
@@ -45,28 +44,28 @@ namespace EventStore.Projections.Core.Tests.Services.projection_core_service_com
 					true);
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_projection_create_prepapre_slave_message() {
 			var createPrepareSlave =
 				HandledMessages.OfType<CoreProjectionManagementMessage.CreateAndPrepareSlave>().LastOrDefault();
-			Assert.IsNotNull(createPrepareSlave);
-			Assert.AreEqual(_projectionId, createPrepareSlave.ProjectionId);
-			Assert.AreEqual("JS", createPrepareSlave.HandlerType);
-			Assert.AreEqual(Query, createPrepareSlave.Query);
-			Assert.AreEqual("test", createPrepareSlave.Name);
-			Assert.IsNotNull(createPrepareSlave.Config);
-			Assert.AreEqual("user", createPrepareSlave.Config.RunAs.Identity.Name);
-			Assert.That(createPrepareSlave.Config.RunAs.IsInRole("b"));
-			Assert.AreEqual(1000, createPrepareSlave.Config.CheckpointHandledThreshold);
-			Assert.AreEqual(10000, createPrepareSlave.Config.CheckpointUnhandledBytesThreshold);
-			Assert.AreEqual(5000, createPrepareSlave.Config.PendingEventsThreshold);
-			Assert.AreEqual(100, createPrepareSlave.Config.MaxWriteBatchLength);
-			Assert.AreEqual(1, createPrepareSlave.Config.MaximumAllowedWritesInFlight);
-			Assert.AreEqual(true, createPrepareSlave.Config.EmitEventEnabled);
-			Assert.AreEqual(true, createPrepareSlave.Config.CheckpointsEnabled);
-			Assert.AreEqual(true, createPrepareSlave.Config.CreateTempStreams);
-			Assert.AreEqual(true, createPrepareSlave.Config.StopOnEof);
-			Assert.AreEqual(true, createPrepareSlave.Config.IsSlaveProjection);
+			Assert.NotNull(createPrepareSlave);
+			Assert.Equal(_projectionId, createPrepareSlave.ProjectionId);
+			Assert.Equal("JS", createPrepareSlave.HandlerType);
+			Assert.Equal(Query, createPrepareSlave.Query);
+			Assert.Equal("test", createPrepareSlave.Name);
+			Assert.NotNull(createPrepareSlave.Config);
+			Assert.Equal("user", createPrepareSlave.Config.RunAs.Identity.Name);
+			Assert.True(createPrepareSlave.Config.RunAs.IsInRole("b"));
+			Assert.Equal(1000, createPrepareSlave.Config.CheckpointHandledThreshold);
+			Assert.Equal(10000, createPrepareSlave.Config.CheckpointUnhandledBytesThreshold);
+			Assert.Equal(5000, createPrepareSlave.Config.PendingEventsThreshold);
+			Assert.Equal(100, createPrepareSlave.Config.MaxWriteBatchLength);
+			Assert.Equal(1, createPrepareSlave.Config.MaximumAllowedWritesInFlight);
+			Assert.Equal(true, createPrepareSlave.Config.EmitEventEnabled);
+			Assert.Equal(true, createPrepareSlave.Config.CheckpointsEnabled);
+			Assert.Equal(true, createPrepareSlave.Config.CreateTempStreams);
+			Assert.Equal(true, createPrepareSlave.Config.StopOnEof);
+			Assert.Equal(true, createPrepareSlave.Config.IsSlaveProjection);
 		}
 	}
 }

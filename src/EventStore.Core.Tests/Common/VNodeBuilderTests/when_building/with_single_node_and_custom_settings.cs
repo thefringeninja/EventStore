@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 using System;
 using System.IO;
 using System.Net;
@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using EventStore.Common.Utils;
 
 namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
-	[TestFixture]
 	public class with_run_on_disk : SingleNodeScenario {
 		private string _dbPath;
 
@@ -17,18 +16,17 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 			_builder.RunOnDisk(_dbPath);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_memdb_to_false() {
-			Assert.IsFalse(_dbConfig.InMemDb);
+			Assert.False(_dbConfig.InMemDb);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_db_path() {
-			Assert.AreEqual(_dbPath, _dbConfig.Path);
+			Assert.Equal(_dbPath, _dbConfig.Path);
 		}
 	}
 
-	[TestFixture]
 	public class with_default_endpoints_option : SingleNodeScenario {
 		public override void Given() {
 			var noEndpoint = new IPEndPoint(IPAddress.None, 0);
@@ -40,365 +38,336 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 			_builder.OnDefaultEndpoints();
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_internal_tcp() {
-			Assert.AreEqual(new IPEndPoint(IPAddress.Loopback, 1112), _settings.NodeInfo.InternalTcp);
+			Assert.Equal(new IPEndPoint(IPAddress.Loopback, 1112), _settings.NodeInfo.InternalTcp);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_external_tcp() {
-			Assert.AreEqual(new IPEndPoint(IPAddress.Loopback, 1113), _settings.NodeInfo.ExternalTcp);
+			Assert.Equal(new IPEndPoint(IPAddress.Loopback, 1113), _settings.NodeInfo.ExternalTcp);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_internal_http() {
-			Assert.AreEqual(new IPEndPoint(IPAddress.Loopback, 2112), _settings.NodeInfo.InternalHttp);
+			Assert.Equal(new IPEndPoint(IPAddress.Loopback, 2112), _settings.NodeInfo.InternalHttp);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_external_http() {
-			Assert.AreEqual(new IPEndPoint(IPAddress.Loopback, 2113), _settings.NodeInfo.ExternalHttp);
+			Assert.Equal(new IPEndPoint(IPAddress.Loopback, 2113), _settings.NodeInfo.ExternalHttp);
 		}
 	}
 
-	[TestFixture]
 	public class with_run_in_memory : SingleNodeScenario {
 		public override void Given() {
 			_builder.RunInMemory();
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_memdb_to_true() {
-			Assert.IsTrue(_dbConfig.InMemDb);
+			Assert.True(_dbConfig.InMemDb);
 		}
 	}
 
-	[TestFixture]
 	public class with_log_http_requests_enabled : SingleNodeScenario {
 		public override void Given() {
 			_builder.EnableLoggingOfHttpRequests();
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_http_logging_to_true() {
-			Assert.IsTrue(_settings.LogHttpRequests);
+			Assert.True(_settings.LogHttpRequests);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_number_of_worker_threads : SingleNodeScenario {
 		public override void Given() {
 			_builder.WithWorkerThreads(10);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_number_of_worker_threads() {
-			Assert.AreEqual(10, _settings.WorkerThreads);
+			Assert.Equal(10, _settings.WorkerThreads);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_stats_period : SingleNodeScenario {
 		public override void Given() {
 			_builder.WithStatsPeriod(TimeSpan.FromSeconds(1));
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_stats_period() {
-			Assert.AreEqual(1, _settings.StatsPeriod.TotalSeconds);
+			Assert.Equal(1, _settings.StatsPeriod.TotalSeconds);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_stats_storage : SingleNodeScenario {
 		public override void Given() {
 			_builder.WithStatsStorage(StatsStorage.None);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_stats_storage() {
-			Assert.AreEqual(StatsStorage.None, _settings.StatsStorage);
+			Assert.Equal(StatsStorage.None, _settings.StatsStorage);
 		}
 	}
 
-	[TestFixture]
 	public class with_histograms_enabled : SingleNodeScenario {
 		public override void Given() {
 			_builder.EnableHistograms();
 		}
 
-		[Test]
+		[Fact]
 		public void should_enable_histograms() {
-			Assert.IsTrue(_settings.EnableHistograms);
+			Assert.True(_settings.EnableHistograms);
 		}
 	}
 
-	[TestFixture]
 	public class with_trusted_auth_enabled : SingleNodeScenario {
 		public override void Given() {
 			_builder.EnableTrustedAuth();
 		}
 
-		[Test]
+		[Fact]
 		public void should_enable_trusted_authentication() {
-			Assert.IsTrue(_settings.EnableTrustedAuth);
+			Assert.True(_settings.EnableTrustedAuth);
 		}
 	}
 
-	[TestFixture]
 	public class with_http_caching_disabled : SingleNodeScenario {
 		public override void Given() {
 			_builder.DisableHTTPCaching();
 		}
 
-		[Test]
+		[Fact]
 		public void should_disable_http_caching() {
-			Assert.IsTrue(_settings.DisableHTTPCaching);
+			Assert.True(_settings.DisableHTTPCaching);
 		}
 	}
 
-	[TestFixture]
 	public class without_verifying_db_hashes : SingleNodeScenario {
 		public override void Given() {
 			_builder.DoNotVerifyDbHashes();
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_verify_db_hashes_to_false() {
-			Assert.IsFalse(_settings.VerifyDbHash);
+			Assert.False(_settings.VerifyDbHash);
 		}
 	}
 
-	[TestFixture]
 	public class with_verifying_db_hashes : SingleNodeScenario {
 		public override void Given() {
 			_builder.DoNotVerifyDbHashes() // Turn off verification before turning it back on
 				.VerifyDbHashes();
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_verify_db_hashes_to_true() {
-			Assert.IsTrue(_settings.VerifyDbHash);
+			Assert.True(_settings.VerifyDbHash);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_min_flush_delay : SingleNodeScenario {
 		public override void Given() {
 			_builder.WithMinFlushDelay(TimeSpan.FromMilliseconds(1200));
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_min_flush_delay() {
-			Assert.AreEqual(1200, _settings.MinFlushDelay.TotalMilliseconds);
+			Assert.Equal(1200, _settings.MinFlushDelay.TotalMilliseconds);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_scavenge_history_max_age : SingleNodeScenario {
 		public override void Given() {
 			_builder.WithScavengeHistoryMaxAge(2);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_scavenge_history_max_age() {
-			Assert.AreEqual(2, _settings.ScavengeHistoryMaxAge);
+			Assert.Equal(2, _settings.ScavengeHistoryMaxAge);
 		}
 	}
 
-	[TestFixture]
 	public class with_scavenge_merging_disabled : SingleNodeScenario {
 		public override void Given() {
 			_builder.DisableScavengeMerging();
 		}
 
-		[Test]
+		[Fact]
 		public void should_disable_scavenge_merging() {
-			Assert.IsTrue(_settings.DisableScavengeMerging);
+			Assert.True(_settings.DisableScavengeMerging);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_max_memtable_size : SingleNodeScenario {
 		public override void Given() {
 			_builder.MaximumMemoryTableSizeOf(200);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_max_memtable_size() {
-			Assert.AreEqual(200, _settings.MaxMemtableEntryCount);
+			Assert.Equal(200, _settings.MaxMemtableEntryCount);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_hash_collision_read_limit : SingleNodeScenario {
 		public override void Given() {
 			_builder.WithHashCollisionReadLimitOf(200);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_hash_collision_read_limit() {
-			Assert.AreEqual(200, _settings.HashCollisionReadLimit);
+			Assert.Equal(200, _settings.HashCollisionReadLimit);
 		}
 	}
 
-	[TestFixture]
 	public class with_standard_projections_started : SingleNodeScenario {
 		public override void Given() {
 			_builder.StartStandardProjections();
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_start_standard_projections_to_true() {
-			Assert.IsTrue(_settings.StartStandardProjections);
+			Assert.True(_settings.StartStandardProjections);
 		}
 	}
 
-	[TestFixture]
 	public class with_ignore_hard_delete_enabled : SingleNodeScenario {
 		public override void Given() {
 			_builder.WithUnsafeIgnoreHardDelete();
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_ignore_hard_deletes() {
-			Assert.IsTrue(_settings.UnsafeIgnoreHardDeletes);
+			Assert.True(_settings.UnsafeIgnoreHardDeletes);
 		}
 	}
 
-	[TestFixture]
 	public class with_better_ordering_enabled : SingleNodeScenario {
 		public override void Given() {
 			_builder.WithBetterOrdering();
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_better_ordering() {
-			Assert.IsTrue(_settings.BetterOrdering);
+			Assert.True(_settings.BetterOrdering);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_index_path : SingleNodeScenario {
 		public override void Given() {
 			_builder.WithIndexPath("index");
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_index_path() {
-			Assert.AreEqual("index", _settings.Index);
+			Assert.Equal("index", _settings.Index);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_prepare_timeout : SingleNodeScenario {
 		public override void Given() {
 			_builder.WithPrepareTimeout(TimeSpan.FromMilliseconds(1234));
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_prepare_timeout() {
-			Assert.AreEqual(1234, _settings.PrepareTimeout.TotalMilliseconds);
+			Assert.Equal(1234, _settings.PrepareTimeout.TotalMilliseconds);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_commit_timeout : SingleNodeScenario {
 		public override void Given() {
 			_builder.WithCommitTimeout(TimeSpan.FromMilliseconds(1234));
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_commit_timeout() {
-			Assert.AreEqual(1234, _settings.CommitTimeout.TotalMilliseconds);
+			Assert.Equal(1234, _settings.CommitTimeout.TotalMilliseconds);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_internal_heartbeat_interval : SingleNodeScenario {
 		public override void Given() {
 			_builder.WithInternalHeartbeatInterval(TimeSpan.FromMilliseconds(1234));
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_internal_heartbeat_interval() {
-			Assert.AreEqual(1234, _settings.IntTcpHeartbeatInterval.TotalMilliseconds);
+			Assert.Equal(1234, _settings.IntTcpHeartbeatInterval.TotalMilliseconds);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_internal_heartbeat_timeout : SingleNodeScenario {
 		public override void Given() {
 			_builder.WithInternalHeartbeatTimeout(TimeSpan.FromMilliseconds(1234));
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_internal_heartbeat_timeout() {
-			Assert.AreEqual(1234, _settings.IntTcpHeartbeatTimeout.TotalMilliseconds);
+			Assert.Equal(1234, _settings.IntTcpHeartbeatTimeout.TotalMilliseconds);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_external_heartbeat_interval : SingleNodeScenario {
 		public override void Given() {
 			_builder.WithExternalHeartbeatInterval(TimeSpan.FromMilliseconds(1234));
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_external_heartbeat_interval() {
-			Assert.AreEqual(1234, _settings.ExtTcpHeartbeatInterval.TotalMilliseconds);
+			Assert.Equal(1234, _settings.ExtTcpHeartbeatInterval.TotalMilliseconds);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_external_heartbeat_timeout : SingleNodeScenario {
 		public override void Given() {
 			_builder.WithExternalHeartbeatTimeout(TimeSpan.FromMilliseconds(1234));
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_external_heartbeat_timeout() {
-			Assert.AreEqual(1234, _settings.ExtTcpHeartbeatTimeout.TotalMilliseconds);
+			Assert.Equal(1234, _settings.ExtTcpHeartbeatTimeout.TotalMilliseconds);
 		}
 	}
 
-	[TestFixture]
 	public class with_no_admin_on_public_interface : SingleNodeScenario {
 		public override void Given() {
 			_builder.NoAdminOnPublicInterface();
 		}
 
-		[Test]
+		[Fact]
 		public void should_disable_admin_on_public() {
-			Assert.IsFalse(_settings.AdminOnPublic);
+			Assert.False(_settings.AdminOnPublic);
 		}
 	}
 
-	[TestFixture]
 	public class with_no_gossip_on_public_interface : SingleNodeScenario {
 		public override void Given() {
 			_builder.NoGossipOnPublicInterface();
 		}
 
-		[Test]
+		[Fact]
 		public void should_disable_gossip_on_public() {
-			Assert.IsFalse(_settings.GossipOnPublic);
+			Assert.False(_settings.GossipOnPublic);
 		}
 	}
 
-	[TestFixture]
 	public class with_no_stats_on_public_interface : SingleNodeScenario {
 		public override void Given() {
 			_builder.NoStatsOnPublicInterface();
 		}
 
-		[Test]
+		[Fact]
 		public void should_disable_stats_on_public() {
-			Assert.IsFalse(_settings.StatsOnPublic);
+			Assert.False(_settings.StatsOnPublic);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_ip_endpoints : SingleNodeScenario {
 		private IPEndPoint _internalHttp;
 		private IPEndPoint _externalHttp;
@@ -417,40 +386,39 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 				.WithInternalTcpOn(_internalTcp);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_internal_http_endpoint() {
-			Assert.AreEqual(_internalHttp, _settings.NodeInfo.InternalHttp);
+			Assert.Equal(_internalHttp, _settings.NodeInfo.InternalHttp);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_external_http_endpoint() {
-			Assert.AreEqual(_externalHttp, _settings.NodeInfo.ExternalHttp);
+			Assert.Equal(_externalHttp, _settings.NodeInfo.ExternalHttp);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_internal_tcp_endpoint() {
-			Assert.AreEqual(_internalTcp, _settings.NodeInfo.InternalTcp);
+			Assert.Equal(_internalTcp, _settings.NodeInfo.InternalTcp);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_external_tcp_endpoint() {
-			Assert.AreEqual(_externalTcp, _settings.NodeInfo.ExternalTcp);
+			Assert.Equal(_externalTcp, _settings.NodeInfo.ExternalTcp);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_internal_http_prefixes() {
 			var internalHttpPrefix = string.Format("http://{0}/", _internalHttp);
-			CollectionAssert.AreEqual(new string[] {internalHttpPrefix}, _settings.IntHttpPrefixes);
+			Assert.Equal(new string[] {internalHttpPrefix}, _settings.IntHttpPrefixes);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_external_http_prefixes() {
 			var externalHttpPrefix = string.Format("http://{0}/", _externalHttp);
-			CollectionAssert.AreEqual(new string[] {externalHttpPrefix}, _settings.ExtHttpPrefixes);
+			Assert.Equal(new string[] {externalHttpPrefix}, _settings.ExtHttpPrefixes);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_http_prefixes : SingleNodeScenario {
 		private string _intPrefix;
 		private string _intLoopbackPrefix;
@@ -478,18 +446,17 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 				.AddExternalHttpPrefix(_extLoopbackPrefix);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_internal_http_prefixes() {
-			CollectionAssert.AreEqual(new string[] {_intPrefix, _intLoopbackPrefix}, _settings.IntHttpPrefixes);
+			Assert.Equal(new[] {_intPrefix, _intLoopbackPrefix}, _settings.IntHttpPrefixes);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_external_http_prefixes() {
-			CollectionAssert.AreEqual(new string[] {_extPrefix, _extLoopbackPrefix}, _settings.ExtHttpPrefixes);
+			Assert.Equal(new[] {_extPrefix, _extLoopbackPrefix}, _settings.ExtHttpPrefixes);
 		}
 	}
 
-	[TestFixture]
 	public class with_add_interface_prefixes : SingleNodeScenario {
 		private IPEndPoint _internalHttp;
 		private IPEndPoint _externalHttp;
@@ -508,24 +475,23 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 				.WithInternalTcpOn(_internalTcp);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_internal_http_prefixes() {
 			var internalHttpPrefixes = new List<string> {
 				string.Format("http://{0}/", _internalHttp)
 			};
-			CollectionAssert.AreEqual(internalHttpPrefixes, _settings.IntHttpPrefixes);
+			Assert.Equal(internalHttpPrefixes, _settings.IntHttpPrefixes);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_external_http_prefixes() {
 			var externalHttpPrefixes = new List<string> {
 				string.Format("http://{0}/", _externalHttp)
 			};
-			CollectionAssert.AreEqual(externalHttpPrefixes, _settings.ExtHttpPrefixes);
+			Assert.Equal(externalHttpPrefixes, _settings.ExtHttpPrefixes);
 		}
 	}
 
-	[TestFixture]
 	public class with_dont_add_interface_prefixes : SingleNodeScenario {
 		private IPEndPoint _internalHttp;
 		private IPEndPoint _externalHttp;
@@ -545,42 +511,39 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 				.DontAddInterfacePrefixes();
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_no_internal_http_prefixes() {
-			CollectionAssert.IsEmpty(_settings.IntHttpPrefixes);
+			Assert.Empty(_settings.IntHttpPrefixes);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_no_external_http_prefixes() {
-			CollectionAssert.IsEmpty(_settings.ExtHttpPrefixes);
+			Assert.Empty(_settings.ExtHttpPrefixes);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_index_cache_depth : SingleNodeScenario {
 		public override void Given() {
 			_builder.WithIndexCacheDepth(8);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_index_cache_depth() {
-			Assert.AreEqual(8, _settings.IndexCacheDepth);
+			Assert.Equal(8, _settings.IndexCacheDepth);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_authentication_provider_factory : SingleNodeScenario {
 		public override void Given() {
 			_builder.WithAuthenticationProvider(new TestAuthenticationProviderFactory());
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_authentication_provider_factory() {
-			Assert.IsInstanceOf(typeof(TestAuthenticationProviderFactory), _settings.AuthenticationProviderFactory);
+			Assert.IsType<TestAuthenticationProviderFactory>(_settings.AuthenticationProviderFactory);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_chunk_size : SingleNodeScenario {
 		private int _chunkSize;
 
@@ -589,13 +552,12 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 			_builder.WithTfChunkSize(_chunkSize);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_chunk_size() {
-			Assert.AreEqual(_chunkSize, _dbConfig.ChunkSize);
+			Assert.Equal(_chunkSize, _dbConfig.ChunkSize);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_chunk_cache_size : SingleNodeScenario {
 		private long _chunkCacheSize;
 
@@ -604,26 +566,24 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 			_builder.WithTfChunksCacheSize(_chunkCacheSize);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_max_chunk_cache_size() {
-			Assert.AreEqual(_chunkCacheSize, _dbConfig.MaxChunksCacheSize);
+			Assert.Equal(_chunkCacheSize, _dbConfig.MaxChunksCacheSize);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_number_of_cached_chunks : SingleNodeScenario {
 		public override void Given() {
 			_builder.WithTfCachedChunks(10);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_max_chunk_size_to_the_size_of_the_number_of_cached_chunks() {
 			var chunkSizeResult = 10 * (long)(TFConsts.ChunkSize + ChunkHeader.Size + ChunkFooter.Size);
-			Assert.AreEqual(chunkSizeResult, _dbConfig.MaxChunksCacheSize);
+			Assert.Equal(chunkSizeResult, _dbConfig.MaxChunksCacheSize);
 		}
 	}
 
-	[TestFixture]
 	public class with_custom_advertise_as : SingleNodeScenario {
 		private Data.GossipAdvertiseInfo _advertiseInfo;
 
@@ -651,36 +611,34 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 				.AdvertiseExternalHttpPortAs(extHttpEndpoint.Port);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_the_advertise_as_info_to_the_specified() {
-			Assert.AreEqual(_advertiseInfo.InternalTcp, _settings.GossipAdvertiseInfo.InternalTcp);
-			Assert.AreEqual(_advertiseInfo.ExternalTcp, _settings.GossipAdvertiseInfo.ExternalTcp);
-			Assert.AreEqual(_advertiseInfo.InternalSecureTcp, _settings.GossipAdvertiseInfo.InternalSecureTcp);
-			Assert.AreEqual(_advertiseInfo.ExternalSecureTcp, _settings.GossipAdvertiseInfo.ExternalSecureTcp);
-			Assert.AreEqual(_advertiseInfo.InternalHttp, _settings.GossipAdvertiseInfo.InternalHttp);
-			Assert.AreEqual(_advertiseInfo.ExternalHttp, _settings.GossipAdvertiseInfo.ExternalHttp);
-			Assert.AreEqual(_advertiseInfo.AdvertiseInternalIPAs, _settings.GossipAdvertiseInfo.AdvertiseInternalIPAs);
-			Assert.AreEqual(_advertiseInfo.AdvertiseExternalIPAs, _settings.GossipAdvertiseInfo.AdvertiseExternalIPAs);
-			Assert.AreEqual(_advertiseInfo.AdvertiseInternalHttpPortAs,
+			Assert.Equal(_advertiseInfo.InternalTcp, _settings.GossipAdvertiseInfo.InternalTcp);
+			Assert.Equal(_advertiseInfo.ExternalTcp, _settings.GossipAdvertiseInfo.ExternalTcp);
+			Assert.Equal(_advertiseInfo.InternalSecureTcp, _settings.GossipAdvertiseInfo.InternalSecureTcp);
+			Assert.Equal(_advertiseInfo.ExternalSecureTcp, _settings.GossipAdvertiseInfo.ExternalSecureTcp);
+			Assert.Equal(_advertiseInfo.InternalHttp, _settings.GossipAdvertiseInfo.InternalHttp);
+			Assert.Equal(_advertiseInfo.ExternalHttp, _settings.GossipAdvertiseInfo.ExternalHttp);
+			Assert.Equal(_advertiseInfo.AdvertiseInternalIPAs, _settings.GossipAdvertiseInfo.AdvertiseInternalIPAs);
+			Assert.Equal(_advertiseInfo.AdvertiseExternalIPAs, _settings.GossipAdvertiseInfo.AdvertiseExternalIPAs);
+			Assert.Equal(_advertiseInfo.AdvertiseInternalHttpPortAs,
 				_settings.GossipAdvertiseInfo.AdvertiseInternalHttpPortAs);
-			Assert.AreEqual(_advertiseInfo.AdvertiseExternalHttpPortAs,
+			Assert.Equal(_advertiseInfo.AdvertiseExternalHttpPortAs,
 				_settings.GossipAdvertiseInfo.AdvertiseExternalHttpPortAs);
 		}
 	}
 
-	[TestFixture]
 	public class with_always_keep_scavenged : SingleNodeScenario {
 		public override void Given() {
 			_builder.AlwaysKeepScavenged();
 		}
 
-		[Test]
+		[Fact]
 		public void should_always_keep_scavenged() {
-			Assert.AreEqual(true, _settings.AlwaysKeepScavenged);
+			Assert.True(_settings.AlwaysKeepScavenged);
 		}
 	}
 
-	[TestFixture]
 	public class with_connection_pending_send_bytes_threshold : SingleNodeScenario {
 		private int _threshold = 40 * 1024;
 
@@ -688,13 +646,12 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 			_builder.WithConnectionPendingSendBytesThreshold(_threshold);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_connection_pending_send_bytes_threshold() {
-			Assert.AreEqual(_threshold, _settings.ConnectionPendingSendBytesThreshold);
+			Assert.Equal(_threshold, _settings.ConnectionPendingSendBytesThreshold);
 		}
 	}
 	
-	[TestFixture]
 	public class with_connection_queue_size_threshold : SingleNodeScenario {
 		private int _threshold = 2000;
 
@@ -702,9 +659,9 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 			_builder.WithConnectionQueueSizeThreshold(_threshold);
 		}
 
-		[Test]
+		[Fact]
 		public void should_set_connection_queue_size_threshold() {
-			Assert.AreEqual(_threshold, _settings.ConnectionQueueSizeThreshold);
+			Assert.Equal(_threshold, _settings.ConnectionQueueSizeThreshold);
 		}
 	}
 }

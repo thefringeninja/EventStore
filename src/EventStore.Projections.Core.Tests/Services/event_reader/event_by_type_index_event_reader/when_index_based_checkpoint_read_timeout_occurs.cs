@@ -7,12 +7,12 @@ using EventStore.Core.Tests.Services.TimeService;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Common.Utils;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Messages;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.event_by_type_index_event_reader {
-	[TestFixture, Category("test")]
+	[Trait("Category", "test")]
 	public class when_index_based_checkpoint_read_timeout_occurs : EventByTypeIndexEventReaderTestFixture {
 		private EventByTypeIndexEventReader _eventReader;
 		private Guid _distributionCorrelationId;
@@ -24,8 +24,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.event_by_type_
 
 		private FakeTimeProvider _fakeTimeProvider;
 
-		[SetUp]
-		public new void When() {
+			public when_index_based_checkpoint_read_timeout_occurs() {
 			_distributionCorrelationId = Guid.NewGuid();
 			_fakeTimeProvider = new FakeTimeProvider();
 			var fromPositions = new Dictionary<string, long>();
@@ -79,19 +78,19 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.event_by_type_
 			});
 		}
 
-		[Test]
+		[Fact]
 		public void should_not_deliver_events() {
-			Assert.AreEqual(0,
-				_consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
+			Assert.Equal(0,
+				Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
 		}
 
-		[Test]
+		[Fact]
 		public void should_attempt_another_checkpoint_read() {
-			var checkpointReads = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsBackward>()
+			var checkpointReads = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsBackward>()
 				.Where(x => x.EventStreamId == "$et");
 
-			Assert.AreEqual(checkpointReads.First().CorrelationId, _checkpointStreamCorrelationId);
-			Assert.AreEqual(1, checkpointReads.Skip(1).Count());
+			Assert.Equal(checkpointReads.First().CorrelationId, _checkpointStreamCorrelationId);
+			Assert.Equal(1, checkpointReads.Skip(1).Count());
 		}
 	}
 }

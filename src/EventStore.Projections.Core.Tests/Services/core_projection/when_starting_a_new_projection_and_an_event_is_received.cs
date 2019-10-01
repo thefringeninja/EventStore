@@ -2,11 +2,10 @@ using System;
 using System.Text;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Projections.Core.Services.Processing.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection {
-	[TestFixture]
 	public class when_starting_a_new_projection_and_an_event_is_received : TestFixtureWithCoreProjectionStarted {
 		protected override void Given() {
 			NoStream("$projections-projection-result");
@@ -24,9 +23,9 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 						"handle_this_type", false, "data", "metadata"), _subscriptionId, 0));
 		}
 
-		[Test]
+		[Fact]
 		public void should_initialize_projection_state_handler() {
-			Assert.AreEqual(1, _stateHandler._initializeCalled);
+			Assert.Equal(1, _stateHandler._initializeCalled);
 		}
 	}
 }

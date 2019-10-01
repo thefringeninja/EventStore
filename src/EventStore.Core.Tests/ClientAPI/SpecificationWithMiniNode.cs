@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.Core.Tests.ClientAPI.Helpers;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	public abstract class SpecificationWithMiniNode : SpecificationWithDirectoryPerTestFixture {
@@ -21,7 +21,6 @@ namespace EventStore.Core.Tests.ClientAPI {
 			return TestConnection.Create(node.TcpEndPoint);
 		}
 
-		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 			_node = new MiniNode(PathName, skipInitializeStandardUsersCheck: false);
@@ -43,7 +42,6 @@ namespace EventStore.Core.Tests.ClientAPI {
 			}
 		}
 
-		[OneTimeTearDown]
 		public override async Task TestFixtureTearDown() {
 			_conn.Close();
 			await _node.Shutdown();

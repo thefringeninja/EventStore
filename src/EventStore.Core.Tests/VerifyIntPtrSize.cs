@@ -1,12 +1,11 @@
 ﻿using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests {
-	[TestFixture]
 	public class VerifyIntPtrSize {
-		[Test]
+		[Fact]
 		public void TestIntPtrSize() {
-			Assert.AreEqual(8, IntPtr.Size);
+			Assert.Equal(8, IntPtr.Size);
 		}
 	}
 }

@@ -6,11 +6,10 @@ using EventStore.Core.Data;
 using EventStore.Core.Util;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Projections.Core.Services.Processing.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection {
-	[TestFixture]
 	public class
 		when_the_state_handler_does_emit_an_event_the_projection_should : TestFixtureWithCoreProjectionStarted {
 		private Guid _causingEventId;
@@ -32,19 +31,19 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 			_bus.Publish(committedEventReceived);
 		}
 
-		[Test]
+		[Fact]
 		public void write_the_emitted_event() {
-			Assert.IsTrue(
+			Assert.True(
 				_writeEventHandler.HandledMessages.Any(
 					v => Helper.UTF8NoBom.GetString(v.Events[0].Data) == FakeProjectionStateHandler._emit1Data));
 		}
 
-		[Test]
+		[Fact]
 		public void set_a_caused_by_position_attributes() {
 			var metadata = _writeEventHandler.HandledMessages[0].Events[0].Metadata
 				.ParseCheckpointTagVersionExtraJson(default(ProjectionVersion));
-			Assert.AreEqual(120, metadata.Tag.CommitPosition);
-			Assert.AreEqual(110, metadata.Tag.PreparePosition);
+			Assert.Equal(120, metadata.Tag.CommitPosition);
+			Assert.Equal(110, metadata.Tag.PreparePosition);
 		}
 	}
 }

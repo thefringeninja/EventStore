@@ -1,104 +1,100 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.Core.Tests.ClientAPI.Helpers;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
-	[TestFixture(TcpType.Normal), TestFixture(TcpType.Ssl), Category("ClientAPI"), Category("LongRunning")]
+	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
 	public class event_store_connection_should : SpecificationWithDirectoryPerTestFixture {
-		private readonly TcpType _tcpType;
 		private MiniNode _node;
+		
+		public static IEnumerable<object[]> TestCases() => new [] {new object[]{TcpType.Normal}, new object[]{TcpType.Ssl}}; 
 
-		public event_store_connection_should(TcpType tcpType) {
-			_tcpType = tcpType;
-		}
-
-		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 			_node = new MiniNode(PathName);
 			await _node.Start();
 		}
 
-		[OneTimeTearDown]
 		public override async Task TestFixtureTearDown() {
 			await _node.Shutdown();
 			await base.TestFixtureTearDown();
 		}
 
-		[Test]
-		[Category("Network")]
-		public void not_throw_on_close_if_connect_was_not_called() {
-			var connection = TestConnection.To(_node, _tcpType);
-			Assert.DoesNotThrow(connection.Close);
+		[Theory, MemberData(nameof(TestCases))]
+		[Trait("Category", "Network")]
+		public void not_throw_on_close_if_connect_was_not_called(TcpType tcpType) {
+			var connection = TestConnection.To(_node, tcpType);
+			connection.Close();
 		}
 
-		[Test]
-		[Category("Network")]
-		public async Task not_throw_on_close_if_called_multiple_times() {
-			var connection = TestConnection.To(_node, _tcpType);
+		[Theory, MemberData(nameof(TestCases))]
+		[Trait("Category", "Network")]
+		public async Task not_throw_on_close_if_called_multiple_times(TcpType tcpType) {
+			var connection = TestConnection.To(_node, tcpType);
 			await connection.ConnectAsync();
 			connection.Close();
-			Assert.DoesNotThrow(connection.Close);
+			connection.Close();
 		}
 
 /*
 //TODO WEIRD TEST GFY
-        [Test]
-        [Category("Network")]
+        [Fact]
+        [Trait("Category", "Network")]
         public void throw_on_connect_called_more_than_once()
         {
             var connection = TestConnection.To(_node, _tcpType);
-            Assert.DoesNotThrow(() => connection.ConnectAsync().Wait());
+            connection.ConnectAsync().Wait();
 
-            await AssertEx.ThrowsAsync<>(() => connection.ConnectAsync().Wait(),
+            await Assert.ThrowsAsync<>(() => connection.ConnectAsync().Wait(),
                         Throws.Exception.InstanceOf<AggregateException>().With.InnerException.InstanceOf<InvalidOperationException>());
         }
 
-        [Test]
-        [Category("Network")]
+        [Fact]
+        [Trait("Category", "Network")]
         public void throw_on_connect_called_after_close()
         {
             var connection = TestConnection.To(_node, _tcpType);
             connection.ConnectAsync().Wait();
             connection.Close();
 
-            await AssertEx.ThrowsAsync<>(() => connection.ConnectAsync().Wait(),
+            await Assert.ThrowsAsync<>(() => connection.ConnectAsync().Wait(),
                         Throws.Exception.InstanceOf<AggregateException>().With.InnerException.InstanceOf<InvalidOperationException>());
         }
 */
-		[Test]
-		[Category("Network")]
-		public async Task throw_invalid_operation_on_every_api_call_if_connect_was_not_called() {
-			var connection = TestConnection.To(_node, _tcpType);
+		[Theory, MemberData(nameof(TestCases))]
+		[Trait("Category", "Network")]
+		public async Task throw_invalid_operation_on_every_api_call_if_connect_was_not_called(TcpType tcpType) {
+			var connection = TestConnection.To(_node, tcpType);
 
 			const string s = "stream";
 			var events = new[] {TestEvent.NewTestEvent()};
 
-			await AssertEx.ThrowsAsync<InvalidOperationException>(() => connection.DeleteStreamAsync(s, 0));
+			await Assert.ThrowsAsync<InvalidOperationException>(() => connection.DeleteStreamAsync(s, 0));
 
-			await AssertEx.ThrowsAsync<InvalidOperationException>(() => connection.AppendToStreamAsync(s, 0, events));
+			await Assert.ThrowsAsync<InvalidOperationException>(() => connection.AppendToStreamAsync(s, 0, events));
 
-			await AssertEx.ThrowsAsync<InvalidOperationException>(
+			await Assert.ThrowsAsync<InvalidOperationException>(
 				() => connection.ReadStreamEventsForwardAsync(s, 0, 1, resolveLinkTos: false));
 
-			await AssertEx.ThrowsAsync<InvalidOperationException>(
+			await Assert.ThrowsAsync<InvalidOperationException>(
 				() => connection.ReadStreamEventsBackwardAsync(s, 0, 1, resolveLinkTos: false));
 
-			await AssertEx.ThrowsAsync<InvalidOperationException>(
+			await Assert.ThrowsAsync<InvalidOperationException>(
 				() => connection.ReadAllEventsForwardAsync(Position.Start, 1, false));
 
-			await AssertEx.ThrowsAsync<InvalidOperationException>(() =>
+			await Assert.ThrowsAsync<InvalidOperationException>(() =>
 				connection.ReadAllEventsBackwardAsync(Position.End, 1, false));
 
-			await AssertEx.ThrowsAsync<InvalidOperationException>(() => connection.StartTransactionAsync(s, 0));
+			await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartTransactionAsync(s, 0));
 
-			await AssertEx.ThrowsAsync<InvalidOperationException>(
+			await Assert.ThrowsAsync<InvalidOperationException>(
 				() => connection.SubscribeToStreamAsync(s, false, (_, __) => Task.CompletedTask, (_, __, ___) => { }));
 
-			await AssertEx.ThrowsAsync<InvalidOperationException>(
+			await Assert.ThrowsAsync<InvalidOperationException>(
 				() => connection.SubscribeToAllAsync(false, (_, __) => Task.CompletedTask, (_, __, ___) => { }));
 		}
 	}

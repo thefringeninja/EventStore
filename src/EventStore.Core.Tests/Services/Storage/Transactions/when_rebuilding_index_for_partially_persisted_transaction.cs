@@ -12,12 +12,11 @@ using EventStore.Core.Tests.Fakes;
 using EventStore.Core.TransactionLog;
 using EventStore.Core.TransactionLog.Chunks;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Util;
 using EventStore.Core.Index.Hashes;
 
 namespace EventStore.Core.Tests.Services.Storage.Transactions {
-	[TestFixture]
 	public class when_rebuilding_index_for_partially_persisted_transaction : ReadIndexTestScenario {
 		public when_rebuilding_index_for_partially_persisted_transaction() : base(maxEntriesInMemTable: 10) {
 		}
@@ -61,12 +60,12 @@ namespace EventStore.Core.Tests.Services.Storage.Transactions {
 			WriteCommit(Guid.NewGuid(), begin.LogPosition, "ES", 0);
 		}
 
-		[Test]
+		[Fact]
 		public void sequence_numbers_are_not_broken() {
 			for (int i = 0; i < 15; ++i) {
 				var result = ReadIndex.ReadEvent("ES", i);
-				Assert.AreEqual(ReadEventResult.Success, result.Result);
-				Assert.AreEqual(Helper.UTF8NoBom.GetBytes("data" + i), result.Record.Data);
+				Assert.Equal(ReadEventResult.Success, result.Result);
+				Assert.Equal(Helper.UTF8NoBom.GetBytes("data" + i), result.Record.Data);
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 ﻿using EventStore.ClientAPI;
 using EventStore.ClientAPI.ClientOperations;
 using EventStore.ClientAPI.Exceptions;
-using NUnit.Framework;
+using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,12 +9,12 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace EventStore.Core.Tests.ClientAPI {
-	[TestFixture, Category("LongRunning"), Category("ClientAPI")]
+	[Trait("Category", "LongRunning"), Trait("Category", "ClientAPI")]
 	public class connect_to_non_existing_persistent_subscription_with_permissions_async : SpecificationWithMiniNode {
 		private Exception _innerEx;
 
 		protected override async Task When() {
-			_innerEx = await AssertEx.ThrowsAsync<ArgumentException>(() => _conn.ConnectToPersistentSubscriptionAsync(
+			_innerEx = await Assert.ThrowsAsync<ArgumentException>(() => _conn.ConnectToPersistentSubscriptionAsync(
 				"nonexisting2",
 				"foo",
 				(sub, e) => {
@@ -24,13 +24,13 @@ namespace EventStore.Core.Tests.ClientAPI {
 				(sub, reason, ex) => { }));
 		}
 
-		[Test]
+		[Fact]
 		public void the_subscription_fails_to_connect_with_argument_exception() {
-			Assert.IsInstanceOf<ArgumentException>(_innerEx);
+			Assert.IsType<ArgumentException>(_innerEx);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class connect_to_existing_persistent_subscription_with_permissions_async : SpecificationWithMiniNode {
 		private EventStorePersistentSubscriptionBase _sub;
 		private readonly string _stream = Guid.NewGuid().ToString();
@@ -51,13 +51,13 @@ namespace EventStore.Core.Tests.ClientAPI {
 				(sub, reason, ex) => { });
 		}
 
-		[Test]
+		[Fact]
 		public void the_subscription_suceeds() {
-			Assert.IsNotNull(_sub);
+			Assert.NotNull(_sub);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class connect_to_existing_persistent_subscription_without_permissions_async : SpecificationWithMiniNode {
 		private readonly string _stream = "$" + Guid.NewGuid();
 
@@ -70,7 +70,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		protected override async Task When() {
             await _conn.CreatePersistentSubscriptionAsync(_stream, "agroupname55", _settings,
 				DefaultData.AdminCredentials);
-			_innerEx = await AssertEx.ThrowsAsync<AccessDeniedException>(() => _conn.ConnectToPersistentSubscriptionAsync(
+			_innerEx = await Assert.ThrowsAsync<AccessDeniedException>(() => _conn.ConnectToPersistentSubscriptionAsync(
 				_stream,
 				"agroupname55",
 				(sub, e) => {
@@ -80,13 +80,13 @@ namespace EventStore.Core.Tests.ClientAPI {
 				(sub, reason, ex) => Console.WriteLine("dropped.")));
 		}
 
-		[Test]
+		[Fact]
 		public void the_subscription_fails_to_connect_with_access_denied_exception() {
-			Assert.IsInstanceOf<AccessDeniedException>(_innerEx);
+			Assert.IsType<AccessDeniedException>(_innerEx);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class connect_to_existing_persistent_subscription_with_max_one_client_async : SpecificationWithMiniNode {
 		private readonly string _stream = "$" + Guid.NewGuid();
 
@@ -117,7 +117,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		protected override async Task When() {
-			_innerEx = await AssertEx.ThrowsAsync<MaximumSubscribersReachedException>(() =>
+			_innerEx = await Assert.ThrowsAsync<MaximumSubscribersReachedException>(() =>
 				// Second connection
 				_conn.ConnectToPersistentSubscriptionAsync(
 					_stream,
@@ -130,18 +130,18 @@ namespace EventStore.Core.Tests.ClientAPI {
 					DefaultData.AdminCredentials));
 		}
 
-		[Test]
+		[Fact]
 		public void the_first_subscription_connects_successfully() {
-			Assert.IsNotNull(_firstConn);
+			Assert.NotNull(_firstConn);
 		}
 
-		[Test]
+		[Fact]
 		public void the_second_subscription_throws_maximum_subscribers_reached_exception() {
-			Assert.IsInstanceOf<MaximumSubscribersReachedException>(_innerEx);
+			Assert.IsType<MaximumSubscribersReachedException>(_innerEx);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class
 		connect_to_existing_persistent_subscription_with_start_from_beginning_and_no_stream_async :
 			SpecificationWithMiniNode {
@@ -183,15 +183,15 @@ namespace EventStore.Core.Tests.ClientAPI {
 			return Task.CompletedTask;
 		}
 
-		[Test]
+		[Fact]
 		public void the_subscription_gets_event_zero_as_its_first_event() {
-			Assert.IsTrue(_resetEvent.WaitOne(TimeSpan.FromSeconds(10)));
-			Assert.AreEqual(0, _firstEvent.Event.EventNumber);
-			Assert.AreEqual(_id, _firstEvent.Event.EventId);
+			Assert.True(_resetEvent.WaitOne(TimeSpan.FromSeconds(10)));
+			Assert.Equal(0, _firstEvent.Event.EventNumber);
+			Assert.Equal(_id, _firstEvent.Event.EventId);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class
 		connect_to_existing_persistent_subscription_with_start_from_two_and_no_stream_async :
 			SpecificationWithMiniNode {
@@ -236,15 +236,15 @@ namespace EventStore.Core.Tests.ClientAPI {
 			return Task.CompletedTask;
 		}
 
-		[Test]
+		[Fact]
 		public void the_subscription_gets_event_two_as_its_first_event() {
-			Assert.IsTrue(_resetEvent.WaitOne(TimeSpan.FromSeconds(10)));
-			Assert.AreEqual(2, _firstEvent.Event.EventNumber);
-			Assert.AreEqual(_id, _firstEvent.Event.EventId);
+			Assert.True(_resetEvent.WaitOne(TimeSpan.FromSeconds(10)));
+			Assert.Equal(2, _firstEvent.Event.EventNumber);
+			Assert.Equal(_id, _firstEvent.Event.EventId);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class
 		connect_to_existing_persistent_subscription_with_start_from_beginning_and_events_in_it_async :
 			SpecificationWithMiniNode {
@@ -294,15 +294,15 @@ namespace EventStore.Core.Tests.ClientAPI {
 			return Task.CompletedTask;
 		}
 
-		[Test]
+		[Fact]
 		public void the_subscription_gets_event_zero_as_its_first_event() {
-			Assert.IsTrue(_resetEvent.WaitOne(TimeSpan.FromSeconds(10)));
-			Assert.AreEqual(0, _firstEvent.Event.EventNumber);
-			Assert.AreEqual(_ids[0], _firstEvent.Event.EventId);
+			Assert.True(_resetEvent.WaitOne(TimeSpan.FromSeconds(10)));
+			Assert.Equal(0, _firstEvent.Event.EventNumber);
+			Assert.Equal(_ids[0], _firstEvent.Event.EventId);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class
 		connect_to_existing_persistent_subscription_with_start_from_beginning_not_set_and_events_in_it_async :
 			SpecificationWithMiniNode {
@@ -344,9 +344,9 @@ namespace EventStore.Core.Tests.ClientAPI {
 			return Task.CompletedTask;
 		}
 
-		[Test]
+		[Fact]
 		public void the_subscription_gets_no_events() {
-			Assert.IsFalse(_resetEvent.WaitOne(TimeSpan.FromSeconds(1)));
+			Assert.False(_resetEvent.WaitOne(TimeSpan.FromSeconds(1)));
 		}
 	}
 }

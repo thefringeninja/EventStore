@@ -9,13 +9,12 @@ using EventStore.Common.Utils;
 using EventStore.Core.Messages;
 using EventStore.Transport.Http;
 using EventStore.Transport.Http.Codecs;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Tests.ClientAPI;
 using EventStore.Core.Tests.Helpers;
 using HttpStatusCode = System.Net.HttpStatusCode;
 
 namespace EventStore.Core.Tests.Services.Transport.Http {
-	[TestFixture]
 	public class when_getting_tcp_stats_from_stat_controller : SpecificationWithMiniNode {
 		private PortableServer _portableServer;
 		private IPEndPoint _serverEndPoint;
@@ -52,36 +51,35 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 			};
 
 			var res = _portableServer.StartServiceAndSendRequest(y => { }, _url, verifier);
-			Assert.IsEmpty(res.Item2, "Http call failed");
+			Assert.Empty(res.Item2);
 			return Task.CompletedTask;
 		}
 
-		[Test]
+		[Fact]
 		public void should_have_succeeded() {
-			Assert.AreEqual((int)HttpStatusCode.OK, _response.HttpStatusCode);
+			Assert.Equal((int)HttpStatusCode.OK, _response.HttpStatusCode);
 		}
 
-		[Test]
+		[Fact]
 		public void should_return_the_external_connections() {
-			Assert.AreEqual(2, _results.Count(r => r.IsExternalConnection));
+			Assert.Equal(2, _results.Count(r => r.IsExternalConnection));
 		}
 
-		[Test]
+		[Fact]
 		public void should_return_the_total_number_of_bytes_sent_for_external_connections() {
-			Assert.Greater(_results.Sum(r => r.IsExternalConnection ? r.TotalBytesSent : 0), 0);
+			Assert.True(_results.Sum(r => r.IsExternalConnection ? r.TotalBytesSent : 0) > 0);
 		}
 
-		[Test]
+		[Fact]
 		public void should_return_the_total_number_of_bytes_received_from_external_connections() {
-			Assert.Greater(_results.Sum(r => r.IsExternalConnection ? r.TotalBytesReceived : 0), 0);
+			Assert.True(_results.Sum(r => r.IsExternalConnection ? r.TotalBytesReceived : 0) > 0);
 		}
 
-		[Test]
+		[Fact]
 		public void should_have_set_the_client_connection_name() {
-			Assert.IsTrue(_results.Any(x => x.ClientConnectionName == _clientConnectionName));
+			Assert.Contains(_results, x => x.ClientConnectionName == _clientConnectionName);
 		}
 
-		[OneTimeTearDown]
 		public override Task TestFixtureTearDown() {
 			_portableServer.TearDown();
 			_connection.Dispose();

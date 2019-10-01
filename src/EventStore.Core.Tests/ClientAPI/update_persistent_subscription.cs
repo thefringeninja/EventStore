@@ -4,10 +4,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.ClientAPI.Exceptions;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
-	[TestFixture, Category("ClientAPI"), Category("LongRunning")]
+	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
 	public class update_existing_persistent_subscription : SpecificationWithMiniNode {
 		private readonly string _stream = Guid.NewGuid().ToString();
 
@@ -23,13 +23,13 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		protected override Task When() => Task.CompletedTask;
 
-		[Test]
+		[Fact]
 		public async Task the_completion_succeeds() {
 			await _conn.UpdatePersistentSubscriptionAsync(_stream, "existing", _settings, DefaultData.AdminCredentials);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class update_existing_persistent_subscription_with_subscribers : SpecificationWithMiniNode {
 		private readonly string _stream = Guid.NewGuid().ToString();
 
@@ -63,21 +63,21 @@ namespace EventStore.Core.Tests.ClientAPI {
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void the_completion_succeeds() {
-			Assert.IsNull(_caught);
+			Assert.Null(_caught);
 		}
 
-		[Test]
+		[Fact]
 		public void existing_subscriptions_are_dropped() {
-			Assert.IsTrue(_dropped.WaitOne(TimeSpan.FromSeconds(5)));
-			Assert.AreEqual(SubscriptionDropReason.UserInitiated, _reason);
-			Assert.IsNull(_exception);
+			Assert.True(_dropped.WaitOne(TimeSpan.FromSeconds(5)));
+			Assert.Equal(SubscriptionDropReason.UserInitiated, _reason);
+			Assert.Null(_exception);
 		}
 	}
 
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class update_non_existing_persistent_subscription : SpecificationWithMiniNode {
 		private readonly string _stream = Guid.NewGuid().ToString();
 
@@ -87,15 +87,15 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		protected override Task When() => Task.CompletedTask;
 
-		[Test]
-		public async Task the_completion_fails_with_not_found() {
-			await AssertEx.ThrowsAsync<InvalidOperationException>(
+		[Fact]
+		public Task the_completion_fails_with_not_found() {
+			return Assert.ThrowsAsync<InvalidOperationException>(
 				() => _conn.UpdatePersistentSubscriptionAsync(_stream, "existing", _settings,
 					DefaultData.AdminCredentials));
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class update_existing_persistent_subscription_without_permissions : SpecificationWithMiniNode {
 		private readonly string _stream = Guid.NewGuid().ToString();
 
@@ -110,9 +110,9 @@ namespace EventStore.Core.Tests.ClientAPI {
 ;
 		}
 
-		[Test]
-		public async Task the_completion_fails_with_access_denied() {
-			await AssertEx.ThrowsAsync<AccessDeniedException>(
+		[Fact]
+		public Task the_completion_fails_with_access_denied() {
+			return Assert.ThrowsAsync<AccessDeniedException>(
 				() => _conn.UpdatePersistentSubscriptionAsync(_stream, "existing", _settings, null));
 		}
 	}

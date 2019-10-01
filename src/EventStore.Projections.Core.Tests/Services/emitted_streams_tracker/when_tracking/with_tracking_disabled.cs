@@ -1,6 +1,6 @@
 ﻿using EventStore.ClientAPI.SystemData;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,12 +33,12 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_streams_tracker.whe
 			sub.Unsubscribe();
 		}
 
-		[Test]
+		[Fact]
 		public async Task should_write_a_stream_tracked_event() {
 			var result = await _conn.ReadStreamEventsForwardAsync(_projectionNamesBuilder.GetEmittedStreamsName(), 0, 200,
 				false, _credentials);
-			Assert.AreEqual(0, result.Events.Length);
-			Assert.AreEqual(1, _eventAppeared.CurrentCount); //no event appeared should get through
+			Assert.Equal(0, result.Events.Length);
+			Assert.Equal(1, _eventAppeared.CurrentCount); //no event appeared should get through
 		}
 	}
 }

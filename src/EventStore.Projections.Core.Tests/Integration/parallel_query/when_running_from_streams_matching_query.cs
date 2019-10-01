@@ -3,10 +3,9 @@ using EventStore.Core.Messaging;
 using EventStore.Core.Services;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Management;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Integration.parallel_query {
-	[TestFixture]
 	public class when_running_from_streams_matching_query : specification_with_a_v8_query_posted {
 		protected override void GivenEvents() {
 			ExistingEvent("account-01", "test", "", "{a:2}");
@@ -41,7 +40,7 @@ fromStreamsMatching(
 ";
 		}
 
-		[Test]
+		[Fact]
 		public void just() {
 			AssertEmptyOrNoStream("$projections-query-account-01-result");
 			AssertLastEvent("$projections-query-account-02-result", "{\"c\":1}");
@@ -50,27 +49,27 @@ fromStreamsMatching(
 			AssertEmptyOrNoStream("$projections-query-account-05-result");
 		}
 
-		[Test]
+		[Fact]
 		public void state_becomes_completed() {
 			_manager.Handle(
 				new ProjectionManagementMessage.Command.GetStatistics(
 					new PublishEnvelope(_bus), null, _projectionName, false));
 
-			Assert.AreEqual(1, _consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().Count());
-			Assert.AreEqual(
+			Assert.Equal(1, Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>().Count());
+			Assert.Equal(
 				1,
-				_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
+				Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
 					.Single()
 					.Projections.Length);
-			Assert.AreEqual(
+			Assert.Equal(
 				_projectionName,
-				_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
+				Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
 					.Single()
 					.Projections.Single()
 					.Name);
-			Assert.AreEqual(
+			Assert.Equal(
 				ManagedProjectionState.Completed,
-				_consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
+				Consumer.HandledMessages.OfType<ProjectionManagementMessage.Statistics>()
 					.Single()
 					.Projections.Single()
 					.MasterStatus);

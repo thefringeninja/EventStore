@@ -4,10 +4,9 @@ using System.Linq;
 using EventStore.Common.Utils;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager.projection_manager_response_reader {
-	[TestFixture]
 	public class when_receiving_state_report_response : specification_with_projection_manager_response_reader_started {
 		private Guid _projectionId;
 		private Guid _correlationId;
@@ -37,16 +36,16 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.project
 					true);
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_state_report_message() {
 			var response =
 				HandledMessages.OfType<CoreProjectionStatusMessage.StateReport>().LastOrDefault();
-			Assert.IsNotNull(response);
-			Assert.AreEqual(_projectionId, response.ProjectionId);
-			Assert.AreEqual(_correlationId, response.CorrelationId);
-			Assert.AreEqual(_partition, response.Partition);
-			Assert.AreEqual(_state, response.State);
-			Assert.AreEqual(_position, response.Position);
+			Assert.NotNull(response);
+			Assert.Equal(_projectionId, response.ProjectionId);
+			Assert.Equal(_correlationId, response.CorrelationId);
+			Assert.Equal(_partition, response.Partition);
+			Assert.Equal(_state, response.State);
+			Assert.Equal(_position, response.Position);
 		}
 	}
 }

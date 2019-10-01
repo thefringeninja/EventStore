@@ -2,11 +2,10 @@ using System;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.ClientAPI.Exceptions;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
-	[TestFixture]
-	[Category("ClientAPI"), Category("LongRunning")]
+	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
 	public class append_to_stream_with_event_numbers_greater_than_2_billion : MiniNodeWithExistingRecords {
 		private const string StreamName = "append_to_stream_with_event_numbers_greater_than_2_billion";
 		private const long intMaxValue = (long)int.MaxValue;
@@ -26,22 +25,22 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 				EventStore.ClientAPI.StreamMetadata.Create(truncateBefore: intMaxValue + 1));
 		}
 
-		[Test]
+		[Fact]
 		public async Task should_be_able_to_append_to_stream() {
 			var evnt = new EventData(Guid.NewGuid(), "EventType", false, new byte[10], new byte[15]);
 			var writeResult = await _store.AppendToStreamAsync(StreamName, intMaxValue + 5, evnt);
-			Assert.AreEqual(intMaxValue + 6, writeResult.NextExpectedVersion);
+			Assert.Equal(intMaxValue + 6, writeResult.NextExpectedVersion);
 
 			var readResult = await _store
 				.ReadStreamEventsForwardAsync(StreamName, intMaxValue + 6, 1, false, DefaultData.AdminCredentials);
-			Assert.AreEqual(SliceReadStatus.Success, readResult.Status);
-			Assert.AreEqual(evnt.EventId, readResult.Events[0].Event.EventId);
+			Assert.Equal(SliceReadStatus.Success, readResult.Status);
+			Assert.Equal(evnt.EventId, readResult.Events[0].Event.EventId);
 		}
 
-		[Test]
+		[Fact]
 		public async Task should_throw_wrong_expected_version_when_version_incorrect() {
 			var evnt = new EventData(Guid.NewGuid(), "EventType", false, new byte[10], new byte[15]);
-			await AssertEx.ThrowsAsync<WrongExpectedVersionException>(
+			await Assert.ThrowsAsync<WrongExpectedVersionException>(
 				() => _store.AppendToStreamAsync(StreamName, intMaxValue + 15, evnt));
 		}
 	}

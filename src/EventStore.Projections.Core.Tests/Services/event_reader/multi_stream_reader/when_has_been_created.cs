@@ -6,20 +6,18 @@ using EventStore.Core.Services.Storage.ReaderIndex;
 using EventStore.Core.Services.TimerService;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 using ReadStreamResult = EventStore.Core.Data.ReadStreamResult;
 using ResolvedEvent = EventStore.Core.Data.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_reader {
-	[TestFixture]
 	public class when_has_been_created : TestFixtureWithExistingEvents {
 		private MultiStreamEventReader _edp;
 		private Guid _distibutionPointCorrelationId;
 		private string[] _abStreams;
 		private Dictionary<string, long> _ab12Tag;
 
-		[SetUp]
-		public new void When() {
+		public when_has_been_created() {
 			_ab12Tag = new Dictionary<string, long> {{"a", 1}, {"b", 2}};
 			_abStreams = new[] {"a", "b"};
 
@@ -29,17 +27,17 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 				new RealTimeProvider());
 		}
 
-		[Test]
+		[Fact]
 		public void it_can_be_resumed() {
 			_edp.Resume();
 		}
 
-		[Test]
+		[Fact]
 		public void it_cannot_be_paused() {
 			Assert.Throws<InvalidOperationException>(() => { _edp.Pause(); });
 		}
 
-		[Test]
+		[Fact]
 		public void handle_read_events_completed_throws() {
 			Assert.Throws<InvalidOperationException>(() => {
 				_edp.Handle(

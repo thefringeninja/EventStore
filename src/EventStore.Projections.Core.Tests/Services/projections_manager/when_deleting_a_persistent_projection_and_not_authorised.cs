@@ -7,10 +7,9 @@ using EventStore.Core.Messaging;
 using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager {
-	[TestFixture]
 	public class
 		when_deleting_a_persistent_projection_and_not_authorised : TestFixtureWithProjectionCoreAndManagementServices {
 		private string _projectionName;
@@ -39,12 +38,11 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 					ProjectionManagementMessage.RunAs.Anonymous, false, false, false);
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void a_projection_deleted_event_is_not_written() {
-			Assert.AreNotEqual(
+			Assert.NotEqual(
 				ProjectionEventTypes.ProjectionDeleted,
-				_consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Last().Events[0].EventType,
-				$"{ProjectionEventTypes.ProjectionDeleted} event was not supposed to be written");
+				Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Last().Events[0].EventType);
 		}
 	}
 }

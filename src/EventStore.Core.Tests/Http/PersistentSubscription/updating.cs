@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.ClientAPI.SystemData;
 using EventStore.Core.Tests.Http.Users.users;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Http.PersistentSubscription {
-	[TestFixture, Category("LongRunning")]
-	class when_updating_a_subscription_without_permissions : with_admin_user {
+	[Trait("Category", "LongRunning")]
+    public class when_updating_a_subscription_without_permissions : with_admin_user {
 		private HttpResponseMessage _response;
 
 		protected override async Task Given() {
@@ -31,14 +31,14 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				}, null);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_unauthorised() {
-			Assert.AreEqual(HttpStatusCode.Unauthorized, _response.StatusCode);
+			Assert.Equal(HttpStatusCode.Unauthorized, _response.StatusCode);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
-	class when_updating_a_non_existent_subscription_without_permissions : with_admin_user {
+	[Trait("Category", "LongRunning")]
+    public class when_updating_a_non_existent_subscription_without_permissions : with_admin_user {
 		private HttpResponseMessage _response;
 
 		protected override Task Given() => Task.CompletedTask;
@@ -51,14 +51,14 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				}, new NetworkCredential("admin", "changeit"));
 		}
 
-		[Test]
+		[Fact]
 		public void returns_not_found() {
-			Assert.AreEqual(HttpStatusCode.NotFound, _response.StatusCode);
+			Assert.Equal(HttpStatusCode.NotFound, _response.StatusCode);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
-	class when_updating_an_existing_subscription : with_admin_user {
+	[Trait("Category", "LongRunning")]
+    public class when_updating_an_existing_subscription : with_admin_user {
 		private HttpResponseMessage _response;
 		private readonly string _groupName = Guid.NewGuid().ToString();
 		private SubscriptionDropReason _droppedReason;
@@ -92,21 +92,21 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				}, DefaultData.AdminNetworkCredentials);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_ok() {
-			Assert.AreEqual(HttpStatusCode.OK, _response.StatusCode);
+			Assert.Equal(HttpStatusCode.OK, _response.StatusCode);
 		}
 
-		[Test]
+		[Fact]
 		public void existing_subscriptions_are_dropped() {
-			Assert.IsTrue(_dropped.WaitOne(TimeSpan.FromSeconds(5)));
-			Assert.AreEqual(SubscriptionDropReason.UserInitiated, _droppedReason);
-			Assert.IsNull(_exception);
+			Assert.True(_dropped.WaitOne(TimeSpan.FromSeconds(5)));
+			Assert.Equal(SubscriptionDropReason.UserInitiated, _droppedReason);
+			Assert.Null(_exception);
 		}
 
-		[Test]
+		[Fact]
 		public void location_header_is_present() {
-			Assert.AreEqual(
+			Assert.Equal(
 				string.Format("http://{0}/subscriptions/{1}/{2}", _node.ExtHttpEndPoint, _stream, _groupName),
 				_response.Headers.Location.ToString());
 		}

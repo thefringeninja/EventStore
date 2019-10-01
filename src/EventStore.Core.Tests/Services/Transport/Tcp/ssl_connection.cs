@@ -3,31 +3,29 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using EventStore.Common.Log;
 using EventStore.Core.Services.Transport.Tcp;
 using EventStore.Core.Tests.Helpers;
 using EventStore.Transport.Tcp;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Transport.Tcp {
-	[TestFixture]
-	public class ssl_connections {
+	public class ssl_connections : IDisposable {
 		private static readonly ILogger Log = LogManager.GetLoggerFor<ssl_connections>();
 		private IPAddress _ip;
 		private int _port;
 
-		[SetUp]
-		public void SetUp() {
+		public ssl_connections() {
 			_ip = IPAddress.Loopback;
 			_port = PortsHelper.GetAvailablePort(_ip);
 		}
 
-		[TearDown]
-		public void TearDown() => PortsHelper.ReturnPort(_port);
+		public void Dispose() => PortsHelper.ReturnPort(_port);
 
-		[Test]
+		[Fact]
 		public void should_connect_to_each_other_and_send_data() {
 			var serverEndPoint = new IPEndPoint(_ip, _port);
 			X509Certificate cert = GetCertificate();
@@ -82,14 +80,14 @@ namespace EventStore.Core.Tests.Services.Transport.Tcp {
 				},
 				verbose: true);
 
-			Assert.IsTrue(done.Wait(20000), "Took too long to receive completion.");
+			Assert.True(done.Wait(20000), "Took too long to receive completion.");
 
 			Log.Info("Stopping listener...");
 			listener.Stop();
 			Log.Info("Closing client ssl connection...");
 			clientSsl.Close("Normal close.");
 			Log.Info("Checking received data...");
-			Assert.AreEqual(sent, received.ToArray());
+			Assert.Equal(sent, received.ToArray());
 		}
 
 		public static X509Certificate2 GetCertificate() {

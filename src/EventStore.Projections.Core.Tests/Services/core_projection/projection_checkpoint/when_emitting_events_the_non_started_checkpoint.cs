@@ -2,16 +2,14 @@ using System;
 using System.Linq;
 using EventStore.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.projection_checkpoint {
-	[TestFixture]
 	public class when_emitting_events_the_non_started_checkpoint : TestFixtureWithExistingEvents {
 		private ProjectionCheckpoint _checkpoint;
 		private TestCheckpointManagerMessageHandler _readyHandler;
 
-		[SetUp]
-		public void setup() {
+		public when_emitting_events_the_non_started_checkpoint() {
 			_readyHandler = new TestCheckpointManagerMessageHandler();
 			_checkpoint = new ProjectionCheckpoint(
 				_bus, _ioDispatcher, new ProjectionVersion(1, 0, 0), null, _readyHandler,
@@ -40,9 +38,9 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.projection_
 				});
 		}
 
-		[Test]
+		[Fact]
 		public void does_not_publish_write_events() {
-			Assert.AreEqual(0, _consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Count());
+			Assert.Equal(0, Consumer.HandledMessages.OfType<ClientMessage.WriteEvents>().Count());
 		}
 	}
 }

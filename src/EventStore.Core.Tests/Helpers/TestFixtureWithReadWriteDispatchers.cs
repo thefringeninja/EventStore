@@ -8,11 +8,11 @@ using EventStore.Core.Messaging;
 using EventStore.Core.Tests.Bus;
 using EventStore.Core.Tests.Bus.Helpers;
 using EventStore.Core.Tests.Services.TimeService;
-using NUnit.Framework;
+using Xunit;
 using System.Linq;
 
 namespace EventStore.Core.Tests.Helpers {
-	public abstract class TestFixtureWithReadWriteDispatchers {
+	public abstract class TestFixtureWithReadWriteDispatchers : IDisposable {
 		protected InMemoryBus _bus;
 
 		protected RequestResponseDispatcher<ClientMessage.DeleteStream, ClientMessage.DeleteStreamCompleted>
@@ -26,9 +26,9 @@ namespace EventStore.Core.Tests.Helpers {
 			<ClientMessage.ReadStreamEventsBackward, ClientMessage.ReadStreamEventsBackwardCompleted>
 			_readDispatcher;
 
-		protected TestHandler<Message> _consumer;
+		public TestHandler<Message> Consumer;
 		protected IODispatcher _ioDispatcher;
-		protected ManualQueue _queue;
+		public ManualQueue Queue;
 		protected ManualQueue[] _otherQueues;
 		protected FakeTimeProvider _timeProvider;
 		private PublishEnvelope _envelope;
@@ -42,17 +42,16 @@ namespace EventStore.Core.Tests.Helpers {
 		}
 
 		protected List<Message> HandledMessages {
-			get { return _consumer.HandledMessages; }
+			get { return Consumer.HandledMessages; }
 		}
 
-		[SetUp]
-		public void setup0() {
+		public TestFixtureWithReadWriteDispatchers() {
 			_envelope = null;
 			_timeProvider = new FakeTimeProvider();
 			_bus = new InMemoryBus("bus");
-			_consumer = new TestHandler<Message>();
-			_bus.Subscribe(_consumer);
-			_queue = GiveInputQueue();
+			Consumer = new TestHandler<Message>();
+			_bus.Subscribe(Consumer);
+			Queue = GiveInputQueue();
 			_otherQueues = null;
 			_ioDispatcher = new IODispatcher(_bus, new PublishEnvelope(GetInputQueue()));
 			_readDispatcher = _ioDispatcher.BackwardReader;
@@ -68,24 +67,25 @@ namespace EventStore.Core.Tests.Helpers {
 			_bus.Subscribe(_ioDispatcher);
 		}
 
-		protected virtual ManualQueue GiveInputQueue() {
-			return null;
+		public virtual void Dispose() {
 		}
 
+		protected virtual ManualQueue GiveInputQueue() => null;
+
 		protected IPublisher GetInputQueue() {
-			return (IPublisher)_queue ?? _bus;
+			return (IPublisher)Queue ?? _bus;
 		}
 
 		protected void DisableTimer() {
-			_queue.DisableTimer();
+			Queue.DisableTimer();
 		}
 
 		protected void EnableTimer() {
-			_queue.EnableTimer();
+			Queue.EnableTimer();
 		}
 
 		protected void WhenLoop() {
-			_queue.Process();
+			Queue.Process();
 			var steps = PreWhen().Concat(When());
 			WhenLoop(steps);
 		}
@@ -93,16 +93,14 @@ namespace EventStore.Core.Tests.Helpers {
 		protected void WhenLoop(IEnumerable<WhenStep> steps) {
 			foreach (var step in steps) {
 				_timeProvider.AddTime(TimeSpan.FromMilliseconds(10));
-				if (step.Action != null) {
-					step.Action();
-				}
+				step.Action?.Invoke();
 
 				foreach (var message in step) {
 					if (message != null)
-						_queue.Publish(message);
+						Queue.Publish(message);
 				}
 
-				_queue.ProcessTimer();
+				Queue.ProcessTimer();
 				if (_otherQueues != null)
 					foreach (var other in _otherQueues)
 						other.ProcessTimer();
@@ -111,7 +109,7 @@ namespace EventStore.Core.Tests.Helpers {
 				var total = 0;
 				while (count > 0) {
 					count = 0;
-					count += _queue.ProcessNonTimer();
+					count += Queue.ProcessNonTimer();
 					if (_otherQueues != null)
 						foreach (var other in _otherQueues)
 							count += other.ProcessNonTimer();
@@ -123,7 +121,7 @@ namespace EventStore.Core.Tests.Helpers {
 				// process final timer messages
 			}
 
-			_queue.Process();
+			Queue.Process();
 			if (_otherQueues != null)
 				foreach (var other in _otherQueues)
 					other.Process();

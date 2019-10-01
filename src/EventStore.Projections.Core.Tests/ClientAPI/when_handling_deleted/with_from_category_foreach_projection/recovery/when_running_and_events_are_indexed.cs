@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
+
 
 namespace EventStore.Projections.Core.Tests.ClientAPI.when_handling_deleted.with_from_category_foreach_projection.
 	recovery {
-	[TestFixture]
 	public class when_running_and_events_are_indexed : specification_with_standard_projections_runnning {
 		protected override bool GivenStandardProjectionsRunning() {
 			return false;
@@ -33,13 +33,13 @@ fromCategory('stream').foreachStream().when({
 
 		protected override async Task When() {
 			await base.When();
-            await _manager.AbortAsync("test-projection", _admin);
+			await _manager.AbortAsync("test-projection", _admin);
 			WaitIdle();
-            await _manager.EnableAsync("test-projection", _admin);
+			await _manager.EnableAsync("test-projection", _admin);
 			WaitIdle();
 		}
 
-		[Test, Category("Network")]
+		[Fact, Trait("Category", "Network")]
 		public async Task receives_deleted_notification() {
 			await AssertStreamTail("$projections-test-projection-stream-1-result", "Result:{\"a\":2,\"deleted\":1}");
 			await AssertStreamTail("$projections-test-projection-stream-2-result", "Result:{\"a\":2}");

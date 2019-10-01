@@ -3,17 +3,16 @@ using System.Collections.Specialized;
 using System.IO;
 using System.IO.Compression;
 using EventStore.Transport.Http.EntityManagement;
-using NUnit.Framework;
+using Xunit;
 using System.Net;
 using System.Text;
 using EventStore.Transport.Http;
 
 namespace EventStore.Core.Tests.Services.Transport.Http {
-	[TestFixture]
-	class compress_response_should {
+	public class compress_response_should {
 		private string inputData = "my test string 123456.";
 
-		[Test]
+		[Fact]
 		public void with_gzip_compression_algo_data_is_gzipped() {
 			var response =
 				HttpEntityManager.CompressResponse(Encoding.ASCII.GetBytes(inputData), CompressionAlgorithms.Gzip);
@@ -27,10 +26,10 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 				uncompressed = Encoding.UTF8.GetString(outputStream.ToArray());
 			}
 
-			Assert.AreEqual(uncompressed, inputData);
+			Assert.Equal(uncompressed, inputData);
 		}
 
-		[Test]
+		[Fact]
 		public void with_gzip_compression_algo_and_string_larger_than_50kb_data_is_gzipped() {
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < 60 * 1024; i++) sb.Append("A");
@@ -48,10 +47,10 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 				uncompressed = Encoding.UTF8.GetString(outputStream.ToArray());
 			}
 
-			Assert.AreEqual(uncompressed, testString);
+			Assert.Equal(uncompressed, testString);
 		}
 
-		[Test]
+		[Fact]
 		public void with_deflate_compression_algo_data_is_deflated() {
 			var response =
 				HttpEntityManager.CompressResponse(Encoding.ASCII.GetBytes(inputData), CompressionAlgorithms.Deflate);
@@ -65,10 +64,10 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 				uncompressed = Encoding.UTF8.GetString(outputStream.ToArray());
 			}
 
-			Assert.AreEqual(uncompressed, inputData);
+			Assert.Equal(uncompressed, inputData);
 		}
 
-		[Test]
+		[Fact]
 		public void with_deflate_compression_algo_and_string_larger_than_50kb_data_is_deflated() {
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < 60 * 1024; i++) sb.Append("A");
@@ -86,20 +85,20 @@ namespace EventStore.Core.Tests.Services.Transport.Http {
 				uncompressed = Encoding.UTF8.GetString(outputStream.ToArray());
 			}
 
-			Assert.AreEqual(uncompressed, testString);
+			Assert.Equal(uncompressed, testString);
 		}
 
-		[Test]
+		[Fact]
 		public void with_invalid_compression_algo_data_remains_the_same() {
 			var response =
 				HttpEntityManager.CompressResponse(Encoding.ASCII.GetBytes(inputData), "invalid_compression_algo");
-			Assert.AreEqual(Encoding.ASCII.GetString(response), inputData);
+			Assert.Equal(Encoding.ASCII.GetString(response), inputData);
 		}
 
-		[Test]
+		[Fact]
 		public void with_null_compression_algo_data_remains_the_same() {
 			var response = HttpEntityManager.CompressResponse(Encoding.ASCII.GetBytes(inputData), null);
-			Assert.AreEqual(Encoding.ASCII.GetString(response), inputData);
+			Assert.Equal(Encoding.ASCII.GetString(response), inputData);
 		}
 	}
 }

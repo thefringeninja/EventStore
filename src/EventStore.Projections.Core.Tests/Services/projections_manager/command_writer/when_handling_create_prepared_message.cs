@@ -4,11 +4,10 @@ using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Messages.Persisted.Commands;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager.command_writer {
-	[TestFixture]
-	class when_handling_create_prepared_message : specification_with_projection_manager_command_writer {
+	public class when_handling_create_prepared_message : specification_with_projection_manager_command_writer {
 		private Guid _projectionId;
 		private Guid _workerId;
 		private ProjectionConfig _config;
@@ -64,61 +63,61 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager.command
 					_query));
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_create_prepared_command() {
 			var command =
 				AssertParsedSingleCommand<CreatePreparedCommand>(
 					"$create-prepared",
 					_workerId);
-			Assert.AreEqual(_projectionId.ToString("N"), command.Id);
-			Assert.AreEqual(_handlerType, command.HandlerType);
-			Assert.AreEqual(_projectionName, command.Name);
-			Assert.AreEqual(_query, command.Query);
-			Assert.AreEqual(
+			Assert.Equal(_projectionId.ToString("N"), command.Id);
+			Assert.Equal(_handlerType, command.HandlerType);
+			Assert.Equal(_projectionName, command.Name);
+			Assert.Equal(_query, command.Query);
+			Assert.Equal(
 				(PersistedProjectionVersion)_projectionVersion,
 				command.Version);
-			Assert.AreEqual(_config.CheckpointHandledThreshold, command.Config.CheckpointHandledThreshold);
-			Assert.AreEqual(_config.CheckpointUnhandledBytesThreshold,
+			Assert.Equal(_config.CheckpointHandledThreshold, command.Config.CheckpointHandledThreshold);
+			Assert.Equal(_config.CheckpointUnhandledBytesThreshold,
 				command.Config.CheckpointUnhandledBytesThreshold);
-			Assert.AreEqual(_config.CheckpointsEnabled, command.Config.CheckpointsEnabled);
-			Assert.AreEqual(_config.CreateTempStreams, command.Config.CreateTempStreams);
-			Assert.AreEqual(_config.EmitEventEnabled, command.Config.EmitEventEnabled);
-			Assert.AreEqual(_config.IsSlaveProjection, command.Config.IsSlaveProjection);
-			Assert.AreEqual(_config.MaxWriteBatchLength, command.Config.MaxWriteBatchLength);
-			Assert.AreEqual(_config.PendingEventsThreshold, command.Config.PendingEventsThreshold);
-			Assert.AreEqual(_config.MaximumAllowedWritesInFlight, command.Config.MaximumAllowedWritesInFlight);
-			Assert.AreEqual(_config.RunAs.Identity.Name, command.Config.RunAs);
-			Assert.AreEqual(_config.StopOnEof, command.Config.StopOnEof);
-			Assert.AreEqual(_definition.AllEvents, command.SourceDefinition.AllEvents);
-			Assert.AreEqual(_definition.AllStreams, command.SourceDefinition.AllStreams);
-			Assert.AreEqual(_definition.ByCustomPartitions, command.SourceDefinition.ByCustomPartitions);
-			Assert.AreEqual(_definition.ByStreams, command.SourceDefinition.ByStreams);
-			Assert.AreEqual(_definition.CatalogStream, command.SourceDefinition.CatalogStream);
-			Assert.AreEqual(_definition.Categories, command.SourceDefinition.Categories);
-			Assert.AreEqual(_definition.Events, command.SourceDefinition.Events);
-			Assert.AreEqual(_definition.LimitingCommitPosition, command.SourceDefinition.LimitingCommitPosition);
-			Assert.AreEqual(_definition.Streams, command.SourceDefinition.Streams);
-			Assert.AreEqual(
+			Assert.Equal(_config.CheckpointsEnabled, command.Config.CheckpointsEnabled);
+			Assert.Equal(_config.CreateTempStreams, command.Config.CreateTempStreams);
+			Assert.Equal(_config.EmitEventEnabled, command.Config.EmitEventEnabled);
+			Assert.Equal(_config.IsSlaveProjection, command.Config.IsSlaveProjection);
+			Assert.Equal(_config.MaxWriteBatchLength, command.Config.MaxWriteBatchLength);
+			Assert.Equal(_config.PendingEventsThreshold, command.Config.PendingEventsThreshold);
+			Assert.Equal(_config.MaximumAllowedWritesInFlight, command.Config.MaximumAllowedWritesInFlight);
+			Assert.Equal(_config.RunAs.Identity.Name, command.Config.RunAs);
+			Assert.Equal(_config.StopOnEof, command.Config.StopOnEof);
+			Assert.Equal(_definition.AllEvents, command.SourceDefinition.AllEvents);
+			Assert.Equal(_definition.AllStreams, command.SourceDefinition.AllStreams);
+			Assert.Equal(_definition.ByCustomPartitions, command.SourceDefinition.ByCustomPartitions);
+			Assert.Equal(_definition.ByStreams, command.SourceDefinition.ByStreams);
+			Assert.Equal(_definition.CatalogStream, command.SourceDefinition.CatalogStream);
+			Assert.Equal(_definition.Categories, command.SourceDefinition.Categories);
+			Assert.Equal(_definition.Events, command.SourceDefinition.Events);
+			Assert.Equal(_definition.LimitingCommitPosition, command.SourceDefinition.LimitingCommitPosition);
+			Assert.Equal(_definition.Streams, command.SourceDefinition.Streams);
+			Assert.Equal(
 				_definition.Options.DefinesCatalogTransform,
 				command.SourceDefinition.Options.DefinesCatalogTransform);
-			Assert.AreEqual(_definition.Options.DefinesFold, command.SourceDefinition.Options.DefinesFold);
-			Assert.AreEqual(
+			Assert.Equal(_definition.Options.DefinesFold, command.SourceDefinition.Options.DefinesFold);
+			Assert.Equal(
 				_definition.Options.DefinesStateTransform,
 				command.SourceDefinition.Options.DefinesStateTransform);
-			Assert.AreEqual(_definition.Options.DisableParallelism,
+			Assert.Equal(_definition.Options.DisableParallelism,
 				command.SourceDefinition.Options.DisableParallelism);
-			Assert.AreEqual(
+			Assert.Equal(
 				_definition.Options.HandlesDeletedNotifications,
 				command.SourceDefinition.Options.HandlesDeletedNotifications);
-			Assert.AreEqual(_definition.Options.IncludeLinks, command.SourceDefinition.Options.IncludeLinks);
-			Assert.AreEqual(_definition.Options.IsBiState, command.SourceDefinition.Options.IsBiState);
-			Assert.AreEqual(
+			Assert.Equal(_definition.Options.IncludeLinks, command.SourceDefinition.Options.IncludeLinks);
+			Assert.Equal(_definition.Options.IsBiState, command.SourceDefinition.Options.IsBiState);
+			Assert.Equal(
 				_definition.Options.PartitionResultStreamNamePattern,
 				command.SourceDefinition.Options.PartitionResultStreamNamePattern);
-			Assert.AreEqual(_definition.Options.ProcessingLag, command.SourceDefinition.Options.ProcessingLag);
-			Assert.AreEqual(_definition.Options.ProducesResults, command.SourceDefinition.Options.ProducesResults);
-			Assert.AreEqual(_definition.Options.ReorderEvents, command.SourceDefinition.Options.ReorderEvents);
-			Assert.AreEqual(_definition.Options.ResultStreamName, command.SourceDefinition.Options.ResultStreamName);
+			Assert.Equal(_definition.Options.ProcessingLag, command.SourceDefinition.Options.ProcessingLag);
+			Assert.Equal(_definition.Options.ProducesResults, command.SourceDefinition.Options.ProducesResults);
+			Assert.Equal(_definition.Options.ReorderEvents, command.SourceDefinition.Options.ReorderEvents);
+			Assert.Equal(_definition.Options.ResultStreamName, command.SourceDefinition.Options.ResultStreamName);
 		}
 	}
 }

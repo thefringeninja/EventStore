@@ -949,7 +949,7 @@ namespace EventStore.Core.Services.VNode {
 		}
 
 		private void Handle(SystemMessage.ShutdownTimeout message) {
-			Debug.Assert(_state == VNodeState.ShuttingDown);
+			ESDebug.Assert(_state == VNodeState.ShuttingDown);
 
 			Log.Error("========== [{internalHttp}] Shutdown Timeout.", _nodeInfo.InternalHttp);
 			Shutdown();
@@ -957,7 +957,7 @@ namespace EventStore.Core.Services.VNode {
 		}
 
 		private void Shutdown() {
-			Debug.Assert(_state == VNodeState.ShuttingDown);
+			ESDebug.Assert(_state == VNodeState.ShuttingDown);
 
 			_db.Close();
 			_fsm.Handle(new SystemMessage.BecomeShutdown(_stateCorrelationId));

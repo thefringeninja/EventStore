@@ -1,6 +1,6 @@
 ﻿using EventStore.Core.Bus;
 using EventStore.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace EventStore.Core.Tests.Integration {
-	[TestFixture, Category("LongRunning")]
+	[Trait("Category", "LongRunning")]
 	public class when_a_single_node_is_restarted_multiple_times : specification_with_a_single_node {
 		private List<Guid> _epochIds = new List<Guid>();
 		private const int _numberOfNodeStarts = 5;
@@ -37,9 +37,9 @@ namespace EventStore.Core.Tests.Integration {
 			_waitForStart.Set();
 		}
 
-		[Test]
+		[Fact]
 		public void should_be_a_different_epoch_for_every_startup() {
-			Assert.AreEqual(_numberOfNodeStarts, _epochIds.Distinct().Count());
+			Assert.Equal(_numberOfNodeStarts, _epochIds.Distinct().Count());
 		}
 	}
 }

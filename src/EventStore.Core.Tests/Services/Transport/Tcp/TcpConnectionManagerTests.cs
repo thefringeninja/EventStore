@@ -1,6 +1,6 @@
 ﻿using EventStore.Core.Bus;
 using EventStore.Core.Services.Transport.Tcp;
-using NUnit.Framework;
+using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -17,12 +17,11 @@ using System.Threading;
 using EventStore.Core.Settings;
 
 namespace EventStore.Core.Tests.Services.Transport.Tcp {
-	[TestFixture]
 	public class TcpConnectionManagerTests {
 		private int _connectionPendingSendBytesThreshold = 10 * 1024;
 		private int _connectionQueueSizeThreshold = 50000;
 
-		[Test]
+		[Fact]
 		public void when_handling_trusted_write_on_external_service() {
 			var package = new TcpPackage(TcpCommand.WriteEvents, TcpFlags.TrustedWrite, Guid.NewGuid(), null, null,
 				new byte[] { });
@@ -43,11 +42,10 @@ namespace EventStore.Core.Tests.Services.Transport.Tcp {
 			var data = dummyConnection.ReceivedData.Last();
 			var receivedPackage = TcpPackage.FromArraySegment(data);
 
-			Assert.AreEqual(receivedPackage.Command, TcpCommand.BadRequest, "Expected Bad Request but got {0}",
-				receivedPackage.Command);
+			Assert.Equal(TcpCommand.BadRequest, receivedPackage.Command);
 		}
 
-		[Test]
+		[Fact]
 		public void when_handling_trusted_write_on_internal_service() {
 			ManualResetEvent waiter = new ManualResetEvent(false);
 			ClientMessage.WriteEvents publishedWrite = null;
@@ -84,12 +82,10 @@ namespace EventStore.Core.Tests.Services.Transport.Tcp {
 				throw new Exception("Timed out waiting for events.");
 			}
 
-			Assert.AreEqual(evnt.EventId, publishedWrite.Events.First().EventId,
-				"Expected the published write to be the event that was sent through the tcp connection manager to be the event {0} but got {1}",
-				evnt.EventId, publishedWrite.Events.First().EventId);
+			Assert.Equal(evnt.EventId, publishedWrite.Events.First().EventId);
 		}
 
-		[Test]
+		[Fact]
 		public void
 			when_limit_pending_and_sending_message_smaller_than_threshold_and_pending_bytes_over_threshold_should_close_connection() {
 			var mre = new ManualResetEventSlim();
@@ -115,11 +111,11 @@ namespace EventStore.Core.Tests.Services.Transport.Tcp {
 			tcpConnectionManager.SendMessage(message);
 
 			if (!mre.Wait(2000)) {
-				Assert.Fail("Timed out waiting for connection to close");
+				throw new Exception("Timed out waiting for connection to close");
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void
 			when_limit_pending_and_sending_message_larger_than_pending_bytes_threshold_but_no_bytes_pending_should_not_close_connection() {
 			var messageSize = _connectionPendingSendBytesThreshold + 1000;
@@ -145,11 +141,10 @@ namespace EventStore.Core.Tests.Services.Transport.Tcp {
 			var data = dummyConnection.ReceivedData.Last();
 			var receivedPackage = TcpPackage.FromArraySegment(data);
 
-			Assert.AreEqual(receivedPackage.Command, TcpCommand.ReadEventCompleted,
-				"Expected ReadEventCompleted but got {0}", receivedPackage.Command);
+			Assert.Equal(TcpCommand.ReadEventCompleted, receivedPackage.Command);
 		}
 
-		[Test]
+		[Fact]
 		public void
 			when_not_limit_pending_and_sending_message_smaller_than_threshold_and_pending_bytes_over_threshold_should_not_close_connection() {
 			var mre = new ManualResetEventSlim();
@@ -177,11 +172,10 @@ namespace EventStore.Core.Tests.Services.Transport.Tcp {
 			var data = dummyConnection.ReceivedData.Last();
 			var receivedPackage = TcpPackage.FromArraySegment(data);
 
-			Assert.AreEqual(receivedPackage.Command, TcpCommand.ReadEventCompleted,
-				"Expected ReadEventCompleted but got {0}", receivedPackage.Command);
+			Assert.Equal(TcpCommand.ReadEventCompleted, receivedPackage.Command);
 		}
 		
-		[Test]
+		[Fact]
 		public void
 			when_send_queue_size_is_smaller_than_threshold_should_not_close_connection() {
 			var mre = new ManualResetEventSlim();
@@ -209,11 +203,10 @@ namespace EventStore.Core.Tests.Services.Transport.Tcp {
 			var data = dummyConnection.ReceivedData.Last();
 			var receivedPackage = TcpPackage.FromArraySegment(data);
 
-			Assert.AreEqual(receivedPackage.Command, TcpCommand.ReadEventCompleted,
-				"Expected ReadEventCompleted but got {0}", receivedPackage.Command);
+			Assert.Equal(TcpCommand.ReadEventCompleted, receivedPackage.Command);
 		}
 		
-		[Test]
+		[Fact]
 		public void
 			when_send_queue_size_is_larger_than_threshold_should_close_connection() {
 			var mre = new ManualResetEventSlim();
@@ -239,7 +232,7 @@ namespace EventStore.Core.Tests.Services.Transport.Tcp {
 			tcpConnectionManager.SendMessage(message);
 
 			if (!mre.Wait(2000)) {
-				Assert.Fail("Timed out waiting for connection to close");
+				throw new Exception("Timed out waiting for connection to close");
 			}
 		}
 	}

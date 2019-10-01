@@ -3,17 +3,15 @@ using EventStore.Core.Data;
 using EventStore.Core.Messaging;
 using EventStore.Core.Services.AwakeReaderService;
 using EventStore.Core.Tests.Bus.Helpers;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.AwakeService {
-	[TestFixture]
 	public class when_handling_subscribe_awake {
 		private Core.Services.AwakeReaderService.AwakeService _it;
 		private Exception _exception;
 		private IEnvelope _envelope;
 
-		[SetUp]
-		public void SetUp() {
+		public when_handling_subscribe_awake() {
 			_exception = null;
 			Given();
 			When();
@@ -35,9 +33,9 @@ namespace EventStore.Core.Tests.AwakeService {
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void it_is_handled() {
-			Assert.IsNull(_exception, (_exception ?? (object)"").ToString());
+			Assert.Null(_exception);
 		}
 	}
 }

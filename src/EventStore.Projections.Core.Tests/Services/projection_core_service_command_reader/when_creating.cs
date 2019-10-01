@@ -1,16 +1,14 @@
 ﻿using System;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projection_core_service_command_reader {
-	[TestFixture]
 	public class when_creating : TestFixtureWithExistingEvents {
 		private ProjectionCoreServiceCommandReader _commandReader;
 		private Exception _exception;
 
-		[SetUp]
-		public new void When() {
+		public when_creating() {
 			_exception = null;
 			try {
 				_commandReader = new ProjectionCoreServiceCommandReader(
@@ -22,14 +20,14 @@ namespace EventStore.Projections.Core.Tests.Services.projection_core_service_com
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void does_not_throw() {
-			Assert.IsNull(_exception);
+			Assert.Null(_exception);
 		}
 
-		[Test]
+		[Fact]
 		public void it_can_be_created() {
-			Assert.IsNotNull(_commandReader);
+			Assert.NotNull(_commandReader);
 		}
 	}
 }

@@ -5,11 +5,11 @@ using EventStore.Core.Data;
 using EventStore.Core.Services.UserManagement;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.all_streams_catalog_event_reader {
 	namespace when_reading_catalog {
-		abstract class with_all_streams_catalog_event_reader : TestFixtureWithEventReaderService {
+        public abstract class with_all_streams_catalog_event_reader : TestFixtureWithEventReaderService {
 			protected const int TailLength = 10;
 			protected Guid _subscriptionId;
 			protected IReaderStrategy _readerStrategy;
@@ -55,38 +55,38 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.all_streams_ca
 					stopAfterNEvents: null);
 			}
 
-			[Test]
+			[Fact]
 			public void returns_all_catalog_events() {
 				var receivedEvents =
-					_consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.CommittedEventReceived>().ToArray();
+					Consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.CommittedEventReceived>().ToArray();
 
-				Assert.AreEqual(4, receivedEvents.Length);
+				Assert.Equal(4, receivedEvents.Length);
 			}
 
-			[Test]
+			[Fact]
 			public void events_are_correct() {
 				var receivedEvents =
-					_consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.CommittedEventReceived>().ToArray();
+					Consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.CommittedEventReceived>().ToArray();
 				var first = receivedEvents[0];
 				var second = receivedEvents[1];
 				var third = receivedEvents[2];
 				var fourth = receivedEvents[3];
 
-				Assert.AreEqual(true, first.Data.ResolvedLinkTo);
-				Assert.AreEqual("{Meta: 1}", first.Data.StreamMetadata);
-				Assert.AreEqual(true, second.Data.ResolvedLinkTo);
-				Assert.AreEqual("{Meta: 2}", second.Data.StreamMetadata);
-				Assert.AreEqual(true, third.Data.ResolvedLinkTo);
-				Assert.AreEqual("{Meta: 3}", third.Data.StreamMetadata);
-				Assert.AreEqual(true, fourth.Data.ResolvedLinkTo);
+				Assert.Equal(true, first.Data.ResolvedLinkTo);
+				Assert.Equal("{Meta: 1}", first.Data.StreamMetadata);
+				Assert.Equal(true, second.Data.ResolvedLinkTo);
+				Assert.Equal("{Meta: 2}", second.Data.StreamMetadata);
+				Assert.Equal(true, third.Data.ResolvedLinkTo);
+				Assert.Equal("{Meta: 3}", third.Data.StreamMetadata);
+				Assert.Equal(true, fourth.Data.ResolvedLinkTo);
 			}
 
-			[Test]
+			[Fact]
 			public void returns_catalog_events_in_catalog_order() {
 				var receivedEvents =
-					_consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.CommittedEventReceived>().ToArray();
+					Consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.CommittedEventReceived>().ToArray();
 
-				Assert.That(
+				Assert.True(
 					(from e in receivedEvents
 						orderby e.Data.Position
 						select e.Data.Position)
@@ -96,8 +96,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.all_streams_ca
 			}
 		}
 
-		[TestFixture]
-		class when_starting_from_the_beginning : with_all_streams_catalog_event_reader {
+		public class when_starting_from_the_beginning : with_all_streams_catalog_event_reader {
 			protected override IEnumerable<WhenStep> When() {
 				var fromZeroPosition = CheckpointTag.FromByStreamPosition(0, "", -1, null, -1, 100000);
 				yield return

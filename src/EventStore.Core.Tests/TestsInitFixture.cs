@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Net;
 using System.Runtime.InteropServices;
 using EventStore.Common.Log;
 using EventStore.Common.Utils;
@@ -8,20 +6,18 @@ using EventStore.Core.Tests.Helpers;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
-using NUnit.Framework;
 
 namespace EventStore.Core.Tests {
-	[SetUpFixture]
-	public class TestsInitFixture {
-		[OneTimeSetUp]
-		public void SetUp() {
+	internal class Program {
+		static Program() {
+			AppDomain.CurrentDomain.DomainUnload += (_, e) => TearDown();  
 			System.Net.ServicePointManager.DefaultConnectionLimit = 1000;
 			Console.WriteLine("Initializing tests (setting console loggers)...");
 
-			var originalFormatter = NLog.Config.ConfigurationItemFactory.Default.ValueFormatter;
+			var originalFormatter = ConfigurationItemFactory.Default.ValueFormatter;
 			ConfigurationItemFactory.Default.ValueFormatter = new NLogValueFormatter(originalFormatter, false);
 			ConsoleTarget consoleTarget = new ConsoleTarget("testconsole");
-			var config = new NLog.Config.LoggingConfiguration();
+			var config = new LoggingConfiguration();
 			config.AddRule(LogLevel.Trace, LogLevel.Fatal, consoleTarget);
 			consoleTarget.Layout =
 				"[${processid:padCharacter=0:padding=5},${threadid:padCharacter=0:padding=2},${date:universalTime=true:format=HH\\:mm\\:ss\\.fff},${level:padding=-5:uppercase=true}] ${message}${onexception:${newline}${literal:text=EXCEPTION OCCURRED}${newline}${exception:format=message}}";
@@ -32,8 +28,8 @@ namespace EventStore.Core.Tests {
 			LogEnvironmentInfo();
 		}
 
-		private void LogEnvironmentInfo() {
-			var log = EventStore.Common.Log.LogManager.GetLoggerFor<TestsInitFixture>();
+		private static void LogEnvironmentInfo() {
+			var log = EventStore.Common.Log.LogManager.GetLoggerFor<Program>();
 
 			log.Info("\n{0,-25} {1} ({2}/{3}, {4})\n"
 			         + "{5,-25} {6} ({7})\n"
@@ -48,40 +44,16 @@ namespace EventStore.Core.Tests {
 					: string.Format("{0} GENERATIONS", GC.MaxGeneration + 1));
 		}
 
-		[OneTimeTearDown]
-		public void TearDown() {
+		public static void TearDown() {
 			var runCount = Math.Max(1, MiniNode.RunCount);
-			var msg = string.Format("Total running time of MiniNode: {0} (mean {1})\n" +
-			                        "Total starting time of MiniNode: {2} (mean {3})\n" +
-			                        "Total stopping time of MiniNode: {4} (mean {5})\n" +
-			                        "Total run count: {6}",
-				MiniNode.RunningTime.Elapsed, TimeSpan.FromTicks(MiniNode.RunningTime.Elapsed.Ticks / runCount),
-				MiniNode.StartingTime.Elapsed, TimeSpan.FromTicks(MiniNode.StartingTime.Elapsed.Ticks / runCount),
-				MiniNode.StoppingTime.Elapsed, TimeSpan.FromTicks(MiniNode.StoppingTime.Elapsed.Ticks / runCount),
-				MiniNode.RunCount);
+			var msg =
+				$"Total running time of MiniNode: {MiniNode.RunningTime.Elapsed} (mean {TimeSpan.FromTicks(MiniNode.RunningTime.Elapsed.Ticks / runCount)})\n" +
+				$"Total starting time of MiniNode: {MiniNode.StartingTime.Elapsed} (mean {TimeSpan.FromTicks(MiniNode.StartingTime.Elapsed.Ticks / runCount)})\n" +
+				$"Total stopping time of MiniNode: {MiniNode.StoppingTime.Elapsed} (mean {TimeSpan.FromTicks(MiniNode.StoppingTime.Elapsed.Ticks / runCount)})\n" +
+				$"Total run count: {MiniNode.RunCount}";
 
 			Console.WriteLine(msg);
 			EventStore.Common.Log.LogManager.Finish();
-		}
-	}
-
-	internal class ThrowExceptionTraceListener : TraceListener {
-		public ThrowExceptionTraceListener() {
-		}
-
-		public override void Fail(string message) {
-			Assert.Fail(message);
-		}
-
-		public override void Fail(string message, string detailMessage) {
-			var msg = message + detailMessage != null ? " " + detailMessage : "";
-			Assert.Fail(msg);
-		}
-
-		public override void Write(string message) {
-		}
-
-		public override void WriteLine(string message) {
 		}
 	}
 }

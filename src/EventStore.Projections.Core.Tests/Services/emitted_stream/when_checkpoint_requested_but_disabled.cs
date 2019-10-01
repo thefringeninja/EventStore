@@ -1,17 +1,15 @@
 using System;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
-	[TestFixture]
 	public class when_checkpoint_requested_but_disabled : TestFixtureWithReadWriteDispatchers {
 		private EmittedStream _stream;
 		private TestCheckpointManagerMessageHandler _readyHandler;
 		private Exception _exception;
 
-		[SetUp]
-		public void setup() {
+		public when_checkpoint_requested_but_disabled() {
 			_exception = null;
 			_readyHandler = new TestCheckpointManagerMessageHandler();
 			_stream = new EmittedStream(
@@ -29,10 +27,10 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream {
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void invalid_operation_exceptioon_is_thrown() {
-			Assert.IsNotNull(_exception);
-			Assert.IsInstanceOf<InvalidOperationException>(_exception);
+			Assert.NotNull(_exception);
+			Assert.IsType<InvalidOperationException>(_exception);
 		}
 	}
 }

@@ -2,12 +2,11 @@ using System.Collections.Generic;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services;
-using NUnit.Framework;
+using Xunit;
 using System.Linq;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_system {
-	[TestFixture]
-	class when_requesting_state_from_a_faulted_projection : with_projection_config {
+	public class when_requesting_state_from_a_faulted_projection : with_projection_config {
 		private TFPos _message1Position;
 
 		protected override void Given() {
@@ -33,17 +32,16 @@ namespace EventStore.Projections.Core.Tests.Services.projections_system {
 			return true;
 		}
 
-		[Test]
+		[Fact]
 		public void reported_state_is_before_the_fault_position() {
 			var states = HandledMessages.OfType<ProjectionManagementMessage.ProjectionState>().ToArray();
-			Assert.AreEqual(1, states.Length);
+			Assert.Equal(1, states.Length);
 			var state = states[0];
 
-			Assert.That(state.Position.Streams.Count == 1);
-			Assert.That(state.Position.Streams.Keys.First() == "message1");
-			Assert.That(state.Position.Streams["message1"] == -1);
-			Assert.That(
-				state.Position.Position <= _message1Position, "{0} <= {1}", state.Position.Position, _message1Position);
+			Assert.True(state.Position.Streams.Count == 1);
+			Assert.True(state.Position.Streams.Keys.First() == "message1");
+			Assert.True(state.Position.Streams["message1"] == -1);
+			Assert.True(state.Position.Position <= _message1Position);
 		}
 	}
 }

@@ -2,10 +2,9 @@ using System;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.projections_manager;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.v8 {
-	[TestFixture]
 	public class when_v8_projection_loading_state : TestFixtureWithJsProjection {
 		protected override void Given() {
 			_projection = @"
@@ -18,7 +17,7 @@ namespace EventStore.Projections.Core.Tests.Services.v8 {
 			_state = @"{""A"":""A"",""B"":""B""}";
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void the_state_is_loaded() {
 			string state;
 			EmittedEventEnvelope[] emittedEvents;
@@ -27,7 +26,7 @@ namespace EventStore.Projections.Core.Tests.Services.v8 {
 				"metadata",
 				@"{""x"":""y""}", out state, out emittedEvents);
 
-			Assert.AreEqual(_state, state);
+			Assert.Equal(_state, state);
 		}
 	}
 }

@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 using EventStore.Core.Bus;
 using EventStore.Core.Data;
 using EventStore.Core.Index;
 using EventStore.Core.Messages;
 using EventStore.Core.TransactionLog.Checkpoint;
 using EventStore.Core.Services.Replication;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Services.Storage.ReaderIndex;
 using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Core.Services.Storage;
@@ -15,7 +16,7 @@ using EventStore.Core.Tests.Services.Storage;
 using EventStore.Core.TransactionLog.Chunks;
 
 namespace EventStore.Core.Tests.Services.Replication.CommitReplication {
-	public abstract class with_index_committer_service {
+	public abstract class with_index_committer_service : IAsyncLifetime {
 		protected const int _timeoutSeconds = 5;
 		protected string _eventStreamId = "test_stream";
 		protected int _commitCount = 2;
@@ -33,7 +34,6 @@ namespace EventStore.Core.Tests.Services.Replication.CommitReplication {
 
 		protected int _expectedCommitReplicatedMessages;
 
-		[OneTimeSetUp]
 		public virtual void TestFixtureSetUp() {
 			_indexCommitter = new FakeIndexCommitter();
 			_replicationCheckpoint = new InMemoryCheckpoint(_replicationPosition);
@@ -45,11 +45,6 @@ namespace EventStore.Core.Tests.Services.Replication.CommitReplication {
 				_commitCount, _tableIndex);
 			_service.Init(0);
 			When();
-		}
-
-		[OneTimeTearDown]
-		public virtual void TestFixtureTearDown() {
-			_service.Stop();
 		}
 
 		public abstract void When();
@@ -95,6 +90,16 @@ namespace EventStore.Core.Tests.Services.Replication.CommitReplication {
 			_service.Handle(new SystemMessage.BecomeSlave(Guid.NewGuid(), new VNodeInfo(Guid.NewGuid(), 1,
 				masterIPEndPoint, masterIPEndPoint, masterIPEndPoint,
 				masterIPEndPoint, masterIPEndPoint, masterIPEndPoint, false)));
+		}
+
+		public Task InitializeAsync() {
+			TestFixtureSetUp();
+			return Task.CompletedTask;
+		}
+
+		public Task DisposeAsync() {
+			_service.Stop();
+			return Task.CompletedTask;
 		}
 	}
 

@@ -5,10 +5,9 @@ using EventStore.Core.Services.RequestManager.Managers;
 using EventStore.Core.Tests.Fakes;
 using EventStore.Core.Tests.Helpers;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Services.Replication.TransactionCommit {
-	[TestFixture]
 	public class when_transaction_commit_completes_successfully : RequestManagerSpecification {
 		protected override TwoPhaseRequestManagerBase OnManager(FakePublisher publisher) {
 			return new TransactionCommitTwoPhaseRequestManager(publisher, 3, PrepareTimeout, CommitTimeout, false);
@@ -25,15 +24,15 @@ namespace EventStore.Core.Tests.Services.Replication.TransactionCommit {
 			return new StorageMessage.CommitReplicated(InternalCorrId, 100, 2, 3, 3);
 		}
 
-		[Test]
+		[Fact]
 		public void successful_request_message_is_publised() {
-			Assert.That(Produced.ContainsSingle<StorageMessage.RequestCompleted>(
+			Assert.True(Produced.ContainsSingle<StorageMessage.RequestCompleted>(
 				x => x.CorrelationId == InternalCorrId && x.Success));
 		}
 
-		[Test]
+		[Fact]
 		public void the_envelope_is_replied_to_with_success() {
-			Assert.That(Envelope.Replies.ContainsSingle<ClientMessage.TransactionCommitCompleted>(
+			Assert.True(Envelope.Replies.ContainsSingle<ClientMessage.TransactionCommitCompleted>(
 				x => x.CorrelationId == ClientCorrId && x.Result == OperationResult.Success));
 		}
 	}

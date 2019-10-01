@@ -1,12 +1,10 @@
 ﻿using System.Linq;
 using EventStore.Core.Data;
-using EventStore.Core.Services.Storage.ReaderIndex;
 using EventStore.Core.Tests.TransactionLog.Scavenging.Helpers;
 using EventStore.Core.TransactionLog.LogRecords;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.TransactionLog.Scavenging {
-	[TestFixture]
 	public class when_metastream_is_scavenged_and_read_index_is_set_to_keep_just_last_metaevent : ScavengeTestScenario {
 		protected override DbResult CreateDb(TFChunkDbCreationHelper dbCreator) {
 			return dbCreator
@@ -25,9 +23,8 @@ namespace EventStore.Core.Tests.TransactionLog.Scavenging {
 			};
 		}
 
-		[Test]
+		[Fact]
 		public void only_last_metaevent_is_left() {
-			CheckRecords();
 		}
 	}
 }

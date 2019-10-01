@@ -2,49 +2,46 @@ using System;
 using EventStore.Core.Bus;
 using EventStore.Core.Tests.Bus.Helpers;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Bus {
-	[TestFixture]
-	public class when_subscribing_to_memory_bus {
+	public class when_subscribing_to_memory_bus : IDisposable {
 		private InMemoryBus _bus;
 
-		[SetUp]
-		public void SetUp() {
+		public when_subscribing_to_memory_bus() {
 			_bus = new InMemoryBus("test_bus", watchSlowMsg: false);
 		}
 
-		[TearDown]
-		public void TearDown() {
+		public void Dispose() {
 			_bus = null;
 		}
 
-		[Test]
+		[Fact]
 		public void null_as_handler_app_should_throw_arg_null_exception() {
 			Assert.Throws<ArgumentNullException>(() => _bus.Subscribe<TestMessage>(null));
 		}
 
-		[Test]
+		[Fact]
 		public void but_not_publishing_messages_noone_should_handle_any_messages() {
 			var multiHandler = new TestMultiHandler();
 			_bus.Subscribe<TestMessage>(multiHandler);
 			_bus.Subscribe<TestMessage2>(multiHandler);
 			_bus.Subscribe<TestMessage3>(multiHandler);
 
-			Assert.That(multiHandler.HandledMessages.Count == 0);
+			Assert.True(multiHandler.HandledMessages.Count == 0);
 		}
 
-		[Test]
+		[Fact]
 		public void one_handler_to_one_message_it_should_be_handled() {
 			var handler = new TestHandler<TestMessage>();
 			_bus.Subscribe<TestMessage>(handler);
 
 			_bus.Publish(new TestMessage());
 
-			Assert.That(handler.HandledMessages.ContainsSingle<TestMessage>());
+			Assert.True(handler.HandledMessages.ContainsSingle<TestMessage>());
 		}
 
-		[Test]
+		[Fact]
 		public void one_handler_to_multiple_messages_they_all_should_be_handled() {
 			var multiHandler = new TestMultiHandler();
 			_bus.Subscribe<TestMessage>(multiHandler);
@@ -55,12 +52,12 @@ namespace EventStore.Core.Tests.Bus {
 			_bus.Publish(new TestMessage2());
 			_bus.Publish(new TestMessage3());
 
-			Assert.That(multiHandler.HandledMessages.ContainsSingle<TestMessage>() &&
+			Assert.True(multiHandler.HandledMessages.ContainsSingle<TestMessage>() &&
 			            multiHandler.HandledMessages.ContainsSingle<TestMessage2>() &&
 			            multiHandler.HandledMessages.ContainsSingle<TestMessage3>());
 		}
 
-		[Test]
+		[Fact]
 		public void one_handler_to_few_messages_then_only_subscribed_should_be_handled() {
 			var multiHandler = new TestMultiHandler();
 			_bus.Subscribe<TestMessage>(multiHandler);
@@ -70,12 +67,12 @@ namespace EventStore.Core.Tests.Bus {
 			_bus.Publish(new TestMessage2());
 			_bus.Publish(new TestMessage3());
 
-			Assert.That(multiHandler.HandledMessages.ContainsSingle<TestMessage>() &&
+			Assert.True(multiHandler.HandledMessages.ContainsSingle<TestMessage>() &&
 			            multiHandler.HandledMessages.ContainsNo<TestMessage2>() &&
 			            multiHandler.HandledMessages.ContainsSingle<TestMessage3>());
 		}
 
-		[Test]
+		[Fact]
 		public void multiple_handlers_to_one_message_then_each_handler_should_handle_message_once() {
 			var handler1 = new TestHandler<TestMessage>();
 			var handler2 = new TestHandler<TestMessage>();
@@ -85,11 +82,11 @@ namespace EventStore.Core.Tests.Bus {
 
 			_bus.Publish(new TestMessage());
 
-			Assert.That(handler1.HandledMessages.ContainsSingle<TestMessage>());
-			Assert.That(handler2.HandledMessages.ContainsSingle<TestMessage>());
+			Assert.True(handler1.HandledMessages.ContainsSingle<TestMessage>());
+			Assert.True(handler2.HandledMessages.ContainsSingle<TestMessage>());
 		}
 
-		[Test]
+		[Fact]
 		public void multiple_handlers_to_multiple_messages_then_each_handler_should_handle_subscribed_messages() {
 			var handler1 = new TestMultiHandler();
 			var handler2 = new TestMultiHandler();
@@ -108,7 +105,7 @@ namespace EventStore.Core.Tests.Bus {
 			_bus.Publish(new TestMessage2());
 			_bus.Publish(new TestMessage3());
 
-			Assert.That(handler1.HandledMessages.ContainsSingle<TestMessage>() &&
+			Assert.True(handler1.HandledMessages.ContainsSingle<TestMessage>() &&
 			            handler1.HandledMessages.ContainsSingle<TestMessage3>() &&
 			            handler2.HandledMessages.ContainsSingle<TestMessage>() &&
 			            handler2.HandledMessages.ContainsSingle<TestMessage2>() &&
@@ -116,7 +113,7 @@ namespace EventStore.Core.Tests.Bus {
 			            handler3.HandledMessages.ContainsSingle<TestMessage3>());
 		}
 
-		[Test]
+		[Fact]
 		public void multiple_handlers_to_multiple_messages_then_each_handler_should_handle_only_subscribed_messages() {
 			var handler1 = new TestMultiHandler();
 			var handler2 = new TestMultiHandler();
@@ -137,7 +134,7 @@ namespace EventStore.Core.Tests.Bus {
 			_bus.Publish(new TestMessage3());
 
 
-			Assert.That(handler1.HandledMessages.ContainsSingle<TestMessage>() &&
+			Assert.True(handler1.HandledMessages.ContainsSingle<TestMessage>() &&
 			            handler1.HandledMessages.ContainsNo<TestMessage2>() &&
 			            handler1.HandledMessages.ContainsSingle<TestMessage3>() &&
 			            handler2.HandledMessages.ContainsSingle<TestMessage>() &&
@@ -148,7 +145,7 @@ namespace EventStore.Core.Tests.Bus {
 			            handler3.HandledMessages.ContainsSingle<TestMessage3>());
 		}
 
-		[Test /*, Ignore("This logic is confused when having hierarchy flattening on subscription in InMemoryBus.")*/]
+		[Fact /*, Ignore("This logic is confused when having hierarchy flattening on subscription in InMemoryBus.")*/]
 		public void same_handler_to_same_message_few_times_then_message_should_be_handled_only_once() {
 			var handler = new TestHandler<TestMessage>();
 			_bus.Subscribe<TestMessage>(handler);
@@ -157,7 +154,7 @@ namespace EventStore.Core.Tests.Bus {
 
 			_bus.Publish(new TestMessage());
 
-			Assert.That(handler.HandledMessages.ContainsSingle<TestMessage>());
+			Assert.True(handler.HandledMessages.ContainsSingle<TestMessage>());
 		}
 	}
 }

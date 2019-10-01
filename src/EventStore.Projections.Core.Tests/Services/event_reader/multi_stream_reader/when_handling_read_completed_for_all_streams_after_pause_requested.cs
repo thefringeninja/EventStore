@@ -8,10 +8,9 @@ using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Tests.Services.core_projection;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_reader {
-	[TestFixture]
 	public class when_handling_read_completed_for_all_streams_after_pause_requested : TestFixtureWithExistingEvents {
 		private MultiStreamEventReader _edp;
 		private Guid _distibutionPointCorrelationId;
@@ -27,8 +26,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 		private string[] _abStreams;
 		private Dictionary<string, long> _ab12Tag;
 
-		[SetUp]
-		public new void When() {
+		public when_handling_read_completed_for_all_streams_after_pause_requested() {
 			_ab12Tag = new Dictionary<string, long> {{"a", 1}, {"b", 2}};
 			_abStreams = new[] {"a", "b"};
 
@@ -42,7 +40,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 			_thirdEventId = Guid.NewGuid();
 			_fourthEventId = Guid.NewGuid();
 			_edp.Pause();
-			var correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			var correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Last(x => x.EventStreamId == "a").CorrelationId;
 			_edp.Handle(
 				new ClientMessage.ReadStreamEventsForwardCompleted(
@@ -60,7 +58,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 								PrepareFlags.SingleWrite | PrepareFlags.TransactionBegin | PrepareFlags.TransactionEnd,
 								"event_type2", new byte[] {3}, new byte[] {4}))
 					}, null, false, "", 3, 2, true, 200));
-			correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Last(x => x.EventStreamId == "b").CorrelationId;
 			_edp.Handle(
 				new ClientMessage.ReadStreamEventsForwardCompleted(
@@ -81,25 +79,25 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
 					}, null, false, "", 4, 3, true, 200));
 		}
 
-		[Test]
+		[Fact]
 		public void can_be_resumed() {
 			_edp.Resume();
 		}
 
-		[Test]
+		[Fact]
 		public void cannot_be_paused() {
 			Assert.Throws<InvalidOperationException>(() => { _edp.Pause(); });
 		}
 
-		[Test]
+		[Fact]
 		public void publishes_correct_number_of_committed_event_received_messages() {
-			Assert.AreEqual(
-				3, _consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
+			Assert.Equal(
+				3, Consumer.HandledMessages.OfType<ReaderSubscriptionMessage.CommittedEventDistributed>().Count());
 		}
 
-		[Test]
+		[Fact]
 		public void cannot_handle_following_read_events_completed() {
-			var correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
+			var correlationId = Consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>()
 				.Last(x => x.EventStreamId == "a").CorrelationId;
 			Assert.Throws<InvalidOperationException>(() => {
 				_edp.Handle(

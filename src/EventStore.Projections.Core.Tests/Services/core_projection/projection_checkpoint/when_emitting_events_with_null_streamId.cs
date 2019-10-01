@@ -1,16 +1,14 @@
 ﻿using System;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection.projection_checkpoint {
-	[TestFixture]
 	public class when_emitting_events_with_null_streamId : TestFixtureWithExistingEvents {
 		private ProjectionCheckpoint _checkpoint;
 		private Exception _lastException;
 		private TestCheckpointManagerMessageHandler _readyHandler;
 
-		[SetUp]
-		public void setup() {
+		public when_emitting_events_with_null_streamId() {
 			_readyHandler = new TestCheckpointManagerMessageHandler();
 			_checkpoint = new ProjectionCheckpoint(
 				_bus, _ioDispatcher, new ProjectionVersion(1, 0, 0), null, _readyHandler,
@@ -28,7 +26,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection.projection_
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void throws_invalid_operation_exception() {
 			Assert.Throws<ArgumentNullException>(() => {
 				if (_lastException != null) throw _lastException;

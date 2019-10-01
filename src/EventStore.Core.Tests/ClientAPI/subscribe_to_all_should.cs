@@ -6,16 +6,15 @@ using EventStore.ClientAPI.SystemData;
 using EventStore.Core.Services;
 using EventStore.Core.Tests.ClientAPI.Helpers;
 using EventStore.Core.Tests.Helpers;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
-	[TestFixture, Category("ClientAPI"), Category("LongRunning")]
+	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
 	public class subscribe_to_all_should : SpecificationWithDirectory {
 		private const int Timeout = 10000;
 
 		private MiniNode _node;
 
-		[SetUp]
 		public override async Task SetUp() {
 			await base.SetUp();
 			_node = new MiniNode(PathName, skipInitializeStandardUsersCheck: false);
@@ -30,7 +29,6 @@ namespace EventStore.Core.Tests.ClientAPI {
 			}
 		}
 
-		[TearDown]
 		public override async Task TearDown() {
 			await _node.Shutdown();
 			await base.TearDown();
@@ -40,7 +38,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			return TestConnection.Create(node.TcpEndPoint);
 		}
 
-		[Test, Category("LongRunning")]
+		[Fact, Trait("Category", "LongRunning")]
 		public async Task allow_multiple_subscriptions() {
 			const string stream = "subscribe_to_all_should_allow_multiple_subscriptions";
 			using (var store = BuildConnection(_node)) {
@@ -59,12 +57,12 @@ namespace EventStore.Core.Tests.ClientAPI {
 					var create =
 						await store.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent());
 
-					Assert.IsTrue(appeared.Wait(Timeout), "Appeared countdown event timed out.");
+					Assert.True(appeared.Wait(Timeout), "Appeared countdown event timed out.");
 				}
 			}
 		}
 
-		[Test, Category("LongRunning")]
+		[Fact, Trait("Category", "LongRunning")]
 		public async Task catch_deleted_events_as_well() {
 			const string stream = "subscribe_to_all_should_catch_created_and_deleted_events_as_well";
 			using (var store = BuildConnection(_node)) {
@@ -79,7 +77,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 					(s, r, e) => dropped.Signal())) {
 					var delete = await store.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: true);
 
-					Assert.IsTrue(appeared.Wait(Timeout), "Appeared countdown event didn't fire in time.");
+					Assert.True(appeared.Wait(Timeout), "Appeared countdown event didn't fire in time.");
 				}
 			}
 		}

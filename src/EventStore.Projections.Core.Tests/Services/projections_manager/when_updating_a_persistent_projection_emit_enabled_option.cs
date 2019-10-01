@@ -7,10 +7,9 @@ using EventStore.Core.TransactionLog.LogRecords;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services;
 using EventStore.Projections.Core.Services.Management;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.projections_manager {
-	[TestFixture]
 	public class when_updating_a_persistent_projection_emit_enabled_option :
 		TestFixtureWithProjectionCoreAndManagementServices {
 		protected override void Given() {
@@ -43,16 +42,16 @@ namespace EventStore.Projections.Core.Tests.Services.projections_manager {
 					_source, emitEnabled: false));
 		}
 
-		[Test, Category("v8")]
+		[Fact, Trait("Category", "v8")]
 		public void emit_enabled_options_remains_unchanged() {
 			_manager.Handle(
 				new ProjectionManagementMessage.Command.GetQuery(
 					new PublishEnvelope(_bus), _projectionName, ProjectionManagementMessage.RunAs.Anonymous));
-			Assert.AreEqual(1, _consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionQuery>().Count());
+			Assert.Equal(1, Consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionQuery>().Count());
 			var projectionQuery =
-				_consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionQuery>().Single();
-			Assert.AreEqual(_projectionName, projectionQuery.Name);
-			Assert.AreEqual(false, projectionQuery.EmitEnabled);
+				Consumer.HandledMessages.OfType<ProjectionManagementMessage.ProjectionQuery>().Single();
+			Assert.Equal(_projectionName, projectionQuery.Name);
+			Assert.False(projectionQuery.EmitEnabled);
 		}
 	}
 }

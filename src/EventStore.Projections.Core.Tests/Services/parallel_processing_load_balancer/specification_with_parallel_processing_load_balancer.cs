@@ -1,5 +1,5 @@
 ﻿using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.parallel_processing_load_balancer {
 	public abstract class specification_with_parallel_processing_load_balancer {
@@ -29,8 +29,7 @@ namespace EventStore.Projections.Core.Tests.Services.parallel_processing_load_ba
 			return 2;
 		}
 
-		[SetUp]
-		public void SetUp() {
+		public specification_with_parallel_processing_load_balancer() {
 			_workers = GivenWorkers();
 			_maxScheduledSizePerWorker = GivenMaxScheduledSizePerWorker();
 			_maxUnmeasuredTasksPerWorker = GivenMaxUnmeasuredTasksPerWorker();

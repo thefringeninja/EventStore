@@ -4,12 +4,11 @@ using EventStore.Core.Data;
 using EventStore.Projections.Core.Services.Processing;
 using EventStore.Projections.Core.Standard;
 using Newtonsoft.Json.Linq;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.Projections.Core.Services.Processing.ResolvedEvent;
 
 namespace EventStore.Projections.Core.Tests.Services.handlers {
 	public static class categorize_events_by_correlation_id {
-		[TestFixture]
 		public class when_handling_simple_event {
 			private ByCorrelationId _handler;
 			private string _state;
@@ -17,8 +16,7 @@ namespace EventStore.Projections.Core.Tests.Services.handlers {
 			private bool _result;
 			private DateTime _dateTime;
 
-			[SetUp]
-			public void when() {
+			public when_handling_simple_event() {
 				_handler = new ByCorrelationId("", Console.WriteLine);
 				_handler.Initialize();
 				_dateTime = DateTime.UtcNow;
@@ -35,24 +33,24 @@ namespace EventStore.Projections.Core.Tests.Services.handlers {
 					out sharedState, out _emittedEvents);
 			}
 
-			[Test]
+			[Fact]
 			public void result_is_true() {
-				Assert.IsTrue(_result);
+				Assert.True(_result);
 			}
 
-			[Test]
+			[Fact]
 			public void state_stays_null() {
-				Assert.IsNull(_state);
+				Assert.Null(_state);
 			}
 
-			[Test]
+			[Fact]
 			public void emits_correct_link() {
 				Assert.NotNull(_emittedEvents);
-				Assert.AreEqual(1, _emittedEvents.Length);
+				Assert.Equal(1, _emittedEvents.Length);
 				var @event = _emittedEvents[0].Event;
-				Assert.AreEqual("$>", @event.EventType);
-				Assert.AreEqual("$bc-testing1", @event.StreamId);
-				Assert.AreEqual("10@cat1-stream1", @event.Data);
+				Assert.Equal("$>", @event.EventType);
+				Assert.Equal("$bc-testing1", @event.StreamId);
+				Assert.Equal("10@cat1-stream1", @event.Data);
 
 				string eventTimestampJson = null;
 				var extraMetadata = @event.ExtraMetaData();
@@ -63,11 +61,10 @@ namespace EventStore.Projections.Core.Tests.Services.handlers {
 				}
 
 				Assert.NotNull(eventTimestampJson);
-				Assert.AreEqual("\"" + _dateTime.ToString("yyyy-MM-ddTHH:mm:ss.ffffffZ") + "\"", eventTimestampJson);
+				Assert.Equal("\"" + _dateTime.ToString("yyyy-MM-ddTHH:mm:ss.ffffffZ") + "\"", eventTimestampJson);
 			}
 		}
 
-		[TestFixture]
 		public class when_handling_link_to_event {
 			private ByCorrelationId _handler;
 			private string _state;
@@ -76,8 +73,7 @@ namespace EventStore.Projections.Core.Tests.Services.handlers {
 			private DateTime _dateTime;
 			private Guid _eventId;
 
-			[SetUp]
-			public void when() {
+			public when_handling_link_to_event() {
 				_handler = new ByCorrelationId("", Console.WriteLine);
 				_handler.Initialize();
 				_dateTime = DateTime.UtcNow;
@@ -95,24 +91,24 @@ namespace EventStore.Projections.Core.Tests.Services.handlers {
 					myEvent, out _state, out sharedState, out _emittedEvents);
 			}
 
-			[Test]
+			[Fact]
 			public void result_is_true() {
-				Assert.IsTrue(_result);
+				Assert.True(_result);
 			}
 
-			[Test]
+			[Fact]
 			public void state_stays_null() {
-				Assert.IsNull(_state);
+				Assert.Null(_state);
 			}
 
-			[Test]
+			[Fact]
 			public void emits_correct_link() {
 				Assert.NotNull(_emittedEvents);
-				Assert.AreEqual(1, _emittedEvents.Length);
+				Assert.Equal(1, _emittedEvents.Length);
 				var @event = _emittedEvents[0].Event;
-				Assert.AreEqual("$>", @event.EventType);
-				Assert.AreEqual("$bc-testing2", @event.StreamId);
-				Assert.AreEqual("10@cat1-stream1", @event.Data);
+				Assert.Equal("$>", @event.EventType);
+				Assert.Equal("$bc-testing2", @event.StreamId);
+				Assert.Equal("10@cat1-stream1", @event.Data);
 
 				string eventTimestampJson = null;
 				string linkJson = null;
@@ -129,28 +125,26 @@ namespace EventStore.Projections.Core.Tests.Services.handlers {
 				}
 
 				Assert.NotNull(eventTimestampJson);
-				Assert.AreEqual("\"" + _dateTime.ToString("yyyy-MM-ddTHH:mm:ss.ffffffZ") + "\"", eventTimestampJson);
+				Assert.Equal("\"" + _dateTime.ToString("yyyy-MM-ddTHH:mm:ss.ffffffZ") + "\"", eventTimestampJson);
 
 				//the link's metadata should be copied to $link.metadata and id to $link.eventId
 				Assert.NotNull(linkJson);
 				var link = JObject.Parse(linkJson);
-				Assert.AreEqual(link.GetValue("eventId").ToObject<string>(), _eventId.ToString());
+				Assert.Equal(link.GetValue("eventId").ToObject<string>(), _eventId.ToString());
 
 				var linkMetadata = (JObject)link.GetValue("metadata");
-				Assert.AreEqual(linkMetadata.GetValue("$correlationId").ToObject<string>(), "testing2");
-				Assert.AreEqual(linkMetadata.GetValue("$whatever").ToObject<string>(), "hello");
+				Assert.Equal(linkMetadata.GetValue("$correlationId").ToObject<string>(), "testing2");
+				Assert.Equal(linkMetadata.GetValue("$whatever").ToObject<string>(), "hello");
 			}
 		}
 
-		[TestFixture]
 		public class when_handling_non_json_event {
 			private ByCorrelationId _handler;
 			private string _state;
 			private EmittedEventEnvelope[] _emittedEvents;
 			private bool _result;
 
-			[SetUp]
-			public void when() {
+			public when_handling_non_json_event() {
 				_handler = new ByCorrelationId("", Console.WriteLine);
 				_handler.Initialize();
 				string sharedState;
@@ -162,31 +156,29 @@ namespace EventStore.Projections.Core.Tests.Services.handlers {
 					out _emittedEvents);
 			}
 
-			[Test]
+			[Fact]
 			public void result_is_false() {
-				Assert.IsFalse(_result);
+				Assert.False(_result);
 			}
 
-			[Test]
+			[Fact]
 			public void state_stays_null() {
-				Assert.IsNull(_state);
+				Assert.Null(_state);
 			}
 
-			[Test]
+			[Fact]
 			public void does_not_emit_link() {
-				Assert.IsNull(_emittedEvents);
+				Assert.Null(_emittedEvents);
 			}
 		}
 
-		[TestFixture]
 		public class when_handling_json_event_with_no_correlation_id {
 			private ByCorrelationId _handler;
 			private string _state;
 			private EmittedEventEnvelope[] _emittedEvents;
 			private bool _result;
 
-			[SetUp]
-			public void when() {
+			public when_handling_json_event_with_no_correlation_id() {
 				_handler = new ByCorrelationId("", Console.WriteLine);
 				_handler.Initialize();
 				string sharedState;
@@ -197,31 +189,29 @@ namespace EventStore.Projections.Core.Tests.Services.handlers {
 						"event_type", true, "{}", "{}"), out _state, out sharedState, out _emittedEvents);
 			}
 
-			[Test]
+			[Fact]
 			public void result_is_false() {
-				Assert.IsFalse(_result);
+				Assert.False(_result);
 			}
 
-			[Test]
+			[Fact]
 			public void state_stays_null() {
-				Assert.IsNull(_state);
+				Assert.Null(_state);
 			}
 
-			[Test]
+			[Fact]
 			public void does_not_emit_link() {
-				Assert.IsNull(_emittedEvents);
+				Assert.Null(_emittedEvents);
 			}
 		}
 
-		[TestFixture]
 		public class when_handling_json_event_with_non_json_metadata {
 			private ByCorrelationId _handler;
 			private string _state;
 			private EmittedEventEnvelope[] _emittedEvents;
 			private bool _result;
 
-			[SetUp]
-			public void when() {
+			public when_handling_json_event_with_non_json_metadata() {
 				_handler = new ByCorrelationId("", Console.WriteLine);
 				_handler.Initialize();
 				string sharedState;
@@ -233,23 +223,22 @@ namespace EventStore.Projections.Core.Tests.Services.handlers {
 					out _emittedEvents);
 			}
 
-			[Test]
+			[Fact]
 			public void result_is_false() {
-				Assert.IsFalse(_result);
+				Assert.False(_result);
 			}
 
-			[Test]
+			[Fact]
 			public void state_stays_null() {
-				Assert.IsNull(_state);
+				Assert.Null(_state);
 			}
 
-			[Test]
+			[Fact]
 			public void does_not_emit_link() {
-				Assert.IsNull(_emittedEvents);
+				Assert.Null(_emittedEvents);
 			}
 		}
 
-		[TestFixture]
 		public class with_custom_valid_correlation_id_property {
 			private ByCorrelationId _handler;
 			private string _state;
@@ -257,8 +246,7 @@ namespace EventStore.Projections.Core.Tests.Services.handlers {
 			private bool _result;
 			private string source = "{\"correlationIdProperty\":\"$myCorrelationId\"}";
 
-			[SetUp]
-			public void when() {
+			public with_custom_valid_correlation_id_property() {
 				_handler = new ByCorrelationId(source, Console.WriteLine);
 				_handler.Initialize();
 				string sharedState;
@@ -270,36 +258,31 @@ namespace EventStore.Projections.Core.Tests.Services.handlers {
 					out _emittedEvents);
 			}
 
-			[Test]
+			[Fact]
 			public void result_is_true() {
-				Assert.IsTrue(_result);
+				Assert.True(_result);
 			}
 
-			[Test]
+			[Fact]
 			public void state_stays_null() {
-				Assert.IsNull(_state);
+				Assert.Null(_state);
 			}
 
-			[Test]
+			[Fact]
 			public void emits_correct_link() {
 				Assert.NotNull(_emittedEvents);
-				Assert.AreEqual(1, _emittedEvents.Length);
+				Assert.Equal(1, _emittedEvents.Length);
 				var @event = _emittedEvents[0].Event;
-				Assert.AreEqual("$>", @event.EventType);
-				Assert.AreEqual("$bc-testing1", @event.StreamId);
-				Assert.AreEqual("10@cat1-stream1", @event.Data);
+				Assert.Equal("$>", @event.EventType);
+				Assert.Equal("$bc-testing1", @event.StreamId);
+				Assert.Equal("10@cat1-stream1", @event.Data);
 			}
 		}
 
-		[TestFixture]
 		public class with_custom_invalid_correlation_id_property {
 			private string source = "{\"thisisnotvalid\":\"$myCorrelationId\"}";
 
-			[SetUp]
-			public void when() {
-			}
-
-			[Test]
+			[Fact]
 			public void should_throw_invalid_operation_exception() {
 				Assert.Throws<InvalidOperationException>(() => { new ByCorrelationId(source, Console.WriteLine); });
 			}

@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading;
 using EventStore.ClientAPI;
 using EventStore.ClientAPI.Common.Log;
 using EventStore.ClientAPI.SystemData;
@@ -15,15 +14,15 @@ using EventStore.Core.Tests;
 using EventStore.Core.Tests.Helpers;
 using EventStore.Core.Util;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 using ResolvedEvent = EventStore.ClientAPI.ResolvedEvent;
 using EventStore.ClientAPI.Projections;
 using System.Threading.Tasks;
 
 namespace EventStore.Projections.Core.Tests.ClientAPI.Cluster {
-	[Category("ClientAPI")]
+	[Trait("Category", "ClientAPI")]
 	public class specification_with_standard_projections_runnning : SpecificationWithDirectoryPerTestFixture {
-		protected MiniClusterNode[] _nodes = new MiniClusterNode[3];
+		public MiniClusterNode[] Nodes = new MiniClusterNode[3];
 		protected Endpoints[] _nodeEndpoints = new Endpoints[3];
 		protected IEventStoreConnection _conn;
 		protected ProjectionsSubsystem _projections;
@@ -59,11 +58,10 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.Cluster {
 			public IEnumerable<int> Ports => _ports;
 		}
 
-		[OneTimeSetUp]
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 #if (!DEBUG)
-            Assert.Ignore("These tests require DEBUG conditional");
+            //Assert.Ignore("These tests require DEBUG conditional");
 #else
 			QueueStatsCollector.InitializeIdleDetection();
 			_nodeEndpoints[0] = new Endpoints(
@@ -79,26 +77,26 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.Cluster {
 				PortsHelper.GetAvailablePort(IPAddress.Loopback), PortsHelper.GetAvailablePort(IPAddress.Loopback),
 				PortsHelper.GetAvailablePort(IPAddress.Loopback), PortsHelper.GetAvailablePort(IPAddress.Loopback));
 
-			_nodes[0] = CreateNode(0,
+			Nodes[0] = CreateNode(0,
 				_nodeEndpoints[0], new[] {_nodeEndpoints[1].InternalHttp, _nodeEndpoints[2].InternalHttp});
-			_nodes[1] = CreateNode(1,
+			Nodes[1] = CreateNode(1,
 				_nodeEndpoints[1], new[] {_nodeEndpoints[0].InternalHttp, _nodeEndpoints[2].InternalHttp});
-			_nodes[2] = CreateNode(2,
+			Nodes[2] = CreateNode(2,
 				_nodeEndpoints[2], new[] {_nodeEndpoints[0].InternalHttp, _nodeEndpoints[1].InternalHttp});
 
 
-			_nodes[0].Start();
-			_nodes[1].Start();
-			_nodes[2].Start();
+			await Task.WhenAll(
+				Nodes[0].Start(),
+				Nodes[1].Start(),
+				Nodes[2].Start());
 
-			WaitHandle.WaitAll(new[] {_nodes[0].StartedEvent, _nodes[1].StartedEvent, _nodes[2].StartedEvent});
 			QueueStatsCollector.WaitIdle(waitForNonEmptyTf: true);
-			_conn = EventStoreConnection.Create(_nodes[0].ExternalTcpEndPoint);
-            await _conn.ConnectAsync();
+			_conn = EventStoreConnection.Create(Nodes[0].ExternalTcpEndPoint);
+			await _conn.ConnectAsync();
 
 			_manager = new ProjectionsManager(
 				new ConsoleLogger(),
-				_nodes[0].ExternalHttpEndPoint,
+				Nodes[0].ExternalHttpEndPoint,
 				TimeSpan.FromMilliseconds(10000));
 
 			if (GivenStandardProjectionsRunning())
@@ -132,15 +130,9 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.Cluster {
 			return node;
 		}
 
-		[TearDown]
-		public async Task PostTestAsserts() {
-			var all = await _manager.ListAllAsync(_admin);
-			if (all.Any(p => p.Name == "Faulted"))
-				Assert.Fail("Projections faulted while running the test" + "\r\n" + all);
-		}
-
 		protected async Task EnableStandardProjections() {
-            await Task.Delay(4000); /* workaround for race condition when a projection is in LoadStopped() state and it is enabled */
+			await Task.Delay(
+				4000); /* workaround for race condition when a projection is in LoadStopped() state and it is enabled */
 			await EnableProjection(ProjectionNamesBuilder.StandardProjections.EventByCategoryStandardProjection);
 			await EnableProjection(ProjectionNamesBuilder.StandardProjections.EventByTypeStandardProjection);
 			await EnableProjection(ProjectionNamesBuilder.StandardProjections.StreamByCategoryStandardProjection);
@@ -159,30 +151,29 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.Cluster {
 		}
 
 		protected async Task EnableProjection(string name) {
-			for(int i=1;i<=10;i++){
-				try{
-                    await _manager.EnableAsync(name, _admin);
-				}
-				catch(Exception e){
-					if(i==10) throw e;
-                    await Task.Delay(5000);
+			for (int i = 1; i <= 10; i++) {
+				try {
+					await _manager.EnableAsync(name, _admin);
+				} catch (Exception e) {
+					if (i == 10) throw e;
+					await Task.Delay(5000);
 				}
 			}
 
-            await Task.Delay(1000); /* workaround for race condition when multiple projections are being enabled simultaneously */
+			await Task.Delay(
+				1000); /* workaround for race condition when multiple projections are being enabled simultaneously */
 		}
 
 		protected Task DisableProjection(string name) {
 			return _manager.DisableAsync(name, _admin);
 		}
 
-		[OneTimeTearDown]
 		public override async Task TestFixtureTearDown() {
+			var all = await _manager.ListAllAsync(_admin);
+			if (all.Any(p => p.Name == "Faulted"))
+				throw new Exception("Projections faulted while running the test" + "\r\n" + all);
 			_conn.Close();
-			await Task.WhenAll(
-				_nodes[0].Shutdown(),
-				_nodes[1].Shutdown(),
-				_nodes[2].Shutdown());
+			await Task.WhenAll(Nodes[0].Shutdown(), Nodes[1].Shutdown(), Nodes[2].Shutdown());
 #if DEBUG
 			QueueStatsCollector.DisableIdleDetection();
 #endif
@@ -191,6 +182,7 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.Cluster {
 					PortsHelper.ReturnPort(port);
 				}
 			}
+
 			await base.TestFixtureTearDown();
 		}
 
@@ -223,10 +215,10 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.Cluster {
 			var result = await _conn.ReadStreamEventsBackwardAsync(streamId, -1, events.Length, true, _admin);
 			switch (result.Status) {
 				case SliceReadStatus.StreamDeleted:
-					Assert.Fail("Stream '{0}' is deleted", streamId);
+					throw new Exception($"Stream '{streamId}' is deleted");
 					break;
 				case SliceReadStatus.StreamNotFound:
-					Assert.Fail("Stream '{0}' does not exist", streamId);
+					throw new Exception($"Stream '{streamId}' does not exist");
 					break;
 				case SliceReadStatus.Success:
 					var resultEventsReversed = result.Events.Reverse().ToArray();
@@ -255,10 +247,10 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.Cluster {
 			var result = await _conn.ReadStreamEventsBackwardAsync(streamId, -1, 100, true, _admin);
 			switch (result.Status) {
 				case SliceReadStatus.StreamDeleted:
-					Assert.Fail("Stream '{0}' is deleted", streamId);
+					throw new Exception($"Stream '{streamId}' is deleted");
 					break;
 				case SliceReadStatus.StreamNotFound:
-					Assert.Fail("Stream '{0}' does not exist", streamId);
+					throw new Exception($"Stream '{streamId}' does not exist");
 					break;
 				case SliceReadStatus.Success:
 					Dump("Dumping..", streamId, result.Events.Reverse().ToArray());
@@ -277,10 +269,8 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.Cluster {
 				"", (a, v) => a + "\r\n" + v.Event.EventType + ":" + v.Event.DebugMetadataView);
 
 
-			Assert.Fail(
-				"Stream: '{0}'\r\n{1}\r\n\r\nExisting events: \r\n{2}\r\n Expected events: \r\n{3}\r\n\r\nActual metas:{4}",
-				streamId,
-				message, actual, expected, actualMeta);
+			throw new Exception(
+				$"Stream: '{streamId}'\r\n{message}\r\n\r\nExisting events: \r\n{actual}\r\n Expected events: \r\n{expected}\r\n\r\nActual metas:{actualMeta}");
 		}
 
 		private void Dump(string message, string streamId, ResolvedEvent[] resultEvents) {
@@ -297,17 +287,16 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.Cluster {
 #endif
 
 		protected async Task PostProjection(string query) {
-            await _manager.CreateContinuousAsync("test-projection", query, _admin);
+			await _manager.CreateContinuousAsync("test-projection", query, _admin);
 			WaitIdle();
 		}
 	}
 
-	[TestFixture, Explicit]
 	public class TestTest : specification_with_standard_projections_runnning {
-		[Test, Explicit]
+		[Explicit]
 		public async Task Test() {
 			await PostProjection(@"fromStream('$user-admin').outputState()");
-            await AssertStreamTailAsync("$projections-test-projection-result", "Result:{}");
+			await AssertStreamTailAsync("$projections-test-projection-result", "Result:{}");
 		}
 	}
 }

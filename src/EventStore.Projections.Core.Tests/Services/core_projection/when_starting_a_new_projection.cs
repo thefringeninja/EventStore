@@ -1,10 +1,9 @@
 using System;
 using EventStore.Projections.Core.Messages;
-using NUnit.Framework;
+using Xunit;
 using System.Linq;
 
 namespace EventStore.Projections.Core.Tests.Services.core_projection {
-	[TestFixture]
 	public class when_starting_a_new_projection : TestFixtureWithCoreProjectionStarted {
 		protected override void Given() {
 			NoStream("$projections-projection-result");
@@ -16,18 +15,18 @@ namespace EventStore.Projections.Core.Tests.Services.core_projection {
 		protected override void When() {
 		}
 
-		[Test]
+		[Fact]
 		public void should_subscribe_from_beginning() {
-			Assert.AreEqual(1, _subscribeProjectionHandler.HandledMessages.Count);
-			Assert.AreEqual(0, _subscribeProjectionHandler.HandledMessages[0].FromPosition.Position.CommitPosition);
-			Assert.AreEqual(-1, _subscribeProjectionHandler.HandledMessages[0].FromPosition.Position.PreparePosition);
+			Assert.Equal(1, _subscribeProjectionHandler.HandledMessages.Count);
+			Assert.Equal(0, _subscribeProjectionHandler.HandledMessages[0].FromPosition.Position.CommitPosition);
+			Assert.Equal(-1, _subscribeProjectionHandler.HandledMessages[0].FromPosition.Position.PreparePosition);
 		}
 
-		[Test]
+		[Fact]
 		public void should_publish_started_message() {
-			Assert.AreEqual(1, _consumer.HandledMessages.OfType<CoreProjectionStatusMessage.Started>().Count());
-			var startedMessage = _consumer.HandledMessages.OfType<CoreProjectionStatusMessage.Started>().Single();
-			Assert.AreEqual(_projectionCorrelationId, startedMessage.ProjectionId);
+			Assert.Equal(1, Consumer.HandledMessages.OfType<CoreProjectionStatusMessage.Started>().Count());
+			var startedMessage = Consumer.HandledMessages.OfType<CoreProjectionStatusMessage.Started>().Single();
+			Assert.Equal(_projectionCorrelationId, startedMessage.ProjectionId);
 		}
 	}
 }

@@ -1,18 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Net;
-using System.Text;
-using System.Xml;
 using System.Xml.Linq;
-using EventStore.ClientAPI;
-using EventStore.ClientAPI.Common;
-using EventStore.ClientAPI.SystemData;
-using EventStore.Core.Tests.ClientAPI.Helpers;
 using EventStore.Core.Tests.Helpers;
-using EventStore.Core.TransactionLog.Chunks;
 using EventStore.Transport.Http;
-using NUnit.Framework;
+using Xunit;
 using Newtonsoft.Json.Linq;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,7 +13,7 @@ using EventStore.Core.Tests.Http.Users.users;
 using HttpStatusCode = System.Net.HttpStatusCode;
 
 namespace EventStore.Core.Tests.Http.PersistentSubscription {
-	abstract class SpecificationWithLongFeed : with_admin_user {
+	public abstract class SpecificationWithLongFeed : with_admin_user {
 		protected int _numberOfEvents = 5;
 
 		protected string SubscriptionGroupName {
@@ -46,7 +38,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 					MessageTimeoutMilliseconds = messageTimeoutInMs
 				}, _admin);
 
-			Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
+			Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 		}
 
 		protected async Task<string> PostEvent(int i) {
@@ -54,7 +46,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 			var response = await MakeArrayEventsPost(
 				TestStream, new[] {new {EventId = eventId, EventType = "event-type", Data = new {Number = i}}});
 			_eventIds.Add(eventId);
-			Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
+			Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 			return response.Headers.Location.ToString();
 		}
 
@@ -74,8 +66,8 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
-	class when_retrieving_an_empty_feed : SpecificationWithLongFeed {
+	[Trait("Category", "LongRunning")]
+    public class when_retrieving_an_empty_feed : SpecificationWithLongFeed {
 		private JObject _feed;
 		private JObject _head;
 		private string _previous;
@@ -90,37 +82,37 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 			_feed = await GetJson<JObject>(_previous, ContentType.CompetingJson);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_ok_status_code() {
-			Assert.AreEqual(HttpStatusCode.OK, _lastResponse.StatusCode);
+			Assert.Equal(HttpStatusCode.OK, _lastResponse.StatusCode);
 		}
 
-		[Test]
+		[Fact]
 		public void does_not_contain_ack_all_link() {
 			var rel = GetLink(_feed, "ackAll");
-			Assert.That(string.IsNullOrEmpty(rel));
+			Assert.True(string.IsNullOrEmpty(rel));
 		}
 
-		[Test]
+		[Fact]
 		public void does_not_contain_nack_all_link() {
 			var rel = GetLink(_feed, "nackAll");
-			Assert.That(string.IsNullOrEmpty(rel));
+			Assert.True(string.IsNullOrEmpty(rel));
 		}
 
-		[Test]
+		[Fact]
 		public void contains_a_link_rel_previous() {
 			var rel = GetLink(_feed, "previous");
-			Assert.That(!string.IsNullOrEmpty(rel));
+			Assert.True(!string.IsNullOrEmpty(rel));
 		}
 
-		[Test]
+		[Fact]
 		public void the_feed_is_empty() {
-			Assert.AreEqual(0, _feed["entries"].Count());
+			Assert.Equal(0, _feed["entries"].Count());
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
-	class when_retrieving_a_feed_with_events : SpecificationWithLongFeed {
+	[Trait("Category", "LongRunning")]
+    public class when_retrieving_a_feed_with_events : SpecificationWithLongFeed {
 		private JObject _feed;
 		private List<JToken> _entries;
 
@@ -130,33 +122,33 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 			_entries = _feed != null ? _feed["entries"].ToList() : new List<JToken>();
 		}
 
-		[Test]
+		[Fact]
 		public void returns_ok_status_code() {
-			Assert.AreEqual(HttpStatusCode.OK, _lastResponse.StatusCode);
+			Assert.Equal(HttpStatusCode.OK, _lastResponse.StatusCode);
 		}
 
-		[Test]
+		[Fact]
 		public void contains_all_the_events() {
-			Assert.AreEqual(_numberOfEvents, _entries.Count);
+			Assert.Equal(_numberOfEvents, _entries.Count);
 		}
 
-		[Test]
+		[Fact]
 		public void the_ackAll_link_is_to_correct_uri() {
 			var ids = String.Format("ids={0}", String.Join(",", _eventIds.ToArray()));
 			var ackAllLink = String.Format("subscriptions/{0}/{1}/ack", TestStreamName, SubscriptionGroupName);
-			Assert.AreEqual(MakeUrl(ackAllLink, ids), GetLink(_feed, "ackAll"));
+			Assert.Equal(MakeUrl(ackAllLink, ids).ToString(), GetLink(_feed, "ackAll"));
 		}
 
-		[Test]
+		[Fact]
 		public void the_nackAll_link_is_to_correct_uri() {
 			var ids = String.Format("ids={0}", String.Join(",", _eventIds.ToArray()));
 			var nackAllLink = String.Format("subscriptions/{0}/{1}/nack", TestStreamName, SubscriptionGroupName);
-			Assert.AreEqual(MakeUrl(nackAllLink, ids), GetLink(_feed, "nackAll"));
+			Assert.Equal(MakeUrl(nackAllLink, ids).ToString(), GetLink(_feed, "nackAll"));
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
-	class when_polling_the_head_forward_and_a_new_event_appears : SpecificationWithLongFeed {
+	[Trait("Category", "LongRunning")]
+    public class when_polling_the_head_forward_and_a_new_event_appears : SpecificationWithLongFeed {
 		private JObject _feed;
 		private JObject _head;
 		private string _previous;
@@ -175,37 +167,37 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 			_entries = _feed != null ? _feed["entries"].ToList() : new List<JToken>();
 		}
 
-		[Test]
+		[Fact]
 		public void returns_ok_status_code() {
-			Assert.AreEqual(HttpStatusCode.OK, _lastResponse.StatusCode);
+			Assert.Equal(HttpStatusCode.OK, _lastResponse.StatusCode);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_a_feed_with_a_single_entry_referring_to_the_last_event() {
 			HelperExtensions.AssertJson(new {entries = new[] {new {Id = _lastEventLocation}}}, _feed);
 		}
 
-		[Test]
+		[Fact]
 		public void the_ack_link_is_to_correct_uri() {
 			var link = _entries[0]["links"][2];
-			Assert.AreEqual("ack", link["relation"].ToString());
+			Assert.Equal("ack", link["relation"].ToString());
 			var ackLink = String.Format("subscriptions/{0}/{1}/ack/{2}", TestStreamName, SubscriptionGroupName,
 				_eventIds.Last());
-			Assert.AreEqual(MakeUrl(ackLink), link["uri"].ToString());
+			Assert.Equal(MakeUrl(ackLink).ToString(), link["uri"].ToString());
 		}
 
-		[Test]
+		[Fact]
 		public void the_nack_link_is_to_correct_uri() {
 			var link = _entries[0]["links"][3];
-			Assert.AreEqual("nack", link["relation"].ToString());
+			Assert.Equal("nack", link["relation"].ToString());
 			var ackLink = String.Format("subscriptions/{0}/{1}/nack/{2}", TestStreamName, SubscriptionGroupName,
 				_eventIds.Last());
-			Assert.AreEqual(MakeUrl(ackLink), link["uri"].ToString());
+			Assert.Equal(MakeUrl(ackLink).ToString(), link["uri"].ToString());
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
-	class when_retrieving_a_feed_with_events_with_competing_xml : SpecificationWithLongFeed {
+	[Trait("Category", "LongRunning")]
+    public class when_retrieving_a_feed_with_events_with_competing_xml : SpecificationWithLongFeed {
 		private XDocument document;
 		private XElement[] _entries;
 
@@ -215,43 +207,43 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 			_entries = document.GetEntries();
 		}
 
-		[Test]
+		[Fact]
 		public void the_feed_has_n_events() {
-			Assert.AreEqual(1, _entries.Length);
+			Assert.Equal(1, _entries.Length);
 		}
 
-		[Test]
+		[Fact]
 		public void contains_all_the_events() {
-			Assert.AreEqual(1, _entries.Length);
+			Assert.Equal(1, _entries.Length);
 		}
 
-		[Test]
+		[Fact]
 		public void the_ackAll_link_is_to_correct_uri() {
 			var ids = String.Format("ids={0}", _eventIds[0]);
 			var ackAllLink = String.Format("subscriptions/{0}/{1}/ack", TestStreamName, SubscriptionGroupName);
-			Assert.AreEqual(MakeUrl(ackAllLink, ids),
+			Assert.Equal(MakeUrl(ackAllLink, ids).ToString(),
 				document.Element(XDocumentAtomExtensions.AtomNamespace + "feed").GetLink("ackAll"));
 		}
 
-		[Test]
+		[Fact]
 		public void the_nackAll_link_is_to_correct_uri() {
 			var ids = String.Format("ids={0}", _eventIds[0]);
 			var nackAllLink = String.Format("subscriptions/{0}/{1}/nack", TestStreamName, SubscriptionGroupName);
-			Assert.AreEqual(MakeUrl(nackAllLink, ids),
+			Assert.Equal(MakeUrl(nackAllLink, ids).ToString(),
 				document.Element(XDocumentAtomExtensions.AtomNamespace + "feed").GetLink("nackAll"));
 		}
 
-		[Test]
+		[Fact]
 		public void the_ack_link_is_to_correct_uri() {
 			var result = document.Element(XDocumentAtomExtensions.AtomNamespace + "feed")
 				.Element(XDocumentAtomExtensions.AtomNamespace + "entry")
 				.GetLink("ack");
 			var ackLink = String.Format("subscriptions/{0}/{1}/ack/{2}", TestStreamName, SubscriptionGroupName,
 				_eventIds[0]);
-			Assert.AreEqual(MakeUrl(ackLink), result);
+			Assert.Equal(MakeUrl(ackLink).ToString(), result);
 		}
 
-		[Test]
+		[Fact]
 		public void the_nack_link_is_to_correct_uri() {
 			var result = document.Element(XDocumentAtomExtensions.AtomNamespace + "feed")
 				.Element(XDocumentAtomExtensions.AtomNamespace + "entry")
@@ -259,24 +251,24 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 			;
 			var nackLink = String.Format("subscriptions/{0}/{1}/nack/{2}", TestStreamName, SubscriptionGroupName,
 				_eventIds[0]);
-			Assert.AreEqual(MakeUrl(nackLink), result);
+			Assert.Equal(MakeUrl(nackLink).ToString(), result);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
-	class when_retrieving_a_feed_with_invalid_content_type : SpecificationWithLongFeed {
+	[Trait("Category", "LongRunning")]
+    public class when_retrieving_a_feed_with_invalid_content_type : SpecificationWithLongFeed {
 		protected override Task When() {
 			return Get(MakeUrl(_subscriptionEndpoint + "/" + _numberOfEvents).ToString(), String.Empty, ContentType.Xml);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_not_acceptable() {
-			Assert.AreEqual(HttpStatusCode.NotAcceptable, _lastResponse.StatusCode);
+			Assert.Equal(HttpStatusCode.NotAcceptable, _lastResponse.StatusCode);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
-	class when_retrieving_a_feed_with_events_using_prefix : SpecificationWithLongFeed {
+	[Trait("Category", "LongRunning")]
+    public class when_retrieving_a_feed_with_events_using_prefix : SpecificationWithLongFeed {
 		private JObject _feed;
 		private List<JToken> _entries;
 		private string _prefix;
@@ -290,43 +282,43 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 			_entries = _feed != null ? _feed["entries"].ToList() : new List<JToken>();
 		}
 
-		[Test]
+		[Fact]
 		public void returns_ok_status_code() {
-			Assert.AreEqual(HttpStatusCode.OK, _lastResponse.StatusCode);
+			Assert.Equal(HttpStatusCode.OK, _lastResponse.StatusCode);
 		}
 
-		[Test]
+		[Fact]
 		public void contains_all_the_events() {
-			Assert.AreEqual(_numberOfEvents, _entries.Count);
+			Assert.Equal(_numberOfEvents, _entries.Count);
 		}
 
-		[Test]
+		[Fact]
 		public void contains_previous_link_with_prefix() {
 			var previousLink = String.Format("{0}/subscriptions/{1}/{2}/5", _prefix, TestStreamName,
 				SubscriptionGroupName);
-			Assert.AreEqual(MakeUrl(previousLink), GetLink(_feed, "previous"));
+			Assert.Equal(MakeUrl(previousLink).ToString(), GetLink(_feed, "previous"));
 		}
 
-		[Test]
+		[Fact]
 		public void contains_self_link_with_prefix() {
 			var selfLink = String.Format("{0}/subscriptions/{1}/{2}", _prefix, TestStreamName, SubscriptionGroupName);
-			Assert.AreEqual(MakeUrl(selfLink), GetLink(_feed, "self"));
+			Assert.Equal(MakeUrl(selfLink).ToString(), GetLink(_feed, "self"));
 		}
 
-		[Test]
+		[Fact]
 		public void the_ackAll_link_is_to_correct_uri_with_prefix() {
 			var ids = String.Format("ids={0}", String.Join(",", _eventIds.ToArray()));
 			var ackAllLink = String.Format("{0}/subscriptions/{1}/{2}/ack", _prefix, TestStreamName,
 				SubscriptionGroupName);
-			Assert.AreEqual(MakeUrl(ackAllLink, ids), GetLink(_feed, "ackAll"));
+			Assert.Equal(MakeUrl(ackAllLink, ids).ToString(), GetLink(_feed, "ackAll"));
 		}
 
-		[Test]
+		[Fact]
 		public void the_nackAll_link_is_to_correct_uri_with_prefix() {
 			var ids = String.Format("ids={0}", String.Join(",", _eventIds.ToArray()));
 			var nackAllLink = String.Format("{0}/subscriptions/{1}/{2}/nack", _prefix, TestStreamName,
 				SubscriptionGroupName);
-			Assert.AreEqual(MakeUrl(nackAllLink, ids), GetLink(_feed, "nackAll"));
+			Assert.Equal(MakeUrl(nackAllLink, ids).ToString(), GetLink(_feed, "nackAll"));
 		}
 	}
 }

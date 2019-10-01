@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using EventStore.Projections.Core.Messages;
 using EventStore.Projections.Core.Services.Processing;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Projections.Core.Tests.Services.event_reader.all_streams_with_links_event_reader {
 	namespace when_including_links {
-		[TestFixture]
 		public class when_reading : TestFixtureWithEventReaderService {
 			protected Guid _subscriptionId;
 			private QuerySourcesDefinition _sourceDefinition;
@@ -59,12 +58,12 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.all_streams_wi
 						_subscriptionId, fromZeroPosition, _readerStrategy, _readerSubscriptionOptions);
 			}
 
-			[Test]
+			[Fact]
 			public void returns_linked_events() {
 				var receivedEvents =
-					_consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.CommittedEventReceived>().ToArray();
+					Consumer.HandledMessages.OfType<EventReaderSubscriptionMessage.CommittedEventReceived>().ToArray();
 
-				Assert.AreEqual(7, receivedEvents.Length);
+				Assert.Equal(7, receivedEvents.Length);
 			}
 		}
 	}

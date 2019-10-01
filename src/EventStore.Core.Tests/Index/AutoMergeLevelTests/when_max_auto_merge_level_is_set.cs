@@ -7,11 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using EventStore.Core.Index;
 using EventStore.Core.Tests.Services.Storage.Transactions;
-using NUnit.Framework;
+using Xunit;
 
 namespace EventStore.Core.Tests.Index.AutoMergeLevelTests {
-	[TestFixture]
-	public abstract class when_max_auto_merge_level_is_set : SpecificationWithDirectoryPerTestFixture {
+	public abstract class when_max_auto_merge_level_is_set  : SpecificationWithDirectoryPerTestFixture {
 		protected readonly int _maxAutoMergeLevel;
 		protected string _filename;
 		protected IndexMap _map;
@@ -20,16 +19,17 @@ namespace EventStore.Core.Tests.Index.AutoMergeLevelTests {
 		protected bool _skipIndexVerify = true;
 		protected GuidFilenameProvider _fileNameProvider;
 
-		public when_max_auto_merge_level_is_set(int maxAutoMergeLevel = 2) {
+		protected when_max_auto_merge_level_is_set(int maxAutoMergeLevel = 2) {
 			_maxAutoMergeLevel = maxAutoMergeLevel;
 		}
 
-		[OneTimeSetUp]
-		public virtual void Setup() {
+		public override async Task TestFixtureSetUp() {
+			await base.TestFixtureSetUp();
 			_filename = GetTempFilePath();
 			_fileNameProvider = new GuidFilenameProvider(PathName);
 			_map = IndexMapTestFactory.FromFile(_filename, maxTablesPerLevel: 2, maxAutoMergeLevel: _maxAutoMergeLevel);
 		}
+
 
 		protected void AddTables(int count) {
 			var memtable = new HashListMemTable(_ptableVersion, maxSize: 10);
@@ -51,7 +51,6 @@ namespace EventStore.Core.Tests.Index.AutoMergeLevelTests {
 			}
 		}
 
-		[OneTimeTearDown]
 		public override Task TestFixtureTearDown() {
 			_result.ToDelete.ForEach(x => x.MarkForDestruction());
 			_result.MergedMap.InOrder().ToList().ForEach(x => x.MarkForDestruction());

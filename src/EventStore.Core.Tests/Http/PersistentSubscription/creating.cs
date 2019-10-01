@@ -1,14 +1,14 @@
 ﻿using System.Net;
 using EventStore.Core.Tests.Http.Users.users;
-using NUnit.Framework;
+using Xunit;
 using System.Collections.Generic;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace EventStore.Core.Tests.Http.PersistentSubscription {
-	[TestFixture, Category("LongRunning")]
-	class when_creating_a_subscription : with_admin_user {
+	[Trait("Category", "LongRunning")]
+	public class when_creating_a_subscription : with_admin_user, IDisposable {
 		private HttpResponseMessage _response;
 
 		protected override Task Given() => Task.CompletedTask;
@@ -21,25 +21,24 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				}, _admin);
 		}
 
-		[OneTimeTearDown]
-		public void TearDown() {
+		public void Dispose() {
 			_response?.Dispose();
 		}
 
-		[Test]
+		[Fact]
 		public void returns_created() {
-			Assert.AreEqual(HttpStatusCode.Created, _response.StatusCode);
+			Assert.Equal(HttpStatusCode.Created, _response.StatusCode);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_location_header() {
-			Assert.AreEqual("http://" + _node.ExtHttpEndPoint + "/subscriptions/stream/groupname334",
+			Assert.Equal("http://" + _node.ExtHttpEndPoint + "/subscriptions/stream/groupname334",
 				_response.Headers.Location.ToString());
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
-	class when_creating_a_subscription_with_query_params : with_admin_user {
+	[Trait("Category", "LongRunning")]
+	public class when_creating_a_subscription_with_query_params : with_admin_user, IDisposable {
 		private HttpResponseMessage _response;
 
 		protected override Task Given() => Task.CompletedTask;
@@ -52,25 +51,24 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				}, _admin, "testing=test");
 		}
 
-		[OneTimeTearDown]
-		public void TearDown() {
-			_response.Dispose();
+		public void Dispose() {
+			_response?.Dispose();
 		}
 
-		[Test]
+		[Fact]
 		public void returns_created() {
-			Assert.AreEqual(HttpStatusCode.Created, _response.StatusCode);
+			Assert.Equal(HttpStatusCode.Created, _response.StatusCode);
 		}
 
-		[Test]
+		[Fact]
 		public void returns_location_header() {
-			Assert.AreEqual("http://" + _node.ExtHttpEndPoint + "/subscriptions/stream/groupname334",
+			Assert.Equal("http://" + _node.ExtHttpEndPoint + "/subscriptions/stream/groupname334",
 				_response.Headers.Location.ToString());
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
-	class when_creating_a_subscription_without_permissions : with_admin_user {
+	[Trait("Category", "LongRunning")]
+	public class when_creating_a_subscription_without_permissions : with_admin_user, IDisposable {
 		private HttpResponseMessage _response;
 
 		protected override Task Given() => Task.CompletedTask;
@@ -84,20 +82,23 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				});
 		}
 
-		[OneTimeTearDown]
-		public void TearDown() {
+		public void Dispose() {
 			_response?.Dispose();
 		}
 
-		[Test]
+		[Fact]
 		public void returns_unauthorised() {
-			Assert.AreEqual(HttpStatusCode.Unauthorized, _response.StatusCode);
+			Assert.Equal(HttpStatusCode.Unauthorized, _response.StatusCode);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
-	class when_creating_a_duplicate_subscription : with_admin_user {
+	[Trait("Category", "LongRunning")]
+	public class when_creating_a_duplicate_subscription : with_admin_user, IDisposable {
 		private HttpResponseMessage _response;
+
+		public void Dispose() {
+			_response?.Dispose();
+		}
 
 		protected override async Task Given() {
 			_response = await MakeJsonPut(
@@ -115,19 +116,14 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				}, _admin);
 		}
 
-		[OneTimeTearDown]
-		public void TearDown() {
-			_response?.Dispose();
-		}
-
-		[Test]
+		[Fact]
 		public void returns_conflict() {
-			Assert.AreEqual(HttpStatusCode.Conflict, _response.StatusCode);
+			Assert.Equal(HttpStatusCode.Conflict, _response.StatusCode);
 		}
 	}
 
-	[TestFixture, Category("LongRunning")]
-	class when_creating_a_subscription_with_bad_config : with_admin_user {
+	[Trait("Category", "LongRunning")]
+	public class when_creating_a_subscription_with_bad_config : with_admin_user, IDisposable {
 		protected List<object> Events;
 		protected string SubscriptionPath;
 		protected string GroupName;
@@ -145,12 +141,12 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				TestStream,
 				Events,
 				_admin);
-			Assert.AreEqual(HttpStatusCode.Created, Response.StatusCode);
+			Assert.Equal(HttpStatusCode.Created, Response.StatusCode);
 		}
 
 		protected override async Task When() {
 			GroupName = Guid.NewGuid().ToString();
-			SubscriptionPath = string.Format("/subscriptions/{0}/{1}", TestStream.Substring(9), GroupName);
+			SubscriptionPath = $"/subscriptions/{TestStream.Substring(9)}/{GroupName}";
 			Response = await MakeJsonPut(SubscriptionPath,
 				new {
 					ResolveLinkTos = true,
@@ -160,14 +156,13 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 				_admin);
 		}
 
-		[OneTimeTearDown]
-		public void TearDown() {
+		public void Dispose() {
 			Response?.Dispose();
 		}
 
-		[Test]
+		[Fact]
 		public void returns_bad_request() {
-			Assert.AreEqual(HttpStatusCode.BadRequest, Response.StatusCode);
+			Assert.Equal(HttpStatusCode.BadRequest, Response.StatusCode);
 		}
 	}
 }

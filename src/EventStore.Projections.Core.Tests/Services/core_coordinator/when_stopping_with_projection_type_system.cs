@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 using EventStore.Core.Data;
 using EventStore.Projections.Core.Services.Management;
 using EventStore.Common.Options;
@@ -13,7 +13,6 @@ using EventStore.Core.Tests.Services.Replication;
 using System.Collections.Generic;
 
 namespace EventStore.Projections.Core.Tests.Services.core_coordinator {
-	[TestFixture]
 	public class when_stopping_with_projection_type_system {
 		private FakePublisher[] queues;
 		private FakePublisher publisher;
@@ -21,8 +20,7 @@ namespace EventStore.Projections.Core.Tests.Services.core_coordinator {
 		private TimeoutScheduler[] timeoutScheduler = { };
 		private FakeEnvelope envelope = new FakeEnvelope();
 
-		[SetUp]
-		public void Setup() {
+		public when_stopping_with_projection_type_system() {
 			queues = new List<FakePublisher>() {new FakePublisher()}.ToArray();
 			publisher = new FakePublisher();
 
@@ -36,14 +34,14 @@ namespace EventStore.Projections.Core.Tests.Services.core_coordinator {
 			_coordinator.Handle(new SystemMessage.BecomeUnknown(Guid.NewGuid()));
 		}
 
-		[Test]
+		[Fact]
 		public void should_publish_stop_reader_messages() {
-			Assert.AreEqual(1, queues[0].Messages.FindAll(x => x is ReaderCoreServiceMessage.StopReader).Count);
+			Assert.Equal(1, queues[0].Messages.FindAll(x => x is ReaderCoreServiceMessage.StopReader).Count);
 		}
 
-		[Test]
+		[Fact]
 		public void should_publish_stop_core_messages() {
-			Assert.AreEqual(1,
+			Assert.Equal(1,
 				queues[0].Messages.FindAll(x => x.GetType() == typeof(ProjectionCoreServiceMessage.StopCore)).Count);
 		}
 	}
