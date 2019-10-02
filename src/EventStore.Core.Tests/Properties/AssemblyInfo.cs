@@ -20,5 +20,3 @@ using NUnit.Framework;
 [assembly: Guid("1596e010-9891-4859-b842-b91aa7eab42d")]
 
 [assembly: Category("All")]
-
-[assembly: Timeout(1000 * 30)] // 30s
