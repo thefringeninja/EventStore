@@ -27,61 +27,34 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.projectionsManager {
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 			_credentials = new UserCredentials(SystemUsers.Admin, SystemUsers.DefaultAdminPassword);
-			var createdMiniNode = false;
 			_timeout = TimeSpan.FromSeconds(10);
 			// Check if a node is running in ProjectionsManagerTestSuiteMarkerBase
-			if (SetUpFixture.Connection != null && SetUpFixture.Node != null) {
-				_tag = "_" + (++SetUpFixture.Counter);
-				_node = SetUpFixture.Node;
-				_connection = SetUpFixture.Connection;
-			} else {
-				createdMiniNode = true;
-				_tag = "_1";
+			_tag = "_1";
 
-				_node = CreateNode();
-				await _node.Start();
+			_node = CreateNode();
+			await _node.Start();
 
-				_connection = TestConnection.Create(_node.TcpEndPoint);
-				await _connection.ConnectAsync();
+			_connection = TestConnection.Create(_node.TcpEndPoint);
+			await _connection.ConnectAsync();
+
+			_projManager = new ProjectionsManager(new ConsoleLogger(), _node.ExtHttpEndPoint, _timeout);
+			try {
+				await Given().WithTimeout(_timeout);
+			} catch (Exception ex) {
+				throw new Exception("Given Failed", ex);
 			}
 
 			try {
-				_projManager = new ProjectionsManager(new ConsoleLogger(), _node.ExtHttpEndPoint, _timeout);
-				try {
-					await Given().WithTimeout(_timeout);
-				} catch (Exception ex) {
-					throw new Exception("Given Failed", ex);
-				}
-
-				try {
-					await When().WithTimeout(_timeout);
-				} catch (Exception ex) {
-					throw new Exception("When Failed", ex);
-				}
-			} catch {
-				if (createdMiniNode) {
-					try {
-						_connection?.Close();
-					} catch {
-					}
-
-					try {
-						if (_node != null)
-							await _node.Shutdown();
-					} catch {
-					}
-				}
-
-				throw;
+				await When().WithTimeout(_timeout);
+			} catch (Exception ex) {
+				throw new Exception("When Failed", ex);
 			}
 		}
 
 		[OneTimeTearDown]
 		public override async Task TestFixtureTearDown() {
-			if (SetUpFixture.Connection == null || SetUpFixture.Node == null) {
-				_connection.Close();
-				await _node.Shutdown();
-			}
+			_connection.Close();
+			await _node.Shutdown();
 
 			await base.TestFixtureTearDown();
 		}
