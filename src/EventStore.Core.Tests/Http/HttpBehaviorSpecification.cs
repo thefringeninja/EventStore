@@ -41,7 +41,6 @@ namespace EventStore.Core.Tests.Http {
 		private Func<HttpRequestMessage, byte[]> _dumpRequest;
 		private Func<HttpRequestMessage, byte[]> _dumpRequest2;
 		private string _tag;
-		private bool _createdMiniNode;
 		private NetworkCredential _defaultCredentials = null;
 		protected HttpClient _client;
 
@@ -53,20 +52,11 @@ namespace EventStore.Core.Tests.Http {
 
 			await base.TestFixtureSetUp();
 
-			_createdMiniNode = false;
-			if (SetUpFixture._connection != null && SetUpFixture._node != null) {
-				_tag = "_" + (++SetUpFixture._counter);
-				_node = SetUpFixture._node;
-				_connection = SetUpFixture._connection;
-			} else {
-				_createdMiniNode = true;
-				_tag = "_1";
-				_node = CreateMiniNode();
-				await _node.Start();
+			_node = CreateMiniNode();
+			await _node.Start();
 
-				_connection = TestConnection.Create(_node.TcpEndPoint);
-				await _connection.ConnectAsync();
-			}
+			_connection = TestConnection.Create(_node.TcpEndPoint);
+			await _connection.ConnectAsync();
 
 			_lastResponse = null;
 			_lastResponseBody = null;
@@ -81,33 +71,15 @@ namespace EventStore.Core.Tests.Http {
 				}.Uri
 			};
 			try {
-				try {
-					await Given().WithTimeout();
-				} catch (Exception ex) {
-					throw new Exception("Given Failed", ex);
-				}
+				await Given().WithTimeout();
+			} catch (Exception ex) {
+				throw new Exception("Given Failed", ex);
+			}
 
-				try {
-					await When().WithTimeout();
-				} catch (Exception ex) {
-					throw new Exception("When Failed", ex);
-				}
-			} catch {
-				if (_createdMiniNode) {
-					try {
-						_connection?.Close();
-					} catch {
-					}
-
-					try {
-						if (_node != null) {
-							await _node.Shutdown();
-						}
-					} catch {
-					}
-				}
-
-				throw;
+			try {
+				await When().WithTimeout();
+			} catch (Exception ex) {
+				throw new Exception("When Failed", ex);
 			}
 		}
 
@@ -136,11 +108,8 @@ namespace EventStore.Core.Tests.Http {
 		}
 
 		public override async Task TestFixtureTearDown() {
-			if (_createdMiniNode) {
-				_connection.Close();
-				await _node.Shutdown();
-			}
-
+			_connection.Close();
+			await _node.Shutdown();
 			await base.TestFixtureTearDown();
 			foreach (var response in _allResponses) {
 				response?.Dispose();

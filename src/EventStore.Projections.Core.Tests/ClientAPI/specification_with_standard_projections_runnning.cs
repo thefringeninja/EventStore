@@ -35,51 +35,38 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
 #else
 			QueueStatsCollector.InitializeIdleDetection();
 			await CreateNode();
+			_conn = EventStoreConnection.Create(_node.TcpEndPoint);
+			await _conn.ConnectAsync();
+
+			_manager = new ProjectionsManager(
+				new ConsoleLogger(),
+				_node.ExtHttpEndPoint,
+				TimeSpan.FromMilliseconds(20000));
+
+			_queryManager = new QueryManager(
+				new ConsoleLogger(),
+				_node.ExtHttpEndPoint,
+				TimeSpan.FromMilliseconds(20000),
+				TimeSpan.FromMilliseconds(20000));
+
+			WaitIdle();
+
+			if (GivenStandardProjectionsRunning())
+				await EnableStandardProjections();
+
+			QueueStatsCollector.WaitIdle();
 			try {
-				_conn = EventStoreConnection.Create(_node.TcpEndPoint);
-                await _conn.ConnectAsync();
-
-				_manager = new ProjectionsManager(
-					new ConsoleLogger(),
-					_node.ExtHttpEndPoint,
-					TimeSpan.FromMilliseconds(20000));
-
-				_queryManager = new QueryManager(
-					new ConsoleLogger(),
-					_node.ExtHttpEndPoint,
-					TimeSpan.FromMilliseconds(20000),
-					TimeSpan.FromMilliseconds(20000));
-
-				WaitIdle();
-
-				if (GivenStandardProjectionsRunning())
-					await EnableStandardProjections();
-
-				QueueStatsCollector.WaitIdle();
-				try {
-					await Given().WithTimeout(TimeSpan.FromSeconds(10));
-				} catch (Exception ex) {
-					throw new Exception("Given Failed", ex);
-				}
-
-				try {
-					await When().WithTimeout(TimeSpan.FromSeconds(10));
-				} catch (Exception ex) {
-					throw new Exception("When Failed", ex);
-				}
-			} catch {
-				try {
-					_conn?.Close();
-				} catch {
-				}
-
-				try {
-					_node?.Shutdown();
-				} catch {
-				}
-
-				throw;
+				await Given().WithTimeout(TimeSpan.FromSeconds(10));
+			} catch (Exception ex) {
+				throw new Exception("Given Failed", ex);
 			}
+
+			try {
+				await When().WithTimeout(TimeSpan.FromSeconds(10));
+			} catch (Exception ex) {
+				throw new Exception("When Failed", ex);
+			}
+
 #endif
 		}
 
