@@ -23,7 +23,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		public override async Task TestFixtureSetUp() {
 			await base.TestFixtureSetUp();
 			_node = new MiniNode(PathName);
-			await _node. Start();
+			await _node.Start();
 		}
 
 		[OneTimeTearDown]
@@ -54,9 +54,9 @@ namespace EventStore.Core.Tests.ClientAPI {
 					_ => Log.Info("Live processing started."),
 					(_, __, ___) => dropped.Signal());
 
-				Thread.Sleep(100); // give time for first pull phase
+				await Task.Delay(100); // give time for first pull phase
                 await store.SubscribeToStreamAsync(stream, false, (s, x) => Task.CompletedTask, (s, r, e) => { });
-				Thread.Sleep(100);
+				await Task.Delay(100);
 				Assert.IsFalse(appeared.Wait(0), "Some event appeared.");
 				Assert.IsFalse(dropped.Wait(0), "Subscription was dropped prematurely.");
 				subscription.Stop(Timeout);
