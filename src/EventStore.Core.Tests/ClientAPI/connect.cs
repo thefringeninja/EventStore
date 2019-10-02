@@ -33,7 +33,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			ClientApiLoggerBridge.Default.Info("Starting '{0}' test...",
 				"should_throw_exception_when_trying_to_reopen_closed_connection");
 
-			var closed = new TaskCompletionSource<bool>();
+			var closed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 			var settings = ConnectionSettings.Create()
 				.EnableVerboseLogging()
 				.UseCustomLogger(ClientApiLoggerBridge.Default)
@@ -54,21 +54,14 @@ namespace EventStore.Core.Tests.ClientAPI {
 				await closed.Task.WithTimeout(
 					TimeSpan.FromSeconds(120)); // TCP connection timeout might be even 60 seconds
 
-				Exception caughtException = null;
-				try {
-					await connection.ConnectAsync().WithTimeout();
-				} catch (Exception ex) {
-					caughtException = ex;
-				}
-
-				Assert.IsInstanceOf<InvalidOperationException>(caughtException);
+				Assert.ThrowsAsync<ObjectDisposedException>(() => connection.ConnectAsync().WithTimeout());
 			}
 		}
 
 		//TODO GFY THIS TEST TIMES OUT IN LINUX.
 		[Test, Category("Network")]
 		public async Task should_close_connection_after_configured_amount_of_failed_reconnections() {
-			var closed = new TaskCompletionSource<bool>();
+			var closed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 			var settings =
 				ConnectionSettings.Create()
 					.EnableVerboseLogging()
@@ -100,16 +93,9 @@ namespace EventStore.Core.Tests.ClientAPI {
 				await closed.Task.WithTimeout(
 					TimeSpan.FromSeconds(120)); // TCP connection timeout might be even 60 seconds
 
-				Exception caughtException = null;
-				try {
-					await connection
-						.AppendToStreamAsync("stream", ExpectedVersion.NoStream, TestEvent.NewTestEvent())
-						.WithTimeout();
-				} catch (Exception ex) {
-					caughtException = ex;
-				}
-
-				Assert.IsInstanceOf<ObjectDisposedException>(caughtException);
+				Assert.ThrowsAsync<ObjectDisposedException>(() => connection
+					.AppendToStreamAsync("stream", ExpectedVersion.NoStream, TestEvent.NewTestEvent())
+					.WithTimeout());
 			}
 		}
 	}
@@ -120,7 +106,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		
 		[Test]
 		public async Task should_timeout_connection_after_configured_amount_time_on_conenct() {
-			var closed = new TaskCompletionSource<bool>();
+			var closed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 			var settings =
 				ConnectionSettings.Create()
 					.EnableVerboseLogging()
