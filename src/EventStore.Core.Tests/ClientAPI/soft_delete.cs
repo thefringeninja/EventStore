@@ -64,7 +64,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			Assert.AreEqual(4,
 				(await _conn.AppendToStreamAsync(stream, ExpectedVersion.Any, events)).NextExpectedVersion);
 
-			Thread.Sleep(50); //TODO: This is a workaround until github issue #1744 is fixed
+			await Task.Delay(50); //TODO: This is a workaround until github issue #1744 is fixed
 
 			var res = await _conn.ReadStreamEventsForwardAsync(stream, 0, 100, false);
 			Assert.AreEqual(SliceReadStatus.Success, res.Status);
@@ -91,7 +91,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			Assert.AreEqual(4,
 				(await _conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, events)).NextExpectedVersion);
 
-			Thread.Sleep(50); //TODO: This is a workaround until github issue #1744 is fixed
+			await Task.Delay(50); //TODO: This is a workaround until github issue #1744 is fixed
 
 			var res = await _conn.ReadStreamEventsForwardAsync(stream, 0, 100, false);
 			Assert.AreEqual(SliceReadStatus.Success, res.Status);
@@ -117,7 +117,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			var events = new[] {TestEvent.NewTestEvent(), TestEvent.NewTestEvent(), TestEvent.NewTestEvent()};
 			Assert.AreEqual(4, (await _conn.AppendToStreamAsync(stream, 1, events)).NextExpectedVersion);
 
-			Thread.Sleep(50); //TODO: This is a workaround until github issue #1744 is fixed
+			await Task.Delay(50); //TODO: This is a workaround until github issue #1744 is fixed
 
 			var res = await _conn.ReadStreamEventsForwardAsync(stream, 0, 100, false);
 			Assert.AreEqual(SliceReadStatus.Success, res.Status);
@@ -149,7 +149,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 			var events = new[] {TestEvent.NewTestEvent(), TestEvent.NewTestEvent(), TestEvent.NewTestEvent()};
 			Assert.AreEqual(4, (await _conn.AppendToStreamAsync(stream, 1, events)).NextExpectedVersion);
-			Thread.Sleep(50); //TODO: This is a workaround until github issue #1744 is fixed
+			await Task.Delay(50); //TODO: This is a workaround until github issue #1744 is fixed
 
 			var res = await _conn.ReadStreamEventsForwardAsync(stream, 0, 100, false);
 			Assert.AreEqual(SliceReadStatus.Success, res.Status);
@@ -199,7 +199,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			var events = new[] {TestEvent.NewTestEvent(), TestEvent.NewTestEvent(), TestEvent.NewTestEvent()};
 			Assert.AreEqual(4,
 				(await _conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, events)).NextExpectedVersion);
-			Thread.Sleep(50); //TODO: This is a workaround until github issue #1744 is fixed
+			await Task.Delay(50); //TODO: This is a workaround until github issue #1744 is fixed
 
 			Assert.ThrowsAsync<WrongExpectedVersionException>(() =>
 				_conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent()));
@@ -229,7 +229,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			var events2 = new[] {TestEvent.NewTestEvent(), TestEvent.NewTestEvent()};
 			Assert.AreEqual(4,
 				(await _conn.AppendToStreamAsync(stream, ExpectedVersion.Any, events1)).NextExpectedVersion);
-			Thread.Sleep(50); //TODO: This is a workaround until github issue #1744 is fixed
+			await Task.Delay(50); //TODO: This is a workaround until github issue #1744 is fixed
 
 			Assert.AreEqual(6,
 				(await _conn.AppendToStreamAsync(stream, ExpectedVersion.Any, events2)).NextExpectedVersion);
@@ -262,7 +262,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 					.SetCustomProperty("key2", 17)
 					.SetCustomProperty("key3", "some value"))).NextExpectedVersion);
 
-			Thread.Sleep(50); //TODO: This is a workaround until github issue #1744 is fixed
+			await Task.Delay(50); //TODO: This is a workaround until github issue #1744 is fixed
 
 			var res = await _conn.ReadStreamEventsForwardAsync(stream, 0, 100, false);
 			Assert.AreEqual(SliceReadStatus.StreamNotFound, res.Status);
@@ -297,7 +297,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 					.SetCustomProperty("key2", 17)
 					.SetCustomProperty("key3", "some value"))).NextExpectedVersion);
 
-			Thread.Sleep(50); //TODO: This is a workaround until github issue #1744 is fixed
+			await Task.Delay(50); //TODO: This is a workaround until github issue #1744 is fixed
 
 			var res = await _conn.ReadStreamEventsForwardAsync(stream, 0, 100, false);
 			Assert.AreEqual(SliceReadStatus.Success, res.Status);
@@ -324,7 +324,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 			Assert.AreEqual(1, (await _conn.SetStreamMetadataAsync(stream, 0, new byte[256])).NextExpectedVersion);
 
-			Thread.Sleep(50); //TODO: This is a workaround until github issue #1744 is fixed
+			await Task.Delay(50); //TODO: This is a workaround until github issue #1744 is fixed
 
 			var res = await _conn.ReadStreamEventsForwardAsync(stream, 0, 100, false);
 			Assert.AreEqual(SliceReadStatus.StreamNotFound, res.Status);
@@ -348,7 +348,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			await _conn.DeleteStreamAsync(stream, 1, hardDelete: false);
 
 			Assert.AreEqual(1, (await _conn.SetStreamMetadataAsync(stream, 0, new byte[256])).NextExpectedVersion);
-			Thread.Sleep(50); //TODO: This is a workaround until github issue #1744 is fixed
+			await Task.Delay(50); //TODO: This is a workaround until github issue #1744 is fixed
 
 			var res = await _conn.ReadStreamEventsForwardAsync(stream, 0, 100, false);
 			Assert.AreEqual(SliceReadStatus.Success, res.Status);

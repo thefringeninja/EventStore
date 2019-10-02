@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using EventStore.Core.TransactionLog.Checkpoint;
 using NUnit.Framework;
 
@@ -48,18 +49,18 @@ namespace EventStore.Core.Tests.TransactionLog {
 		}
 
 		[Test]
-		public void the_new_value_is_not_accessible_if_not_flushed_even_with_delay() {
+		public async Task the_new_value_is_not_accessible_if_not_flushed_even_with_delay() {
 			var checkSum = new MemoryMappedFileCheckpoint(Filename);
 			var readChecksum = new MemoryMappedFileCheckpoint(Filename);
 			checkSum.Write(1011);
-			Thread.Sleep(200);
+			await Task.Delay(200);
 			Assert.AreEqual(0, readChecksum.Read());
 			checkSum.Close();
 			readChecksum.Close();
 		}
 
 		[Test]
-		public void the_new_value_is_accessible_after_flush() {
+		public async Task the_new_value_is_accessible_after_flush() {
 			var checkSum = new MemoryMappedFileCheckpoint(Filename);
 			var readChecksum = new MemoryMappedFileCheckpoint(Filename);
 			checkSum.Write(1011);
@@ -67,7 +68,7 @@ namespace EventStore.Core.Tests.TransactionLog {
 			Assert.AreEqual(1011, readChecksum.Read());
 			checkSum.Close();
 			readChecksum.Close();
-			Thread.Sleep(100);
+			await Task.Delay(100);
 		}
 	}
 }

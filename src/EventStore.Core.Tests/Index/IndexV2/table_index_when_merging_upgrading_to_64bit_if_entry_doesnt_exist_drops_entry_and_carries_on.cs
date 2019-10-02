@@ -66,7 +66,7 @@ namespace EventStore.Core.Tests.Index.IndexV2 {
 			_tableIndex.Add(1, Stream2, 1, 5);
 			_tableIndex.Add(1, Stream1, 1, 6);
 
-			Thread.Sleep(500);
+			await Task.Delay(500);
 		}
 
 		[OneTimeTearDown]
