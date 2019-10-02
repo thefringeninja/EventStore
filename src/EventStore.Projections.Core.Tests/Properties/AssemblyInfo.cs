@@ -17,4 +17,3 @@ using NUnit.Framework;
 
 [assembly: ComVisible(false)]
 [assembly: Guid("000aa1a5-5e87-4404-a909-49d3f8878f00")]
-[assembly: Timeout(1000 * 30)] // 30s

@@ -22,4 +22,3 @@ using NUnit.Framework;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("eaae290d-04f9-48b3-8ed4-4e9721ebc8ab")]
-[assembly: Timeout(1000 * 30)] // 30s
