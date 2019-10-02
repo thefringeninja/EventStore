@@ -20,11 +20,6 @@ namespace EventStore.Common.Utils {
 		protected static readonly ILogger Log = LogManager.GetLoggerFor<Application>();
 
 		private static Action<int> _exit = exitCode => {
-			if (exitCode == 0) {
-				return;
-			}
-
-			throw new Exception($"Non zero exit code: {exitCode}");
 		};
 		private static int _exited;
 

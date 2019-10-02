@@ -48,13 +48,13 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.projectionsManager {
 			try {
 				_projManager = new ProjectionsManager(new ConsoleLogger(), _node.ExtHttpEndPoint, _timeout);
 				try {
-					await Given().WithTimeout();
+					await Given().WithTimeout(_timeout);
 				} catch (Exception ex) {
 					throw new Exception("Given Failed", ex);
 				}
 
 				try {
-					await When().WithTimeout();
+					await When().WithTimeout(_timeout);
 				} catch (Exception ex) {
 					throw new Exception("When Failed", ex);
 				}
