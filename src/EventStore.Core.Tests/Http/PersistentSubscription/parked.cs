@@ -22,7 +22,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 		private Guid _eventIdToPark;
 		private Guid _parkedEventId;
 		private List<JToken> _entries;
-		private readonly TaskCompletionSource<bool> _eventParked = new TaskCompletionSource<bool>(false);
+		private readonly TaskCompletionSource<bool> _eventParked = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 		protected override async Task Given() {
 			NumberOfEventsToCreate = 1;
@@ -66,7 +66,7 @@ namespace EventStore.Core.Tests.Http.PersistentSubscription {
 
 		private string _subscriptionParkedStream;
 		private Guid _writeCorrelationId;
-		private TaskCompletionSource<bool> _eventParked = new TaskCompletionSource<bool>(false);
+		private TaskCompletionSource<bool> _eventParked = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 		protected override async Task Given() {
 			_connection.Close();

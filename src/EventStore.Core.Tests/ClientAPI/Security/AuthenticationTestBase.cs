@@ -33,7 +33,7 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 			try {
 				await _node.Start();
 
-				var userCreateEvent1 = new TaskCompletionSource<bool>();
+				var userCreateEvent1 = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 				_node.Node.MainQueue.Publish(
 					new UserManagementMessage.Create(
 						new CallbackEnvelope(
@@ -50,7 +50,7 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 						new string[0],
 						"pa$$1"));
 
-				var userCreateEvent2 = new TaskCompletionSource<bool>();
+				var userCreateEvent2 = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 				_node.Node.MainQueue.Publish(
 					new UserManagementMessage.Create(
 						new CallbackEnvelope(
@@ -67,7 +67,7 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 						new string[0],
 						"pa$$2"));
 
-				var adminCreateEvent2 = new TaskCompletionSource<bool>();
+				var adminCreateEvent2 = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 				_node.Node.MainQueue.Publish(
 					new UserManagementMessage.Create(
 						new CallbackEnvelope(

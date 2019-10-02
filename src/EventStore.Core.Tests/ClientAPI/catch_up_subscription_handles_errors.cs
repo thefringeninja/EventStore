@@ -35,8 +35,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 		public void SetUp() {
 			_connection = new FakeEventStoreConnection();
 			_raisedEvents = new List<ResolvedEvent>();
-			_dropEvent = new TaskCompletionSource<bool>();
-			_raisedEventEvent = new TaskCompletionSource<bool>();
+			_dropEvent = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			_raisedEventEvent = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 			_liveProcessingStarted = false;
 			_isDropped = false;
 			_dropReason = SubscriptionDropReason.Unknown;

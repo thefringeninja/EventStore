@@ -162,7 +162,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			.StartFromBeginning();
 
 		private readonly Guid _id = Guid.NewGuid();
-		private readonly TaskCompletionSource<ResolvedEvent> _firstEventSource = new TaskCompletionSource<ResolvedEvent>();
+		private readonly TaskCompletionSource<ResolvedEvent> _firstEventSource = new TaskCompletionSource<ResolvedEvent>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 		private const string _group = "startinbeginning1";
 
@@ -207,7 +207,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		private readonly AutoResetEvent _resetEvent = new AutoResetEvent(false);
 		private readonly Guid _id = Guid.NewGuid();
-		private readonly TaskCompletionSource<ResolvedEvent> _firstEventSource = new TaskCompletionSource<ResolvedEvent>();
+		private readonly TaskCompletionSource<ResolvedEvent> _firstEventSource = new TaskCompletionSource<ResolvedEvent>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 		private const string _group = "startinbeginning1";
 
