@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using EventStore.Core.Bus;
 using EventStore.Core.Tests.Helpers;
 using NUnit.Framework;
@@ -37,7 +38,7 @@ namespace EventStore.Core.Tests.Replication.ReadStream {
 			}
 		}
 
-		protected override void Given() {
+		protected override async Task Given() {
 			_expectedNumberOfRoleAssignments.Wait(5000);
 
 			var master = GetMaster();
@@ -53,7 +54,7 @@ namespace EventStore.Core.Tests.Replication.ReadStream {
 
 			Assert.IsTrue(_commitPosition <= GetMaster().Db.Config.ReplicationCheckpoint.ReadNonFlushed(),
 				"Replication checkpoint should be greater than event commit position");
-			base.Given();
+			await base.Given();
 		}
 
 		[Test]

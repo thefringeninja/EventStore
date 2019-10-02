@@ -36,8 +36,8 @@ namespace EventStore.Core.Tests.Integration {
 
 		protected virtual Task Given() => Task.CompletedTask;
 
-		protected void ShutdownNode() {
-			_node.Shutdown(keepDb: true);
+		protected async Task ShutdownNode() {
+			await _node.Shutdown(keepDb: true);
 			_node = null;
 		}
 
@@ -51,10 +51,10 @@ namespace EventStore.Core.Tests.Integration {
 		}
 
 		[OneTimeTearDown]
-		public override Task TestFixtureTearDown() {
-			_node.Shutdown();
+		public override async Task TestFixtureTearDown() {
+			await _node.Shutdown();
 			_node = null;
-			return base.TestFixtureTearDown();
+			await base.TestFixtureTearDown();
 		}
 	}
 }

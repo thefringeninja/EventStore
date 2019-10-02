@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using EventStore.Core.Bus;
 using EventStore.Core.Tests.Helpers;
 using NUnit.Framework;
@@ -38,7 +39,7 @@ namespace EventStore.Core.Tests.Replication.ReadStream {
 			}
 		}
 
-		protected override void Given() {
+		protected override async Task Given() {
 			_expectedNumberOfRoleAssignments.Wait(5000);
 
 			var master = GetMaster();
@@ -67,7 +68,7 @@ namespace EventStore.Core.Tests.Replication.ReadStream {
 			var writeResult = ReplicationTestHelper.WriteEvent(master, events, _streamId);
 			Assert.AreEqual(OperationResult.Success, writeResult.Result);
 
-			base.Given();
+			await base.Given();
 		}
 
 		[Test]

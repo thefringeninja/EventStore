@@ -31,10 +31,10 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[TearDown]
-		public override Task TearDown() {
+		public override async Task TearDown() {
 			_connection.Close();
-			_node.Shutdown();
-			return base.TearDown();
+			await _node.Shutdown();
+			await base.TearDown();
 		}
 
 		[Test]

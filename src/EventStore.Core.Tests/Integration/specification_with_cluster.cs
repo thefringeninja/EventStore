@@ -107,17 +107,10 @@ namespace EventStore.Core.Tests.Integration {
 		protected virtual void BeforeNodesStart() {
 		}
 
-		protected virtual void Given() {
-		}
+		protected virtual Task Given() => Task.CompletedTask;
 
-		protected void ShutdownNode(int nodeNum) {
-			_nodes[nodeNum].Shutdown(keepDb: true);
-		}
-
-		protected void StartNode(int nodeNum) {
-			_nodes[nodeNum] = _nodeCreationFactory[nodeNum](false);
-			_nodes[nodeNum].Start();
-			WaitHandle.WaitAll(new[] {_nodes[nodeNum].StartedEvent});
+		protected Task ShutdownNode(int nodeNum) {
+			return _nodes[nodeNum].Shutdown(keepDb: true);
 		}
 
 		protected virtual MiniClusterNode CreateNode(int index, Endpoints endpoints, IPEndPoint[] gossipSeeds, bool wait = true) {
@@ -132,15 +125,16 @@ namespace EventStore.Core.Tests.Integration {
 		}
 
 		[OneTimeTearDown]
-		public override Task TestFixtureTearDown() {
+		public override async Task TestFixtureTearDown() {
 			_conn.Close();
-			_nodes[0].Shutdown();
-			_nodes[1].Shutdown();
-			_nodes[2].Shutdown();
+			await Task.WhenAll(
+				_nodes[0].Shutdown(),
+				_nodes[1].Shutdown(),
+				_nodes[2].Shutdown());
 #if DEBUG
 			QueueStatsCollector.DisableIdleDetection();
 #endif
-			return base.TestFixtureTearDown();
+			await base.TestFixtureTearDown();
 		}
 
 		protected static void WaitIdle() {

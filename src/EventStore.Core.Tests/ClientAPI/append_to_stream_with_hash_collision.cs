@@ -28,9 +28,9 @@ namespace EventStore.Core.Tests.Services.Storage.HashCollisions {
 		}
 
 		[OneTimeTearDown]
-		public override Task TestFixtureTearDown() {
-			_node.Shutdown();
-			return base.TestFixtureTearDown();
+		public override async Task TestFixtureTearDown() {
+			await _node.Shutdown();
+			await base.TestFixtureTearDown();
 		}
 
 		[Test]
@@ -52,7 +52,7 @@ namespace EventStore.Core.Tests.Services.Storage.HashCollisions {
 			var tcpPort = _node.TcpEndPoint.Port;
 			var tcpSecPort = _node.TcpSecEndPoint.Port;
 			var httpPort = _node.ExtHttpEndPoint.Port;
-			_node.Shutdown(keepDb: true);
+			await _node.Shutdown(keepDb: true);
 
 			//Restart the node to ensure the read index stream info cache is empty
 			_node = new MiniNode(PathName,

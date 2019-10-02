@@ -409,7 +409,7 @@ namespace EventStore.ClusterNode {
 		}
 
 		public override void Stop() {
-			_node.StopNonblocking(true, true);
+			Task.Run(() => _node.Stop());
 		}
 
 		protected override void OnProgramExit() {

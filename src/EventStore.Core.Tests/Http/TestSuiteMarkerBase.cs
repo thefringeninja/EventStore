@@ -28,12 +28,12 @@ namespace EventStore.Core.Tests.Http {
 		}
 
 		[OneTimeTearDown]
-		public Task TearDown() {
+		public async Task TearDown() {
 			_connection.Close();
-			_node.Shutdown();
+			await _node.Shutdown();
 			_connection = null;
 			_node = null;
-			return _directory.TestFixtureTearDown();
+			await _directory.TestFixtureTearDown();
 		}
 	}
 }

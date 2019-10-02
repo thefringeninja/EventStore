@@ -23,9 +23,9 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[OneTimeTearDown]
-		public override Task TestFixtureTearDown() {
-			_node.Shutdown();
-			return base.TestFixtureTearDown();
+		public override async Task TestFixtureTearDown() {
+			await _node.Shutdown();
+			await base.TestFixtureTearDown();
 		}
 
 		protected virtual IEventStoreConnection BuildConnection(MiniNode node) {

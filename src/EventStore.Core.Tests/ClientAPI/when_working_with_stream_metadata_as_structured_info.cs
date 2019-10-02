@@ -31,10 +31,10 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[OneTimeTearDown]
-		public override Task TestFixtureTearDown() {
+		public override async Task TestFixtureTearDown() {
 			_connection.Close();
-			_node.Shutdown();
-			return base.TestFixtureTearDown();
+			await _node.Shutdown();
+			await base.TestFixtureTearDown();
 		}
 
 		[Test]

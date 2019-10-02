@@ -24,9 +24,9 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[TearDown]
-		public override Task TearDown() {
-			_node.Shutdown();
-			return base.TearDown();
+		public override async Task TearDown() {
+			await _node.Shutdown();
+			await base.TearDown();
 		}
 
 		protected virtual IEventStoreConnection BuildConnection(MiniNode node) {

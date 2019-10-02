@@ -22,9 +22,9 @@ namespace EventStore.Core.Tests.ClientAPI.UserManagement {
 		}
 
 		[OneTimeTearDown]
-		public override Task TestFixtureTearDown() {
-			_node.Shutdown();
-			return base.TestFixtureTearDown();
+		public override async Task TestFixtureTearDown() {
+			await _node.Shutdown();
+			await base.TestFixtureTearDown();
 		}
 
 

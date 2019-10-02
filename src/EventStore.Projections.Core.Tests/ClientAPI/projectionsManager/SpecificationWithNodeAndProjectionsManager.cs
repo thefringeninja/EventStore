@@ -66,7 +66,8 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.projectionsManager {
 					}
 
 					try {
-						_node?.Shutdown();
+						if (_node != null)
+							await _node.Shutdown();
 					} catch {
 					}
 				}
@@ -76,13 +77,13 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.projectionsManager {
 		}
 
 		[OneTimeTearDown]
-		public override Task TestFixtureTearDown() {
+		public override async Task TestFixtureTearDown() {
 			if (SetUpFixture.Connection == null || SetUpFixture.Node == null) {
 				_connection.Close();
-				_node.Shutdown();
+				await _node.Shutdown();
 			}
 
-			return base.TestFixtureTearDown();
+			await base.TestFixtureTearDown();
 		}
 
 		public abstract Task Given();
