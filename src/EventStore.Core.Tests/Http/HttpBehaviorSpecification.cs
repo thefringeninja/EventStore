@@ -100,7 +100,9 @@ namespace EventStore.Core.Tests.Http {
 					}
 
 					try {
-						_node?.Shutdown();
+						if (_node != null) {
+							await _node.Shutdown();
+						}
 					} catch {
 					}
 				}
@@ -136,7 +138,7 @@ namespace EventStore.Core.Tests.Http {
 		public override async Task TestFixtureTearDown() {
 			if (_createdMiniNode) {
 				_connection.Close();
-				_node.Shutdown();
+				await _node.Shutdown();
 			}
 
 			await base.TestFixtureTearDown();

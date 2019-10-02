@@ -154,7 +154,7 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 			} catch {
 				if (_node != null)
 					try {
-						_node.Shutdown();
+						await _node.Shutdown();
 					} catch {
 					}
 
@@ -163,10 +163,10 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[OneTimeTearDown]
-		public override Task TestFixtureTearDown() {
-			_node.Shutdown();
+		public override async Task TestFixtureTearDown() {
+			await _node.Shutdown();
 			Connection.Close();
-			return base.TestFixtureTearDown();
+			await base.TestFixtureTearDown();
 		}
 
 		protected Task ReadEvent(string streamId, string login, string password) {

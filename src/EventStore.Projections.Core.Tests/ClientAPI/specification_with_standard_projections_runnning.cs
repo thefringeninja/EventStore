@@ -133,16 +133,16 @@ namespace EventStore.Projections.Core.Tests.ClientAPI {
 		}
 
 		[OneTimeTearDown]
-		public override Task TestFixtureTearDown() {
+		public override async Task TestFixtureTearDown() {
 			if (_conn != null)
 				_conn.Close();
 
 			if (_node != null)
-				_node.Shutdown();
+				await _node.Shutdown();
 #if DEBUG
 			QueueStatsCollector.DisableIdleDetection();
 #endif
-			return base.TestFixtureTearDown();
+			await base.TestFixtureTearDown();
 		}
 
 		protected virtual Task When() => Task.CompletedTask;

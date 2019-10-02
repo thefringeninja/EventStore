@@ -93,11 +93,11 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 		}
 
 		[OneTimeTearDown]
-		public override Task TestFixtureTearDown() {
+		public override async Task TestFixtureTearDown() {
 			_store?.Dispose();
 
-			Node.Shutdown();
-			return base.TestFixtureTearDown();
+			await Node.Shutdown();
+			await base.TestFixtureTearDown();
 		}
 
 		public abstract void WriteTestScenario();

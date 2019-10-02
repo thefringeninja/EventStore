@@ -30,9 +30,9 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.projectionsManager {
 		}
 
 		[OneTimeTearDown]
-		public void TearDown() {
+		public async Task TearDown() {
 			Connection.Close();
-			Node.Shutdown();
+			await Node.Shutdown();
 			Connection = null;
 			Node = null;
 

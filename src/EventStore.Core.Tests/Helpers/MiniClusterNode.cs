@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using EventStore.Common.Log;
 using EventStore.Common.Options;
 using EventStore.Common.Utils;
@@ -155,10 +156,9 @@ namespace EventStore.Core.Tests.Helpers {
 			Node.Start();
 		}
 
-		public void Shutdown(bool keepDb = false) {
+		public async Task Shutdown(bool keepDb = false) {
 			StoppingTime.Start();
-			if (!Node.Stop(TimeSpan.FromSeconds(20), false, true))
-				throw new TimeoutException("MiniNode has not shut down in 20 seconds.");
+			await Node.Stop().WithTimeout(TimeSpan.FromSeconds(20));
 
 			if (!keepDb)
 				TryDeleteDirectory(_dbPath);

@@ -87,7 +87,7 @@ namespace EventStore.Core {
 		private readonly IHttpService _externalHttpService;
 		private readonly ITimeProvider _timeProvider;
 		private readonly ISubsystem[] _subsystems;
-		private readonly ManualResetEvent _shutdownEvent = new ManualResetEvent(false);
+		private readonly TaskCompletionSource<bool> _shutdownSource = new TaskCompletionSource<bool>();
 		private readonly IAuthenticationProvider _internalAuthenticationProvider;
 
 
@@ -659,21 +659,17 @@ namespace EventStore.Core {
 			_mainQueue.Publish(new SystemMessage.SystemInit());
 		}
 
-		public void StopNonblocking(bool exitProcess, bool shutdownHttp) {
-			_mainQueue.Publish(new ClientMessage.RequestShutdown(exitProcess, shutdownHttp));
 
-			if (_subsystems == null) return;
-			foreach (var subsystem in _subsystems)
-				subsystem.Stop();
-		}
+		public Task Stop() {
+			_mainQueue.Publish(new ClientMessage.RequestShutdown(false, true));
 
-		public bool Stop() {
-			return Stop(TimeSpan.FromSeconds(15), false, true);
-		}
+			if (_subsystems != null) {
+				foreach (var subsystem in _subsystems) {
+					subsystem.Stop();
+				}
+			}
 
-		public bool Stop(TimeSpan timeout, bool exitProcess, bool shutdownHttp) {
-			StopNonblocking(exitProcess, shutdownHttp);
-			return _shutdownEvent.WaitOne(timeout);
+			return _shutdownSource.Task;
 		}
 
 		public void Handle(SystemMessage.StateChangeMessage message) {
@@ -681,7 +677,7 @@ namespace EventStore.Core {
 		}
 
 		public void Handle(SystemMessage.BecomeShutdown message) {
-			_shutdownEvent.Set();
+			_shutdownSource.TrySetResult(true);
 		}
 
 		public void AddTasks(IEnumerable<Task> tasks) {

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using EventStore.Core.Bus;
 using NUnit.Framework;
 using EventStore.Core.Tests.Integration;
@@ -36,7 +37,7 @@ namespace EventStore.Core.Tests.Replication.ReadStream {
 			}
 		}
 
-		protected override void Given() {
+		protected override async Task Given() {
 			_expectedNumberOfRoleAssignments.Wait(5000);
 
 			var master = GetMaster();
@@ -49,7 +50,7 @@ namespace EventStore.Core.Tests.Replication.ReadStream {
 
 			// Set checkpoint to starting value
 			master.Db.Config.ReplicationCheckpoint.Write(-1);
-			base.Given();
+			await base.Given();
 		}
 
 		[Test]

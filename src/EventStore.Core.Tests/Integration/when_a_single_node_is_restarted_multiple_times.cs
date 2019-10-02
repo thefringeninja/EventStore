@@ -24,7 +24,7 @@ namespace EventStore.Core.Tests.Integration {
 		protected override async Task Given() {
 			for (int i = 0; i < _numberOfNodeStarts - 1; i++) {
 				_waitForStart.WaitOne(5000);
-				ShutdownNode();
+				await ShutdownNode();
 				await StartNode();
 			}
 

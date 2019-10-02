@@ -40,8 +40,8 @@ namespace EventStore.Core.Tests.Services.Storage.Scavenge {
 		}
 
 		[TearDown]
-		public void TearDown() {
-			_node.Shutdown();
+		public async Task TearDown() {
+			await _node.Shutdown();
 		}
 
 		public async Task When() {
