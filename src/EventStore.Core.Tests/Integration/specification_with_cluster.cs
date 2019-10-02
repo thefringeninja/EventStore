@@ -97,7 +97,7 @@ namespace EventStore.Core.Tests.Integration {
 
 			QueueStatsCollector.WaitIdle();
 
-			Given();
+			await Given();
 		}
 
 		protected virtual IEventStoreConnection CreateConnection() {

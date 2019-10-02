@@ -297,7 +297,7 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.Cluster {
 	public class TestTest : specification_with_standard_projections_runnning {
 		[Test, Explicit]
 		public async Task Test() {
-			PostProjection(@"fromStream('$user-admin').outputState()");
+			await PostProjection(@"fromStream('$user-admin').outputState()");
             await AssertStreamTailAsync("$projections-test-projection-result", "Result:{}");
 		}
 	}
