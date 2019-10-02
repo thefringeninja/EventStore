@@ -99,8 +99,11 @@ namespace EventStore.ClientAPI.Internal {
 				case ConnectionState.Closed:
 					task.SetException(new ObjectDisposedException(_esConnection.ConnectionName));
 					break;
-				default: throw new Exception(string.Format("Unknown state: {0}", _state));
+				default:
+					task.SetException(new Exception(string.Format("Unknown state: {0}", _state)));
+					break;
 			}
+
 		}
 
 		private void DiscoverEndPoint(TaskCompletionSource<object> completionTask) {
@@ -266,6 +269,10 @@ namespace EventStore.ClientAPI.Internal {
 
 			_identifyInfo = new IdentifyInfo(Guid.NewGuid(), _stopwatch.Elapsed);
 			var dto = new ClientMessage.IdentifyClient(ClientVersion, _esConnection.ConnectionName);
+			if (_settings.VerboseLogging) {
+				_settings.Log.Debug($"IdentifyClient; Client Version: {ClientVersion}, ConnectionName: {_esConnection.ConnectionName}, ");
+			}
+
 			_connection.EnqueueSend(new TcpPackage(TcpCommand.IdentifyClient, _identifyInfo.CorrelationId,
 				dto.Serialize()));
 		}
