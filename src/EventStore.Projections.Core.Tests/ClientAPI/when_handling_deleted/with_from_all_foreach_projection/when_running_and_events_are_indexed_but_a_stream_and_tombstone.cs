@@ -12,24 +12,24 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.when_handling_deleted.with
 		protected override async Task Given() {
 			await base.Given();
 			await PostEvent("stream-2", "type1", "{}");
-			PostEvent("stream-2", "type2", "{}");
+			await PostEvent("stream-2", "type2", "{}");
 			WaitIdle();
-			EnableStandardProjections();
+			await EnableStandardProjections();
 			WaitIdle();
-			DisableStandardProjections();
+			await DisableStandardProjections();
 			WaitIdle();
 
 			// required to flush index checkpoint
 			{
-				EnableStandardProjections();
+				await EnableStandardProjections();
 				WaitIdle();
-				DisableStandardProjections();
+				await DisableStandardProjections();
 				WaitIdle();
 			}
 
-			PostEvent("stream-1", "type1", "{}");
-			PostEvent("stream-1", "type2", "{}");
-			HardDeleteStream("stream-1");
+			await PostEvent("stream-1", "type1", "{}");
+			await PostEvent("stream-1", "type2", "{}");
+			await HardDeleteStream("stream-1");
 			WaitIdle();
 		}
 

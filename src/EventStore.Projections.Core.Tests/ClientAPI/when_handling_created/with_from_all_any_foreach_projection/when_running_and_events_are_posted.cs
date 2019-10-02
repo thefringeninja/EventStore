@@ -30,9 +30,9 @@ fromAll().foreachStream().when({
 		}
 
 		[Test, Category("Network")]
-		public void receives_created_notification() {
-			AssertStreamTail("$projections-test-projection-stream-1-result", "Result:{\"a\":3}");
-			AssertStreamTail("$projections-test-projection-stream-2-result", "Result:{\"a\":3}");
+		public async Task receives_created_notification() {
+			await AssertStreamTail("$projections-test-projection-stream-1-result", "Result:{\"a\":3}");
+			await AssertStreamTail("$projections-test-projection-stream-2-result", "Result:{\"a\":3}");
 		}
 	}
 }
