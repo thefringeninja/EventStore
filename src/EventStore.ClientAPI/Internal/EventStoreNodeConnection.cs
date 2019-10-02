@@ -542,43 +542,36 @@ namespace EventStore.ClientAPI.Internal {
 			return await source.Task.ConfigureAwait(false);
 		}
 
-		public Task<StreamMetadataResult>
-			GetStreamMetadataAsync(string stream, UserCredentials userCredentials = null) {
-			return GetStreamMetadataAsRawBytesAsync(stream, userCredentials).ContinueWith(t => {
-				if (t.Exception != null)
-					throw t.Exception.InnerException;
-				var res = t.Result;
-				if (res.StreamMetadata == null || res.StreamMetadata.Length == 0)
-					return new StreamMetadataResult(res.Stream, res.IsStreamDeleted, res.MetastreamVersion,
-						StreamMetadata.Create());
-				var metadata = StreamMetadata.FromJsonBytes(res.StreamMetadata);
-				return new StreamMetadataResult(res.Stream, res.IsStreamDeleted, res.MetastreamVersion, metadata);
-			});
+		public async Task<StreamMetadataResult> GetStreamMetadataAsync(
+			string stream, UserCredentials userCredentials = null) {
+			var res = await GetStreamMetadataAsRawBytesAsync(stream, userCredentials).ConfigureAwait(false);
+
+			if (res.StreamMetadata == null || res.StreamMetadata.Length == 0)
+				return new StreamMetadataResult(res.Stream, res.IsStreamDeleted, res.MetastreamVersion,
+					StreamMetadata.Create());
+			var metadata = StreamMetadata.FromJsonBytes(res.StreamMetadata);
+			return new StreamMetadataResult(res.Stream, res.IsStreamDeleted, res.MetastreamVersion, metadata);
 		}
 
-		public Task<RawStreamMetadataResult> GetStreamMetadataAsRawBytesAsync(string stream,
-			UserCredentials userCredentials = null) {
-			return ReadEventAsync(SystemStreams.MetastreamOf(stream), -1, false, userCredentials).ContinueWith(t => {
-				if (t.Exception != null)
-					throw t.Exception.InnerException;
+		public async Task<RawStreamMetadataResult> GetStreamMetadataAsRawBytesAsync(
+			string stream, UserCredentials userCredentials = null) {
+			var res = await ReadEventAsync(SystemStreams.MetastreamOf(stream), -1, false, userCredentials)
+				.ConfigureAwait(false);
 
-				var res = t.Result;
-				switch (res.Status) {
-					case EventReadStatus.Success:
-						if (res.Event == null) throw new Exception("Event is null while operation result is Success.");
-						var evnt = res.Event.Value.OriginalEvent;
-						if (evnt == null) return new RawStreamMetadataResult(stream, false, -1, Empty.ByteArray);
-						return new RawStreamMetadataResult(stream, false, evnt.EventNumber, evnt.Data);
-					case EventReadStatus.NotFound:
-					case EventReadStatus.NoStream:
-						return new RawStreamMetadataResult(stream, false, -1, Empty.ByteArray);
-					case EventReadStatus.StreamDeleted:
-						return new RawStreamMetadataResult(stream, true, long.MaxValue, Empty.ByteArray);
-					default:
-						throw new ArgumentOutOfRangeException(string.Format("Unexpected ReadEventResult: {0}.",
-							res.Status));
-				}
-			});
+			switch (res.Status) {
+				case EventReadStatus.Success:
+					if (res.Event == null) throw new Exception("Event is null while operation result is Success.");
+					var evnt = res.Event.Value.OriginalEvent;
+					if (evnt == null) return new RawStreamMetadataResult(stream, false, -1, Empty.ByteArray);
+					return new RawStreamMetadataResult(stream, false, evnt.EventNumber, evnt.Data);
+				case EventReadStatus.NotFound:
+				case EventReadStatus.NoStream:
+					return new RawStreamMetadataResult(stream, false, -1, Empty.ByteArray);
+				case EventReadStatus.StreamDeleted:
+					return new RawStreamMetadataResult(stream, true, long.MaxValue, Empty.ByteArray);
+				default:
+					throw new ArgumentOutOfRangeException($"Unexpected ReadEventResult: {res.Status}.");
+			}
 		}
 
 		public Task SetSystemSettingsAsync(SystemSettings settings, UserCredentials userCredentials = null) {
