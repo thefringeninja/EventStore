@@ -25,8 +25,6 @@ using System.Threading.Tasks;
 
 namespace EventStore.Core.Tests.Helpers {
 	public class MiniNode {
-		private static bool _running;
-
 		public static int RunCount = 0;
 		public static readonly Stopwatch RunningTime = new Stopwatch();
 		public static readonly Stopwatch StartingTime = new Stopwatch();
@@ -62,8 +60,6 @@ namespace EventStore.Core.Tests.Helpers {
 			int hashCollisionReadLimit = EventStore.Core.Util.Opts.HashCollisionReadLimitDefault,
 			byte indexBitnessVersion = EventStore.Core.Util.Opts.IndexBitnessVersionDefault,
 			string dbPath = "", bool isReadOnlyReplica = false) {
-			if (_running) throw new Exception("Previous MiniNode is still running!!!");
-			_running = true;
 
 			RunningTime.Start();
 			RunCount += 1;
@@ -228,8 +224,6 @@ namespace EventStore.Core.Tests.Helpers {
 
 			StoppingTime.Stop();
 			RunningTime.Stop();
-
-			_running = false;
 		}
 
 		private void TryDeleteDirectory(string directory) {
