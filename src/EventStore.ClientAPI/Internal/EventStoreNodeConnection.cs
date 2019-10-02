@@ -57,13 +57,10 @@ namespace EventStore.ClientAPI.Internal {
 			_handler = new EventStoreConnectionLogicHandler(this, settings);
 		}
 
-		public async Task ConnectAsync() {
+		public Task ConnectAsync() {
 			var source = TaskCompletionSourceFactory.Create<object>();
 			_handler.EnqueueMessage(new StartConnectionMessage(source, _endPointDiscoverer));
-			await source.Task;
-			if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
-				await Task.Delay(TimeSpan.FromSeconds(2));
-			}
+			return source.Task;
 		}
 
 		void IDisposable.Dispose() {
