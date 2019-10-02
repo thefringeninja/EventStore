@@ -47,7 +47,7 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 					this, timeout, onConnectionEstablished, onConnectionFailed, onConnectionClosed);
 			}
 
-			return TcpConnectionLockless.CreateConnectingConnection(
+			return TcpConnection.CreateConnectingConnection(
 				log, connectionId, remoteEndPoint, this, timeout,
 				onConnectionEstablished, onConnectionFailed, onConnectionClosed);
 		}
