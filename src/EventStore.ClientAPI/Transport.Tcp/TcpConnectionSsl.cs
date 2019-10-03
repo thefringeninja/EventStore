@@ -386,11 +386,9 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 			_log.Info("Receive calls: {0}, callbacks: {1}", ReceiveCalls, ReceiveCallbacks);
 			_log.Info("Close reason: [{0}] {1}", socketError, reason);
 
-			if (_sslStream != null)
-				Helper.EatException(() => _sslStream.Close());
+			Helper.EatException(() => _sslStream?.Close());
 
-			if (_onConnectionClosed != null)
-				_onConnectionClosed(this, socketError);
+			_onConnectionClosed?.Invoke(this, socketError);
 		}
 
 		public override string ToString() {

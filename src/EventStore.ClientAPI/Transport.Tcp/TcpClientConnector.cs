@@ -105,6 +105,7 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 				var onConnectionFailed = callbacks.OnConnectionFailed;
 				var pendingConnection = callbacks.PendingConnection;
 
+				Helper.EatException(() => socketArgs.AcceptSocket.Shutdown(SocketShutdown.Both));
 				Helper.EatException(() => socketArgs.AcceptSocket.Close(TcpConfiguration.SocketCloseTimeoutMs));
 				socketArgs.AcceptSocket = null;
 				callbacks.Reset();

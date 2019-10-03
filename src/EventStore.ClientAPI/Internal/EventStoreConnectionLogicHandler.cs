@@ -38,6 +38,7 @@ namespace EventStore.ClientAPI.Internal {
 		private ConnectionState _state = ConnectionState.Init;
 		private ConnectingPhase _connectingPhase = ConnectingPhase.Invalid;
 		private int _wasConnected;
+		private int _wasClosed;
 
 		private int _packageNumber;
 		private TcpPackageConnection _connection;
@@ -204,10 +205,14 @@ namespace EventStore.ClientAPI.Internal {
 				return;
 			}
 
+			if (Interlocked.CompareExchange(ref _wasClosed, 1, 0) != 0) {
+				LogDebug("CloseTcpConnection IGNORED because was closed");
+				return;
+			}
+
 			LogDebug("CloseTcpConnection");
 			_connection.Close(reason);
 			TcpConnectionClosed(_connection);
-			_connection = null;
 		}
 
 		private void TcpConnectionClosed(TcpPackageConnection connection) {
