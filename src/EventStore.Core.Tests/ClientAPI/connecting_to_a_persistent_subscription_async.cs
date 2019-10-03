@@ -13,8 +13,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 	public class connect_to_non_existing_persistent_subscription_with_permissions_async : SpecificationWithMiniNode {
 		private Exception _innerEx;
 
-		protected override Task When() {
-			_innerEx = Assert.ThrowsAsync<ArgumentException>(() => _conn.ConnectToPersistentSubscriptionAsync(
+		protected override async Task When() {
+			_innerEx = await AssertEx.ThrowsAsync<ArgumentException>(() => _conn.ConnectToPersistentSubscriptionAsync(
 				"nonexisting2",
 				"foo",
 				(sub, e) => {
@@ -22,7 +22,6 @@ namespace EventStore.Core.Tests.ClientAPI {
 					return Task.CompletedTask;
 				},
 				(sub, reason, ex) => { }));
-			return Task.CompletedTask;
 		}
 
 		[Test]
@@ -71,7 +70,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		protected override async Task When() {
             await _conn.CreatePersistentSubscriptionAsync(_stream, "agroupname55", _settings,
 				DefaultData.AdminCredentials);
-			_innerEx = Assert.ThrowsAsync<AccessDeniedException>(() => _conn.ConnectToPersistentSubscriptionAsync(
+			_innerEx = await AssertEx.ThrowsAsync<AccessDeniedException>(() => _conn.ConnectToPersistentSubscriptionAsync(
 				_stream,
 				"agroupname55",
 				(sub, e) => {
@@ -117,8 +116,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 				DefaultData.AdminCredentials);
 		}
 
-		protected override Task When() {
-			_innerEx = Assert.ThrowsAsync<MaximumSubscribersReachedException>(() =>
+		protected override async Task When() {
+			_innerEx = await AssertEx.ThrowsAsync<MaximumSubscribersReachedException>(() =>
 				// Second connection
 				_conn.ConnectToPersistentSubscriptionAsync(
 					_stream,
@@ -129,8 +128,6 @@ namespace EventStore.Core.Tests.ClientAPI {
 					},
 					(sub, reason, ex) => { },
 					DefaultData.AdminCredentials));
-			
-			return Task.CompletedTask;
 		}
 
 		[Test]

@@ -16,36 +16,36 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void write_to_all_is_never_allowed() {
-			Expect<AccessDeniedException>(() => WriteStream("$all", null, null));
-			Expect<AccessDeniedException>(() => WriteStream("$all", "user1", "pa$$1"));
-			Expect<AccessDeniedException>(() => WriteStream("$all", "adm", "admpa$$"));
+		public async Task write_to_all_is_never_allowed() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$all", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$all", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$all", "adm", "admpa$$"));
 		}
 
 		[Test]
-		public void delete_of_all_is_never_allowed() {
-			Expect<AccessDeniedException>(() => DeleteStream("$all", null, null));
-			Expect<AccessDeniedException>(() => DeleteStream("$all", "user1", "pa$$1"));
-			Expect<AccessDeniedException>(() => DeleteStream("$all", "adm", "admpa$$"));
+		public async Task delete_of_all_is_never_allowed() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => DeleteStream("$all", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => DeleteStream("$all", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => DeleteStream("$all", "adm", "admpa$$"));
 		}
 
 
 		[Test]
-		public void reading_and_subscribing_is_not_allowed_when_no_credentials_are_passed() {
-			Expect<AccessDeniedException>(() => ReadEvent("$all", null, null));
-			Expect<AccessDeniedException>(() => ReadStreamForward("$all", null, null));
-			Expect<AccessDeniedException>(() => ReadStreamBackward("$all", null, null));
-			Expect<AccessDeniedException>(() => ReadMeta("$all", null, null));
-			Expect<AccessDeniedException>(() => SubscribeToStream("$all", null, null));
+		public async Task reading_and_subscribing_is_not_allowed_when_no_credentials_are_passed() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadEvent("$all", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamForward("$all", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamBackward("$all", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadMeta("$all", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => SubscribeToStream("$all", null, null));
 		}
 
 		[Test]
-		public void reading_and_subscribing_is_not_allowed_for_usual_user() {
-			Expect<AccessDeniedException>(() => ReadEvent("$all", "user1", "pa$$1"));
-			Expect<AccessDeniedException>(() => ReadStreamForward("$all", "user1", "pa$$1"));
-			Expect<AccessDeniedException>(() => ReadStreamBackward("$all", "user1", "pa$$1"));
-			Expect<AccessDeniedException>(() => ReadMeta("$all", "user1", "pa$$1"));
-			Expect<AccessDeniedException>(() => SubscribeToStream("$all", "user1", "pa$$1"));
+		public async Task reading_and_subscribing_is_not_allowed_for_usual_user() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadEvent("$all", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamForward("$all", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamBackward("$all", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadMeta("$all", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => SubscribeToStream("$all", "user1", "pa$$1"));
 		}
 
 		[Test]
@@ -59,13 +59,13 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 
 
 		[Test]
-		public void meta_write_is_not_allowed_when_no_credentials_are_passed() {
-			Expect<AccessDeniedException>(() => WriteMeta("$all", null, null, null));
+		public async Task meta_write_is_not_allowed_when_no_credentials_are_passed() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteMeta("$all", null, null, null));
 		}
 
 		[Test]
-		public void meta_write_is_not_allowed_for_usual_user() {
-			Expect<AccessDeniedException>(() => WriteMeta("$all", "user1", "pa$$1", null));
+		public async Task meta_write_is_not_allowed_for_usual_user() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteMeta("$all", "user1", "pa$$1", null));
 		}
 
 		[Test]

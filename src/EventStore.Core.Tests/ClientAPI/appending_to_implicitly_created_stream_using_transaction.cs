@@ -105,7 +105,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 				var writer = new TransactionalWriter(store, stream);
 
 				Assert.AreEqual(5, (await (await (await writer.StartTransaction(-1)).Write(events)).Commit()).NextExpectedVersion);
-				Assert.ThrowsAsync<WrongExpectedVersionException>(async () =>
+				await AssertEx.ThrowsAsync<WrongExpectedVersionException>(async () =>
 					await (await (await writer.StartTransaction(6)).Write(events.First())).Commit());
 			}
 		}
@@ -122,7 +122,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 				var writer = new TransactionalWriter(store, stream);
 
 				Assert.AreEqual(5, (await (await (await writer.StartTransaction(-1)).Write(events)).Commit()).NextExpectedVersion);
-				Assert.ThrowsAsync<WrongExpectedVersionException>(
+				await AssertEx.ThrowsAsync<WrongExpectedVersionException>(
 					async () => await (await (await writer.StartTransaction(4)).Write(events.First())).Commit());
 			}
 		}
@@ -218,7 +218,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 				var writer = new TransactionalWriter(store, stream);
 
 				Assert.AreEqual(1, (await (await (await writer.StartTransaction(-1)).Write(events)).Commit()).NextExpectedVersion);
-				Assert.ThrowsAsync<WrongExpectedVersionException>(async () =>
+				await AssertEx.ThrowsAsync<WrongExpectedVersionException>(async () =>
 					await (await (await writer.StartTransaction(-1)).Write(events.Concat(new[] {TestEvent.NewTestEvent(Guid.NewGuid())}).ToArray())).Commit());
 			}
 		}

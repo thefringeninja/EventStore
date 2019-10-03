@@ -88,8 +88,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 		protected override Task When() => Task.CompletedTask;
 
 		[Test]
-		public void the_completion_fails_with_not_found() {
-			Assert.ThrowsAsync<InvalidOperationException>(
+		public async Task the_completion_fails_with_not_found() {
+			await AssertEx.ThrowsAsync<InvalidOperationException>(
 				() => _conn.UpdatePersistentSubscriptionAsync(_stream, "existing", _settings,
 					DefaultData.AdminCredentials));
 		}
@@ -111,8 +111,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public void the_completion_fails_with_access_denied() {
-			Assert.ThrowsAsync<AccessDeniedException>(
+		public async Task the_completion_fails_with_access_denied() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(
 				() => _conn.UpdatePersistentSubscriptionAsync(_stream, "existing", _settings, null));
 		}
 	}

@@ -21,18 +21,18 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test, Category("Network")]
-		public void throw_if_stream_id_is_null() {
-			Assert.ThrowsAsync<ArgumentNullException>(() => _conn.ReadEventAsync(null, 0, resolveLinkTos: false));
+		public async Task throw_if_stream_id_is_null() {
+			await AssertEx.ThrowsAsync<ArgumentNullException>(() => _conn.ReadEventAsync(null, 0, resolveLinkTos: false));
 		}
 
 		[Test, Category("Network")]
-		public void throw_if_stream_id_is_empty() {
-			Assert.ThrowsAsync<ArgumentNullException>(() => _conn.ReadEventAsync("", 0, resolveLinkTos: false));
+		public async Task throw_if_stream_id_is_empty() {
+			await AssertEx.ThrowsAsync<ArgumentNullException>(() => _conn.ReadEventAsync("", 0, resolveLinkTos: false));
 		}
 
 		[Test, Category("Network")]
-		public void throw_if_event_number_is_less_than_minus_one() {
-			Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+		public async Task throw_if_event_number_is_less_than_minus_one() {
+			await AssertEx.ThrowsAsync<ArgumentOutOfRangeException>(() =>
 				_conn.ReadEventAsync("stream", -2, resolveLinkTos: false));
 		}
 

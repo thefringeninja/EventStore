@@ -9,8 +9,8 @@ namespace EventStore.Core.Tests.ClientAPI.UserManagement {
 	[TestFixture, Category("ClientAPI"), Category("LongRunning")]
 	public class deleting_a_user : TestWithNode {
 		[Test]
-		public void deleting_non_existing_user_throws() {
-			var ex = Assert.ThrowsAsync<UserCommandFailedException>(() =>
+		public async Task deleting_non_existing_user_throws() {
+			var ex = await AssertEx.ThrowsAsync<UserCommandFailedException>(() =>
 				_manager.DeleteUserAsync(Guid.NewGuid().ToString(), new UserCredentials("admin", "changeit")));
 			Assert.AreEqual(HttpStatusCode.NotFound, ex.HttpStatusCode);
 		}
@@ -43,7 +43,7 @@ namespace EventStore.Core.Tests.ClientAPI.UserManagement {
 				var x = await _manager.GetUserAsync("ouro", new UserCredentials("admin", "changeit"));
             await _manager.DeleteUserAsync("ouro", new UserCredentials("admin", "changeit"));
 
-			var ex = Assert.ThrowsAsync<AggregateException>(
+			var ex = await AssertEx.ThrowsAsync<AggregateException>(
 				() => _manager.GetUserAsync("ouro", new UserCredentials("admin", "changeit")));
 			Assert.AreEqual(HttpStatusCode.NotFound,
 				((UserCommandFailedException)ex.InnerException).HttpStatusCode);

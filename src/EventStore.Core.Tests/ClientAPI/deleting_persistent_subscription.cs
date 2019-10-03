@@ -61,8 +61,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 		protected override Task When() => Task.CompletedTask;
 
 		[Test]
-		public void the_delete_fails_with_argument_exception() {
-			Assert.ThrowsAsync<InvalidOperationException>(
+		public async Task the_delete_fails_with_argument_exception() {
+			await AssertEx.ThrowsAsync<InvalidOperationException>(
 				() =>
 					_conn.DeletePersistentSubscriptionAsync(_stream, Guid.NewGuid().ToString(),
 						DefaultData.AdminCredentials));
@@ -77,8 +77,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 		protected override Task When() => Task.CompletedTask;
 
 		[Test]
-		public void the_delete_fails_with_access_denied() {
-			Assert.ThrowsAsync<AccessDeniedException>(
+		public async Task the_delete_fails_with_access_denied() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(
 				() => _conn.DeletePersistentSubscriptionAsync(_stream, Guid.NewGuid().ToString()));
 		}
 	}

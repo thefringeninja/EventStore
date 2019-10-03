@@ -22,14 +22,14 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 
 		[Test]
 		public async Task multiple_roles_are_handled_correctly() {
-			Expect<AccessDeniedException>(() => ReadEvent("usr-stream", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadEvent("usr-stream", null, null));
 			await ReadEvent("usr-stream", "user1", "pa$$1");
 			await ReadEvent("usr-stream", "user2", "pa$$2");
 			await ReadEvent("usr-stream", "adm", "admpa$$");
 
-			Expect<AccessDeniedException>(() => WriteStream("usr-stream", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("usr-stream", null, null));
 			await WriteStream("usr-stream", "user1", "pa$$1");
-			Expect<AccessDeniedException>(() => WriteStream("usr-stream", "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("usr-stream", "user2", "pa$$2"));
 			await WriteStream("usr-stream", "adm", "admpa$$");
 
 			await DeleteStream("usr-stream1", null, null);

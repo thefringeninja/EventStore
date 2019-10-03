@@ -61,7 +61,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 					await closed.Task.WithTimeout(
 						TimeSpan.FromSeconds(120)); // TCP connection timeout might be even 60 seconds
 
-					Assert.ThrowsAsync<ObjectDisposedException>(() => connection.ConnectAsync().WithTimeout());
+					await AssertEx.ThrowsAsync<ObjectDisposedException>(() => connection.ConnectAsync().WithTimeout());
 				}
 			} finally {
 				PortsHelper.ReturnPort(port);
@@ -104,7 +104,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 					await closed.Task.WithTimeout(
 						TimeSpan.FromSeconds(120)); // TCP connection timeout might be even 60 seconds
 
-					Assert.ThrowsAsync<ObjectDisposedException>(() => connection
+					await AssertEx.ThrowsAsync<ObjectDisposedException>(() => connection
 						.AppendToStreamAsync("stream", ExpectedVersion.NoStream, TestEvent.NewTestEvent())
 						.WithTimeout());
 				}

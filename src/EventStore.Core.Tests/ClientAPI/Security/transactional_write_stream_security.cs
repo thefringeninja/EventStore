@@ -7,18 +7,18 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 	[TestFixture, Category("ClientAPI"), Category("LongRunning"), Category("Network")]
 	public class transactional_write_stream_security : AuthenticationTestBase {
 		[Test]
-		public void starting_transaction_with_not_existing_credentials_is_not_authenticated() {
-			Expect<NotAuthenticatedException>(() => TransStart("write-stream", "badlogin", "badpass"));
+		public async Task starting_transaction_with_not_existing_credentials_is_not_authenticated() {
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => TransStart("write-stream", "badlogin", "badpass"));
 		}
 
 		[Test]
-		public void starting_transaction_to_stream_with_no_credentials_is_denied() {
-			Expect<AccessDeniedException>(() => TransStart("write-stream", null, null));
+		public async Task starting_transaction_to_stream_with_no_credentials_is_denied() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => TransStart("write-stream", null, null));
 		}
 
 		[Test]
-		public void starting_transaction_to_stream_with_not_authorized_user_credentials_is_denied() {
-			Expect<AccessDeniedException>(() => TransStart("write-stream", "user2", "pa$$2"));
+		public async Task starting_transaction_to_stream_with_not_authorized_user_credentials_is_denied() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => TransStart("write-stream", "user2", "pa$$2"));
 		}
 
 		[Test]
@@ -37,7 +37,7 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 			var transId = (await TransStart("write-stream", "user1", "pa$$1")).TransactionId;
 			var t2 = Connection.ContinueTransaction(transId, new UserCredentials("badlogin", "badpass"));
             await t2.WriteAsync(CreateEvents());
-			Expect<NotAuthenticatedException>(() => t2.CommitAsync());
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => t2.CommitAsync());
 		}
 
 		[Test]
@@ -45,7 +45,7 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 			var transId = (await TransStart("write-stream", "user1", "pa$$1")).TransactionId;
 			var t2 = Connection.ContinueTransaction(transId);
             await t2.WriteAsync();
-			Expect<AccessDeniedException>(() => t2.CommitAsync());
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => t2.CommitAsync());
 		}
 
 		[Test]
@@ -53,7 +53,7 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 			var transId = (await TransStart("write-stream", "user1", "pa$$1")).TransactionId;
 			var t2 = Connection.ContinueTransaction(transId, new UserCredentials("user2", "pa$$2"));
             await t2.WriteAsync();
-			Expect<AccessDeniedException>(() => t2.CommitAsync());
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => t2.CommitAsync());
 		}
 
 		[Test]
@@ -83,8 +83,8 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void transaction_to_no_acl_stream_is_not_authenticated_when_not_existing_credentials_are_passed() {
-			Expect<NotAuthenticatedException>(() => TransStart("noacl-stream", "badlogin", "badpass"));
+		public async Task transaction_to_no_acl_stream_is_not_authenticated_when_not_existing_credentials_are_passed() {
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => TransStart("noacl-stream", "badlogin", "badpass"));
 		}
 
 		[Test]
@@ -121,9 +121,9 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void
+		public async Task
 			transaction_to_all_access_normal_stream_is_not_authenticated_when_not_existing_credentials_are_passed() {
-			Expect<NotAuthenticatedException>(() => TransStart("normal-all", "badlogin", "badpass"));
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => TransStart("normal-all", "badlogin", "badpass"));
 		}
 
 		[Test]

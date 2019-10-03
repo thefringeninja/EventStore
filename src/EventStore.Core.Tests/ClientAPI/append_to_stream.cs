@@ -154,7 +154,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 				await store.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: true);
 
-				Assert.ThrowsAsync<StreamDeletedException>(
+				await AssertEx.ThrowsAsync<StreamDeletedException>(
 					() => store.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent()));
 				
 			}
@@ -186,7 +186,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 					Assert.Fail();
 				}
 
-				Assert.ThrowsAsync<StreamDeletedException>(
+				await AssertEx.ThrowsAsync<StreamDeletedException>(
 					() => store.AppendToStreamAsync(stream, ExpectedVersion.Any, TestEvent.NewTestEvent()));
 			}
 		}
@@ -200,7 +200,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 				await store.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: true);
 
-				Assert.ThrowsAsync<StreamDeletedException>(() => store.AppendToStreamAsync(stream, 5, TestEvent.NewTestEvent()));
+				await AssertEx.ThrowsAsync<StreamDeletedException>(() => store.AppendToStreamAsync(stream, 5, TestEvent.NewTestEvent()));
 			}
 		}
 
@@ -234,7 +234,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
 
-                var wev = Assert.ThrowsAsync<WrongExpectedVersionException>(() =>
+                var wev = await AssertEx.ThrowsAsync<WrongExpectedVersionException>(() =>
 	                store.AppendToStreamAsync(stream, 1, new[] {TestEvent.NewTestEvent()}));
 				Assert.AreEqual(1, wev.ExpectedVersion);
 				Assert.AreEqual(ExpectedVersion.NoStream, wev.ActualVersion);
@@ -287,7 +287,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
 
-                var wev = Assert.ThrowsAsync<WrongExpectedVersionException>(
+                var wev = await AssertEx.ThrowsAsync<WrongExpectedVersionException>(
 	                () => store.AppendToStreamAsync(stream, ExpectedVersion.StreamExists, TestEvent.NewTestEvent()));
 				Assert.AreEqual(ExpectedVersion.StreamExists, wev.ExpectedVersion);
 				Assert.AreEqual(ExpectedVersion.NoStream, wev.ActualVersion);
@@ -303,7 +303,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 				await store.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: true);
 
-				Assert.ThrowsAsync<StreamDeletedException>(
+				await AssertEx.ThrowsAsync<StreamDeletedException>(
 					() => store.AppendToStreamAsync(stream, ExpectedVersion.StreamExists, TestEvent.NewTestEvent()));
 			}
 		}
@@ -317,7 +317,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 				await store.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: false);
 
-				Assert.ThrowsAsync<StreamDeletedException>(
+				await AssertEx.ThrowsAsync<StreamDeletedException>(
 					() => store.AppendToStreamAsync(stream, ExpectedVersion.StreamExists, TestEvent.NewTestEvent()));
 			}
 		}
@@ -447,7 +447,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 				await store.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: true);
 
-				Assert.ThrowsAsync<StreamDeletedException>(() => 
+				await AssertEx.ThrowsAsync<StreamDeletedException>(() => 
 					store.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent()));
 			}
 		}
@@ -460,7 +460,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 				await store.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: true);
 
-				Assert.ThrowsAsync<StreamDeletedException>(() => 
+				await AssertEx.ThrowsAsync<StreamDeletedException>(() => 
 					store.AppendToStreamAsync(stream, ExpectedVersion.Any, TestEvent.NewTestEvent()));
 			}
 		}
@@ -473,7 +473,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 				await store.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: true);
 
-				Assert.ThrowsAsync<StreamDeletedException>(() =>
+				await AssertEx.ThrowsAsync<StreamDeletedException>(() =>
 					store.AppendToStreamAsync(stream, 5, new[] {TestEvent.NewTestEvent()}));
 			}
 		}
@@ -519,7 +519,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 				Assert.AreEqual(0, 
 					(await store.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent())).NextExpectedVersion);
 
-				var wev = Assert.ThrowsAsync<WrongExpectedVersionException>(() =>
+				var wev = await AssertEx.ThrowsAsync<WrongExpectedVersionException>(() =>
 					store.AppendToStreamAsync(stream, 1, TestEvent.NewTestEvent()));
 				Assert.AreEqual(1, wev.ExpectedVersion);
 				Assert.AreEqual(0, wev.ActualVersion);

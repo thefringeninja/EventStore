@@ -6,25 +6,25 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 	[TestFixture, Category("ClientAPI"), Category("LongRunning"), Category("Network")]
 	public class write_stream_security : AuthenticationTestBase {
 		[Test]
-		public void writing_to_all_is_never_allowed() {
-			Expect<AccessDeniedException>(() => WriteStream("$all", null, null));
-			Expect<AccessDeniedException>(() => WriteStream("$all", "user1", "pa$$1"));
-			Expect<AccessDeniedException>(() => WriteStream("$all", "adm", "admpa$$"));
+		public async Task writing_to_all_is_never_allowed() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$all", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$all", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$all", "adm", "admpa$$"));
 		}
 
 		[Test]
-		public void writing_with_not_existing_credentials_is_not_authenticated() {
-			Expect<NotAuthenticatedException>(() => WriteStream("write-stream", "badlogin", "badpass"));
+		public async Task writing_with_not_existing_credentials_is_not_authenticated() {
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => WriteStream("write-stream", "badlogin", "badpass"));
 		}
 
 		[Test]
-		public void writing_to_stream_with_no_credentials_is_denied() {
-			Expect<AccessDeniedException>(() => WriteStream("write-stream", null, null));
+		public async Task writing_to_stream_with_no_credentials_is_denied() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("write-stream", null, null));
 		}
 
 		[Test]
-		public void writing_to_stream_with_not_authorized_user_credentials_is_denied() {
-			Expect<AccessDeniedException>(() => WriteStream("write-stream", "user2", "pa$$2"));
+		public async Task writing_to_stream_with_not_authorized_user_credentials_is_denied() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("write-stream", "user2", "pa$$2"));
 		}
 
 		[Test]
@@ -44,8 +44,8 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void writing_to_no_acl_stream_is_not_authenticated_when_not_existing_credentials_are_passed() {
-			Expect<NotAuthenticatedException>(() => WriteStream("noacl-stream", "badlogin", "badpass"));
+		public async Task writing_to_no_acl_stream_is_not_authenticated_when_not_existing_credentials_are_passed() {
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => WriteStream("noacl-stream", "badlogin", "badpass"));
 		}
 
 		[Test]
@@ -66,9 +66,9 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void
+		public async Task
 			writing_to_all_access_normal_stream_is_not_authenticated_when_not_existing_credentials_are_passed() {
-			Expect<NotAuthenticatedException>(() => WriteStream("normal-all", "badlogin", "badpass"));
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => WriteStream("normal-all", "badlogin", "badpass"));
 		}
 
 		[Test]

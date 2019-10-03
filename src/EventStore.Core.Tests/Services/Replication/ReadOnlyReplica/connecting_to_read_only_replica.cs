@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.ClientAPI.Exceptions;
 using EventStore.Core.Tests.ClientAPI.Helpers;
@@ -31,23 +32,23 @@ namespace EventStore.Core.Tests.Replication.ReadOnlyReplica {
 		}
 
 		[Test]
-		public void append_to_stream_should_fail_with_not_supported_exception() {
+		public async Task append_to_stream_should_fail_with_not_supported_exception() {
 			const string stream = "append_to_stream_should_fail_with_not_supported_exception";
-			Assert.ThrowsAsync<OperationNotSupportedException>(
+			await AssertEx.ThrowsAsync<OperationNotSupportedException>(
 				() => _conn.AppendToStreamAsync(stream, ExpectedVersion.Any, TestEvent.NewTestEvent()));
 		}
 
 		[Test]
-		public void delete_stream_should_fail_with_not_supported_exception() {
+		public async Task delete_stream_should_fail_with_not_supported_exception() {
 			const string stream = "delete_stream_should_fail_with_not_supported_exception";
-			Assert.ThrowsAsync<OperationNotSupportedException>(() =>
+			await AssertEx.ThrowsAsync<OperationNotSupportedException>(() =>
 				_conn.DeleteStreamAsync(stream, ExpectedVersion.Any));
 		}
 
 		[Test]
-		public void start_transaction_should_fail_with_not_supported_exception() {
+		public async Task start_transaction_should_fail_with_not_supported_exception() {
 			const string stream = "start_transaction_should_fail_with_not_supported_exception";
-			Assert.ThrowsAsync<OperationNotSupportedException>(() =>
+			await AssertEx.ThrowsAsync<OperationNotSupportedException>(() =>
 				_conn.StartTransactionAsync(stream, ExpectedVersion.Any));
 		}
 	}

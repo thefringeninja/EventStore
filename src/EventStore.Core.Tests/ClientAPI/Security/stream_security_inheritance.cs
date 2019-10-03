@@ -48,24 +48,24 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 
 		[Test]
 		public async Task acl_inheritance_is_working_properly_on_user_streams() {
-			Expect<AccessDeniedException>(() => WriteStream("user-no-acl", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("user-no-acl", null, null));
 			await WriteStream("user-no-acl", "user1", "pa$$1");
-			Expect<AccessDeniedException>(() => WriteStream("user-no-acl", "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("user-no-acl", "user2", "pa$$2"));
 			await WriteStream("user-no-acl", "adm", "admpa$$");
 
-			Expect<AccessDeniedException>(() => WriteStream("user-w-diff", null, null));
-			Expect<AccessDeniedException>(() => WriteStream("user-w-diff", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("user-w-diff", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("user-w-diff", "user1", "pa$$1"));
 			await WriteStream("user-w-diff", "user2", "pa$$2");
 			await WriteStream("user-w-diff", "adm", "admpa$$");
 
-			Expect<AccessDeniedException>(() => WriteStream("user-w-multiple", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("user-w-multiple", null, null));
 			await WriteStream("user-w-multiple", "user1", "pa$$1");
 			await WriteStream("user-w-multiple", "user2", "pa$$2");
 			await WriteStream("user-w-multiple", "adm", "admpa$$");
 
-			Expect<AccessDeniedException>(() => WriteStream("user-w-restricted", null, null));
-			Expect<AccessDeniedException>(() => WriteStream("user-w-restricted", "user1", "pa$$1"));
-			Expect<AccessDeniedException>(() => WriteStream("user-w-restricted", "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("user-w-restricted", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("user-w-restricted", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("user-w-restricted", "user2", "pa$$2"));
 			await WriteStream("user-w-restricted", "adm", "admpa$$");
 
 			await WriteStream("user-w-all", null, null);
@@ -79,32 +79,32 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 			await ReadEvent("user-no-acl", "user2", "pa$$2");
 			await ReadEvent("user-no-acl", "adm", "admpa$$");
 
-			Expect<AccessDeniedException>(() => ReadEvent("user-r-restricted", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadEvent("user-r-restricted", null, null));
 			await ReadEvent("user-r-restricted", "user1", "pa$$1");
-			Expect<AccessDeniedException>(() => ReadEvent("user-r-restricted", "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadEvent("user-r-restricted", "user2", "pa$$2"));
 			await ReadEvent("user-r-restricted", "adm", "admpa$$");
 		}
 
 		[Test]
 		public async Task acl_inheritance_is_working_properly_on_system_streams() {
-			Expect<AccessDeniedException>(() => WriteStream("$sys-no-acl", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$sys-no-acl", null, null));
 			await WriteStream("$sys-no-acl", "user1", "pa$$1");
-			Expect<AccessDeniedException>(() => WriteStream("$sys-no-acl", "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$sys-no-acl", "user2", "pa$$2"));
 			await WriteStream("$sys-no-acl", "adm", "admpa$$");
 
-			Expect<AccessDeniedException>(() => WriteStream("$sys-w-diff", null, null));
-			Expect<AccessDeniedException>(() => WriteStream("$sys-w-diff", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$sys-w-diff", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$sys-w-diff", "user1", "pa$$1"));
 			await WriteStream("$sys-w-diff", "user2", "pa$$2");
 			await WriteStream("$sys-w-diff", "adm", "admpa$$");
 
-			Expect<AccessDeniedException>(() => WriteStream("$sys-w-multiple", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$sys-w-multiple", null, null));
 			await WriteStream("$sys-w-multiple", "user1", "pa$$1");
 			await WriteStream("$sys-w-multiple", "user2", "pa$$2");
 			await WriteStream("$sys-w-multiple", "adm", "admpa$$");
 
-			Expect<AccessDeniedException>(() => WriteStream("$sys-w-restricted", null, null));
-			Expect<AccessDeniedException>(() => WriteStream("$sys-w-restricted", "user1", "pa$$1"));
-			Expect<AccessDeniedException>(() => WriteStream("$sys-w-restricted", "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$sys-w-restricted", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$sys-w-restricted", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$sys-w-restricted", "user2", "pa$$2"));
 			await WriteStream("$sys-w-restricted", "adm", "admpa$$");
 
 			await WriteStream("$sys-w-all", null, null);
@@ -112,9 +112,9 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 			await WriteStream("$sys-w-all", "user2", "pa$$2");
 			await WriteStream("$sys-w-all", "adm", "admpa$$");
 
-			Expect<AccessDeniedException>(() => ReadEvent("$sys-no-acl", null, null));
-			Expect<AccessDeniedException>(() => ReadEvent("$sys-no-acl", "user1", "pa$$1"));
-			Expect<AccessDeniedException>(() => ReadEvent("$sys-no-acl", "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadEvent("$sys-no-acl", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadEvent("$sys-no-acl", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadEvent("$sys-no-acl", "user2", "pa$$2"));
 			await ReadEvent("$sys-no-acl", "adm", "admpa$$");
 		}
 	}

@@ -6,24 +6,24 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 	[TestFixture, Category("ClientAPI"), Category("LongRunning"), Category("Network")]
 	public class read_stream_security : AuthenticationTestBase {
 		[Test]
-		public void reading_stream_with_not_existing_credentials_is_not_authenticated() {
-			Expect<NotAuthenticatedException>(() => ReadEvent("read-stream", "badlogin", "badpass"));
-			Expect<NotAuthenticatedException>(() => ReadStreamForward("read-stream", "badlogin", "badpass"));
-			Expect<NotAuthenticatedException>(() => ReadStreamBackward("read-stream", "badlogin", "badpass"));
+		public async Task reading_stream_with_not_existing_credentials_is_not_authenticated() {
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => ReadEvent("read-stream", "badlogin", "badpass"));
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => ReadStreamForward("read-stream", "badlogin", "badpass"));
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => ReadStreamBackward("read-stream", "badlogin", "badpass"));
 		}
 
 		[Test]
-		public void reading_stream_with_no_credentials_is_denied() {
-			Expect<AccessDeniedException>(() => ReadEvent("read-stream", null, null));
-			Expect<AccessDeniedException>(() => ReadStreamForward("read-stream", null, null));
-			Expect<AccessDeniedException>(() => ReadStreamBackward("read-stream", null, null));
+		public async Task reading_stream_with_no_credentials_is_denied() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadEvent("read-stream", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamForward("read-stream", null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamBackward("read-stream", null, null));
 		}
 
 		[Test]
-		public void reading_stream_with_not_authorized_user_credentials_is_denied() {
-			Expect<AccessDeniedException>(() => ReadEvent("read-stream", "user2", "pa$$2"));
-			Expect<AccessDeniedException>(() => ReadStreamForward("read-stream", "user2", "pa$$2"));
-			Expect<AccessDeniedException>(() => ReadStreamBackward("read-stream", "user2", "pa$$2"));
+		public async Task reading_stream_with_not_authorized_user_credentials_is_denied() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadEvent("read-stream", "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamForward("read-stream", "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamBackward("read-stream", "user2", "pa$$2"));
 		}
 
 		[Test]
@@ -49,10 +49,10 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void reading_no_acl_stream_is_not_authenticated_when_not_existing_credentials_are_passed() {
-			Expect<NotAuthenticatedException>(() => ReadEvent("noacl-stream", "badlogin", "badpass"));
-			Expect<NotAuthenticatedException>(() => ReadStreamForward("noacl-stream", "badlogin", "badpass"));
-			Expect<NotAuthenticatedException>(() => ReadStreamBackward("noacl-stream", "badlogin", "badpass"));
+		public async Task reading_no_acl_stream_is_not_authenticated_when_not_existing_credentials_are_passed() {
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => ReadEvent("noacl-stream", "badlogin", "badpass"));
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => ReadStreamForward("noacl-stream", "badlogin", "badpass"));
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => ReadStreamBackward("noacl-stream", "badlogin", "badpass"));
 		}
 
 		[Test]
@@ -81,10 +81,10 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void reading_all_access_normal_stream_is_not_authenticated_when_not_existing_credentials_are_passed() {
-			Expect<NotAuthenticatedException>(() => ReadEvent("normal-all", "badlogin", "badpass"));
-			Expect<NotAuthenticatedException>(() => ReadStreamForward("normal-all", "badlogin", "badpass"));
-			Expect<NotAuthenticatedException>(() => ReadStreamBackward("normal-all", "badlogin", "badpass"));
+		public async Task reading_all_access_normal_stream_is_not_authenticated_when_not_existing_credentials_are_passed() {
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => ReadEvent("normal-all", "badlogin", "badpass"));
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => ReadStreamForward("normal-all", "badlogin", "badpass"));
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => ReadStreamBackward("normal-all", "badlogin", "badpass"));
 		}
 
 		[Test]

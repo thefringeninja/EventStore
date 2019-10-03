@@ -235,10 +235,6 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 				login == null && password == null ? null : new UserCredentials(login, password));
 		}
 
-		protected void Expect<T>(AsyncTestDelegate action) where T : Exception {
-			Assert.ThrowsAsync<T>(action);
-		}
-
 		protected Task ExpectNoException(Func<Task> action) => action();
 
 		protected EventData[] CreateEvents() {

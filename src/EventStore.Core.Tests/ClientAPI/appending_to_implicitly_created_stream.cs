@@ -106,7 +106,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 				var writer = new StreamWriter(store, stream, -1);
 
 				var first6 = await writer.Append(events);
-				Assert.ThrowsAsync<WrongExpectedVersionException>(
+				await AssertEx.ThrowsAsync<WrongExpectedVersionException>(
 					() => first6.Then(events.First(), 6));
 			}
 		}
@@ -122,7 +122,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 				var writer = new StreamWriter(store, stream, -1);
 
 				var first6 = await writer.Append(events);
-				Assert.ThrowsAsync<WrongExpectedVersionException>(
+				await AssertEx.ThrowsAsync<WrongExpectedVersionException>(
 					() => first6.Then(events.First(), 4));
 			}
 		}
@@ -281,7 +281,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 				var events = Enumerable.Range(0, 2).Select(x => TestEvent.NewTestEvent(Guid.NewGuid())).ToArray();
 				await store.AppendToStreamAsync(stream, -1, events);
 
-				Assert.ThrowsAsync<WrongExpectedVersionException>(
+				await AssertEx.ThrowsAsync<WrongExpectedVersionException>(
 					() => store.AppendToStreamAsync(stream, -1,
 						events.Concat(new[] {TestEvent.NewTestEvent(Guid.NewGuid())})));
 			}
