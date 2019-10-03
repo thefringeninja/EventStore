@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class when_connecting_with_connection_string : SpecificationWithDirectoryPerTestFixture {
+	public class when_connecting_with_connection_string : IClassFixture<when_connecting_with_connection_string.Fixture> { public class Fixture : SpecificationWithDirectoryPerTestFixture {
 		private MiniNode _node;
 
 		public override async Task TestFixtureSetUp() {

@@ -11,7 +11,7 @@ using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class subscribe_to_stream_catching_up_should : SpecificationWithDirectoryPerTestFixture {
+	public class subscribe_to_stream_catching_up_should : IClassFixture<subscribe_to_stream_catching_up_should.Fixture> { public class Fixture : SpecificationWithDirectoryPerTestFixture {
 		private static readonly EventStore.Common.Log.ILogger Log =
 			LogManager.GetLoggerFor<subscribe_to_stream_catching_up_should>();
 

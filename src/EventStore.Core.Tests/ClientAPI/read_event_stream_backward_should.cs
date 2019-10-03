@@ -8,7 +8,7 @@ using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class read_event_stream_backward_should : SpecificationWithDirectoryPerTestFixture {
+	public class read_event_stream_backward_should : IClassFixture<read_event_stream_backward_should.Fixture> { public class Fixture : SpecificationWithDirectoryPerTestFixture {
 		private MiniNode _node;
 
 		public override async Task TestFixtureSetUp() {

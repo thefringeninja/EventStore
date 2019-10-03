@@ -9,7 +9,7 @@ using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI.UserManagement {
 	[Trait("Category", "LongRunning"), Trait("Category", "ClientAPI")]
-	public class TestWithNode : SpecificationWithDirectoryPerTestFixture {
+	public class TestWithNode : IClassFixture<TestWithNode.Fixture> { public class Fixture : SpecificationWithDirectoryPerTestFixture {
 		protected MiniNode _node;
 		protected UsersManager _manager;
 

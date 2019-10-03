@@ -5,7 +5,7 @@ using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class read_all_events_forward_with_linkto_passed_max_count : SpecificationWithLinkToToMaxCountDeletedEvents {
+	public class read_all_events_forward_with_linkto_passed_max_count : IClassFixture<read_all_events_forward_with_linkto_passed_max_count.Fixture> { public class Fixture : SpecificationWithLinkToToMaxCountDeletedEvents {
 		private StreamEventsSlice _read;
 
 		protected override async Task When() {

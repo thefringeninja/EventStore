@@ -12,7 +12,7 @@ using EventStore.Core.Tests.Helpers;
 using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI.Security {
-	public abstract class AuthenticationTestBase : SpecificationWithDirectoryPerTestFixture {
+	public abstract class AuthenticationTestBase : IClassFixture<SpecificationWithDirectoryPerTestFixture> {
 		private readonly UserCredentials _userCredentials;
 		private MiniNode _node;
 		protected IEventStoreConnection Connection;

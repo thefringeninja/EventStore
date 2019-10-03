@@ -18,7 +18,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_streams_tracker.whe
 		}
 
 		protected override async Task When() {
-			var sub = await _conn.SubscribeToStreamAsync(_projectionNamesBuilder.GetEmittedStreamsName(), true, (s, evnt) => {
+			var sub = await Connection.SubscribeToStreamAsync(_projectionNamesBuilder.GetEmittedStreamsName(), true, (s, evnt) => {
 				_eventAppeared.Signal();
 				return Task.CompletedTask;
 			}, userCredentials: _credentials);
@@ -35,7 +35,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_streams_tracker.whe
 
 		[Fact]
 		public async Task should_write_a_stream_tracked_event() {
-			var result = await _conn.ReadStreamEventsForwardAsync(_projectionNamesBuilder.GetEmittedStreamsName(), 0, 200,
+			var result = await Connection.ReadStreamEventsForwardAsync(_projectionNamesBuilder.GetEmittedStreamsName(), 0, 200,
 				false, _credentials);
 			Assert.Equal(0, result.Events.Length);
 			Assert.Equal(1, _eventAppeared.CurrentCount); //no event appeared should get through

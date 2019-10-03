@@ -9,28 +9,28 @@ using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class read_all_events_backward_should : SpecificationWithMiniNode {
+	public class read_all_events_backward_should : IClassFixture<read_all_events_backward_should.Fixture> { public class Fixture : SpecificationWithMiniNode {
 		private EventData[] _testEvents;
 
 		protected override async Task When() {
-            await _conn.SetStreamMetadataAsync("$all", -1,
+            await Connection.SetStreamMetadataAsync("$all", -1,
 					StreamMetadata.Build().SetReadRole(SystemRoles.All),
 					DefaultData.AdminCredentials);
 
 			_testEvents = Enumerable.Range(0, 20).Select(x => TestEvent.NewTestEvent(x.ToString())).ToArray();
-            await _conn.AppendToStreamAsync("stream", ExpectedVersion.NoStream, _testEvents);
+            await Connection.AppendToStreamAsync("stream", ExpectedVersion.NoStream, _testEvents);
 		}
 
 		[Fact, Trait("Category", "LongRunning")]
 		public async Task return_empty_slice_if_asked_to_read_from_start() {
-			var read = await _conn.ReadAllEventsBackwardAsync(Position.Start, 1, false);
+			var read = await Connection.ReadAllEventsBackwardAsync(Position.Start, 1, false);
 			Assert.True(read.IsEndOfStream);
 			Assert.Empty(read.Events);
 		}
 
 		[Fact, Trait("Category", "LongRunning")]
 		public async Task return_partial_slice_if_not_enough_events() {
-			var read = await _conn.ReadAllEventsBackwardAsync(Position.End, 30, false);
+			var read = await Connection.ReadAllEventsBackwardAsync(Position.End, 30, false);
 			Assert.True(read.Events.Length < 30);
 			Assert.True(EventDataComparer.Equal(_testEvents.Reverse().ToArray(),
 				read.Events.Take(_testEvents.Length).Select(x => x.Event).ToArray()));
@@ -38,7 +38,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		[Fact, Trait("Category", "LongRunning")]
 		public async Task return_events_in_reversed_order_compared_to_written() {
-			var read = await _conn.ReadAllEventsBackwardAsync(Position.End, _testEvents.Length, false);
+			var read = await Connection.ReadAllEventsBackwardAsync(Position.End, _testEvents.Length, false);
 			Assert.True(EventDataComparer.Equal(_testEvents.Reverse().ToArray(),
 				read.Events.Select(x => x.Event).ToArray()));
 		}
@@ -49,7 +49,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			var position = Position.End;
 			AllEventsSlice slice;
 
-			while (!(slice = await _conn.ReadAllEventsBackwardAsync(position, 1, false)).IsEndOfStream) {
+			while (!(slice = await Connection.ReadAllEventsBackwardAsync(position, 1, false)).IsEndOfStream) {
 				all.Add(slice.Events.Single().Event);
 				position = slice.NextPosition;
 			}
@@ -64,7 +64,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			var position = Position.End;
 			AllEventsSlice slice;
 
-			while (!(slice = await _conn.ReadAllEventsBackwardAsync(position, 5, false)).IsEndOfStream) {
+			while (!(slice = await Connection.ReadAllEventsBackwardAsync(position, 5, false)).IsEndOfStream) {
 				all.AddRange(slice.Events.Select(x => x.Event));
 				position = slice.NextPosition;
 			}
@@ -77,7 +77,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		[Trait("Category", "Network")]
 		public Task throw_when_got_int_max_value_as_maxcount() {
 			return Assert.ThrowsAsync<ArgumentException>(
-				() => _conn.ReadAllEventsBackwardAsync(Position.Start, int.MaxValue, resolveLinkTos: false));
+				() => Connection.ReadAllEventsBackwardAsync(Position.Start, int.MaxValue, resolveLinkTos: false));
 		}
 	}
 }

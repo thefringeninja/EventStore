@@ -11,7 +11,7 @@ using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class soft_delete : SpecificationWithDirectoryPerTestFixture {
+	public class soft_delete : IClassFixture<soft_delete.Fixture> { public class Fixture : SpecificationWithDirectoryPerTestFixture {
 		private MiniNode _node;
 		private IEventStoreConnection _conn;
 

@@ -7,11 +7,13 @@ namespace EventStore.Core.Tests {
 	public class SpecificationWithDirectoryPerTestFixture : IAsyncLifetime {
 		public readonly string PathName;
 
-		public SpecificationWithDirectoryPerTestFixture() {
-			var typeName = GetType().Name.Length > 30 ? GetType().Name.Substring(0, 30) : GetType().Name;
-			PathName = Path.Combine(Path.GetTempPath(), string.Format("{0}-{1}", Guid.NewGuid(), typeName));
+		public SpecificationWithDirectoryPerTestFixture(Type type = default) {
+			type ??= GetType();
+			var typeName = type.Name.Length > 30 ? type.Name.Substring(0, 30) : type.Name;
+			PathName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}-{typeName}");
 			Directory.CreateDirectory(PathName);
 		}
+
 
 		protected string GetTempFilePath() {
 			var typeName = GetType().Name.Length > 30 ? GetType().Name.Substring(0, 30) : GetType().Name;

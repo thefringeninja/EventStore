@@ -8,7 +8,7 @@ using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class when_committing_empty_transaction : SpecificationWithDirectory {
+	public class when_committing_empty_transaction : IClassFixture<when_committing_empty_transaction.Fixture> { public class Fixture : SpecificationWithDirectory {
 		private MiniNode _node;
 		private IEventStoreConnection _connection;
 		private EventData _firstEvent;

@@ -7,7 +7,7 @@ using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class subscribe_should : SpecificationWithDirectoryPerTestFixture {
+	public class subscribe_should : IClassFixture<subscribe_should.Fixture> { public class Fixture : SpecificationWithDirectoryPerTestFixture {
 		private const int Timeout = 10000;
 
 		private MiniNode _node;

@@ -13,7 +13,7 @@ using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class isjson_flag_on_event : SpecificationWithDirectory {
+	public class isjson_flag_on_event : IClassFixture<isjson_flag_on_event.Fixture> { public class Fixture : SpecificationWithDirectory {
 		private MiniNode _node;
 
 		public override async Task SetUp() {

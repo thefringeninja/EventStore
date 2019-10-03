@@ -9,23 +9,31 @@ using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class append_to_stream : SpecificationWithDirectoryPerTestFixture {
+	public class append_to_stream : IClassFixture<append_to_stream.Fixture> {
 		private readonly TcpType _tcpType = TcpType.Normal;
-		private MiniNode _node;
+		private readonly MiniNode _node;
 
 		protected virtual IEventStoreConnection BuildConnection(MiniNode node) {
 			return TestConnection.To(node, _tcpType);
 		}
 
-		public override async Task TestFixtureSetUp() {
-			await base.TestFixtureSetUp();
-			_node = new MiniNode(PathName);
-			await _node.Start();
+		public append_to_stream(Fixture fixture) {
+			_node = fixture.Node;
 		}
 
-		public override async Task TestFixtureTearDown() {
-			await _node.Shutdown();
-			await base.TestFixtureTearDown();
+		public class Fixture : SpecificationWithDirectoryPerTestFixture {
+			public MiniNode Node;
+
+			public override async Task TestFixtureSetUp() {
+				await base.TestFixtureSetUp();
+				Node = new MiniNode(PathName);
+				await Node.Start();
+			}
+
+			public override async Task TestFixtureTearDown() {
+				await Node.Shutdown();
+				await base.TestFixtureTearDown();
+			}
 		}
 
 		[Fact, Trait("Category", "Network")]
@@ -44,7 +52,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 					(await store.AppendToStreamAsync(stream1, ExpectedVersion.NoStream)).NextExpectedVersion);
 
 				var read1 = await store.ReadStreamEventsForwardAsync(stream1, 0, 2, resolveLinkTos: false);
-				Assert.Equal(0, read1.Events.Length);
+				Assert.Empty(read1.Events);
 
 				Assert.Equal(-1, (await store.AppendToStreamAsync(stream2, ExpectedVersion.NoStream)).NextExpectedVersion);
 				Assert.Equal(-1, (await store.AppendToStreamAsync(stream2, ExpectedVersion.Any)).NextExpectedVersion);
@@ -177,12 +185,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
 
-				try {
-                    await store.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: true);
-				} catch (Exception exc) {
-					Console.WriteLine(exc);
-					throw;
-				}
+                await store.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: true);
 
 				await Assert.ThrowsAsync<StreamDeletedException>(
 					() => store.AppendToStreamAsync(stream, ExpectedVersion.Any, TestEvent.NewTestEvent()));
@@ -376,24 +379,32 @@ namespace EventStore.Core.Tests.ClientAPI {
 	}
 
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class ssl_append_to_stream : SpecificationWithDirectoryPerTestFixture {
+	public class ssl_append_to_stream : IClassFixture<ssl_append_to_stream.Fixture> {
 		private readonly TcpType _tcpType = TcpType.Ssl;
-		protected MiniNode _node;
+		private readonly MiniNode _node;
 
 		protected virtual IEventStoreConnection BuildConnection(MiniNode node) {
 			return TestConnection.To(node, _tcpType);
 		}
 
-
-		public override async Task TestFixtureSetUp() {
-			await base.TestFixtureSetUp();
-			_node = new MiniNode(PathName);
-			await _node.Start();
+		public ssl_append_to_stream(Fixture fixture) {
+			_node = fixture.Node;
 		}
 
-		public override async Task TestFixtureTearDown() {
-			await _node.Shutdown();
-			await base.TestFixtureTearDown();
+		public class Fixture : SpecificationWithDirectoryPerTestFixture {
+			public MiniNode Node;
+
+
+			public override async Task TestFixtureSetUp() {
+				await base.TestFixtureSetUp();
+				Node = new MiniNode(PathName);
+				await Node.Start();
+			}
+
+			public override async Task TestFixtureTearDown() {
+				await Node.Shutdown();
+				await base.TestFixtureTearDown();
+			}
 		}
 
 		[Fact]

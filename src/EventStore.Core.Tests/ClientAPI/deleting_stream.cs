@@ -7,7 +7,7 @@ using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class deleting_stream : SpecificationWithDirectoryPerTestFixture {
+	public class deleting_stream : IClassFixture<deleting_stream.Fixture> { public class Fixture : SpecificationWithDirectoryPerTestFixture {
 		private MiniNode _node;
 
 		public override async Task TestFixtureSetUp() {

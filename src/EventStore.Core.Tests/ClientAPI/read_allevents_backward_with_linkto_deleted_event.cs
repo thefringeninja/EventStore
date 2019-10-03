@@ -4,7 +4,7 @@ using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class read_event_of_linkto_to_deleted_event : SpecificationWithLinkToToDeletedEvents {
+	public class read_event_of_linkto_to_deleted_event : IClassFixture<read_event_of_linkto_to_deleted_event.Fixture> { public class Fixture : SpecificationWithLinkToToDeletedEvents {
 		private EventReadResult _read;
 
 		protected override async Task When() {
@@ -28,7 +28,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 	}
 
 	[Trait("Category", "LongRunning")]
-	public class read_allevents_backward_with_linkto_deleted_event : SpecificationWithLinkToToDeletedEvents {
+	public class read_allevents_backward_with_linkto_deleted_event : IClassFixture<read_allevents_backward_with_linkto_deleted_event.Fixture> { public class Fixture : SpecificationWithLinkToToDeletedEvents {
 		private StreamEventsSlice _read;
 
 		protected override async Task When() {

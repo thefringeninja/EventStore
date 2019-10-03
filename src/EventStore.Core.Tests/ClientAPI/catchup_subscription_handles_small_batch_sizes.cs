@@ -8,56 +8,72 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit.Abstractions;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "LongRunning"), Trait("Category", "ClientAPI")]
-	public class catchup_subscription_handles_small_batch_sizes : SpecificationWithDirectoryPerTestFixture {
-		private MiniNode _node;
-		private string _streamName = "TestStream";
-		private CatchUpSubscriptionSettings _settings;
-		private IEventStoreConnection _conn;
+	public class catchup_subscription_handles_small_batch_sizes :
+		IClassFixture<catchup_subscription_handles_small_batch_sizes.Fixture> {
+		private readonly Fixture _fixture;
+		private readonly ITestOutputHelper _testOutputHelper;
 
-		public override async Task TestFixtureSetUp() {
-			await base.TestFixtureSetUp();
-			_node = new MiniNode(PathName, inMemDb: true);
-			await _node.Start();
+		public class Fixture : SpecificationWithDirectoryPerTestFixture {
+			private MiniNode _node;
+			public string StreamName = "TestStream";
+			public CatchUpSubscriptionSettings Settings;
+			public IEventStoreConnection Connection;
 
-			_conn = BuildConnection(_node);
-			await _conn.ConnectAsync();
-			//Create 80000 events
-			for (var i = 0; i < 80; i++) {
-				await _conn.AppendToStreamAsync(_streamName, ExpectedVersion.Any, CreateThousandEvents());
+			public override async Task TestFixtureSetUp() {
+				await base.TestFixtureSetUp();
+				_node = new MiniNode(PathName, inMemDb: true);
+				await _node.Start();
+
+				Connection = BuildConnection(_node);
+				await Connection.ConnectAsync();
+				//Create 80000 events
+				for (var i = 0; i < 80; i++) {
+					await Connection.AppendToStreamAsync(StreamName, ExpectedVersion.Any, CreateThousandEvents());
+				}
+
+				Settings = new CatchUpSubscriptionSettings(100, 1, false, true, String.Empty);
 			}
 
-			_settings = new CatchUpSubscriptionSettings(100, 1, false, true, String.Empty);
-		}
+			private EventData[] CreateThousandEvents() {
+				var events = new List<EventData>();
+				for (var i = 0; i < 1000; i++) {
+					events.Add(new EventData(Guid.NewGuid(), "testEvent", true,
+						Encoding.UTF8.GetBytes("{ \"Foo\":\"Bar\" }"), null));
+				}
 
-		private EventData[] CreateThousandEvents() {
-			var events = new List<EventData>();
-			for (var i = 0; i < 1000; i++) {
-				events.Add(new EventData(Guid.NewGuid(), "testEvent", true,
-					Encoding.UTF8.GetBytes("{ \"Foo\":\"Bar\" }"), null));
+				return events.ToArray();
 			}
 
-			return events.ToArray();
-		}
+			public override async Task TestFixtureTearDown() {
+				Connection.Dispose();
+				await _node.Shutdown();
+				await base.TestFixtureTearDown();
+			}
 
-		public override async Task TestFixtureTearDown() {
-			_conn.Dispose();
-			await _node.Shutdown();
-			await base.TestFixtureTearDown();
+			protected virtual IEventStoreConnection BuildConnection(MiniNode node) {
+				return TestConnection.Create(node.TcpEndPoint);
+			}
 		}
 
 		protected virtual IEventStoreConnection BuildConnection(MiniNode node) {
 			return TestConnection.Create(node.TcpEndPoint);
 		}
 
+		public catchup_subscription_handles_small_batch_sizes(Fixture fixture, ITestOutputHelper testOutputHelper) {
+			_fixture = fixture;
+			_testOutputHelper = testOutputHelper;
+		}
+
 		[Fact(Skip = "Very long running")]
 		public void CatchupSubscriptionToAllHandlesManyEventsWithSmallBatchSize() {
 			var mre = new ManualResetEvent(false);
-			_conn.SubscribeToAllFrom(null, _settings, (sub, evnt) => {
+			_fixture.Connection.SubscribeToAllFrom(null, _fixture.Settings, (sub, evnt) => {
 				if (evnt.OriginalEventNumber % 1000 == 0) {
-					Console.WriteLine("Processed {0} events", evnt.OriginalEventNumber);
+					_testOutputHelper.WriteLine("Processed {0} events", evnt.OriginalEventNumber);
 				}
 
 				return Task.CompletedTask;
@@ -69,9 +85,9 @@ namespace EventStore.Core.Tests.ClientAPI {
 		[Fact(Skip = "Very long running")]
 		public void CatchupSubscriptionToStreamHandlesManyEventsWithSmallBatchSize() {
 			var mre = new ManualResetEvent(false);
-			_conn.SubscribeToStreamFrom(_streamName, null, _settings, (sub, evnt) => {
+			_fixture.Connection.SubscribeToStreamFrom(_fixture.StreamName, null, _fixture.Settings, (sub, evnt) => {
 				if (evnt.OriginalEventNumber % 1000 == 0) {
-					Console.WriteLine("Processed {0} events", evnt.OriginalEventNumber);
+					_testOutputHelper.WriteLine("Processed {0} events", evnt.OriginalEventNumber);
 				}
 
 				return Task.CompletedTask;

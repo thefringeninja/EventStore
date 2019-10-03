@@ -9,7 +9,7 @@ using Xunit;
 namespace EventStore.Core.Tests.ClientAPI {
 	public abstract class SpecificationWithMiniNode : SpecificationWithDirectoryPerTestFixture {
 		protected MiniNode _node;
-		protected IEventStoreConnection _conn;
+		public IEventStoreConnection Connection;
 		protected IPEndPoint _HttpEndPoint;
 		protected virtual TimeSpan Timeout { get; } = TimeSpan.FromSeconds(3);
 
@@ -26,8 +26,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 			_node = new MiniNode(PathName, skipInitializeStandardUsersCheck: false);
 			await _node.Start();
 			_HttpEndPoint = _node.ExtHttpEndPoint;
-			_conn = BuildConnection(_node);
-			await _conn.ConnectAsync();
+			Connection = BuildConnection(_node);
+			await Connection.ConnectAsync();
 
 			try {
 				await Given().WithTimeout(Timeout);
@@ -43,7 +43,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		public override async Task TestFixtureTearDown() {
-			_conn.Close();
+			Connection.Close();
 			await _node.Shutdown();
 			await base.TestFixtureTearDown();
 		}

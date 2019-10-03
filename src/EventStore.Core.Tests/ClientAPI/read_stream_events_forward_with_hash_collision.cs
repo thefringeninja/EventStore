@@ -8,7 +8,7 @@ using Xunit;
 
 namespace EventStore.Core.Tests.Services.Storage.HashCollisions {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class read_stream_events_forward_with_hash_collision : SpecificationWithDirectoryPerTestFixture {
+	public class read_stream_events_forward_with_hash_collision : IClassFixture<read_stream_events_forward_with_hash_collision.Fixture> { public class Fixture : SpecificationWithDirectoryPerTestFixture {
 		private MiniNode _node;
 
 		protected virtual IEventStoreConnection BuildConnection(MiniNode node) {

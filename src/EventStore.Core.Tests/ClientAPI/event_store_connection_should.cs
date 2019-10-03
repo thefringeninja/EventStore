@@ -8,7 +8,7 @@ using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class event_store_connection_should : SpecificationWithDirectoryPerTestFixture {
+	public class event_store_connection_should : IClassFixture<event_store_connection_should.Fixture> { public class Fixture : SpecificationWithDirectoryPerTestFixture {
 		private MiniNode _node;
 		
 		public static IEnumerable<object[]> TestCases() => new [] {new object[]{TcpType.Normal}, new object[]{TcpType.Ssl}}; 

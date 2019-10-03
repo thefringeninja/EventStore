@@ -8,37 +8,28 @@ using Xunit;
 
 namespace EventStore.Core.Tests.Services.Storage.HashCollisions {
 	[Trait("Category", "LongRunning")]
-	public class append_to_stream_with_hash_collision : SpecificationWithDirectoryPerTestFixture {
-		private MiniNode _node;
-
+	public class append_to_stream_with_hash_collision {
 		protected virtual IEventStoreConnection BuildConnection(MiniNode node) {
 			return TestConnection.To(node, TcpType.Normal);
 		}
 
-		public override async Task TestFixtureSetUp() {
-			await base.TestFixtureSetUp();
-			_node = new MiniNode(PathName,
+		[Fact]
+		public async Task should_throw_wrong_expected_version() {
+			await using var fixture = new SpecificationWithDirectoryPerTestFixture(GetType());
+
+			var node = new MiniNode(fixture.PathName,
 				inMemDb: false,
 				memTableSize: 20,
 				hashCollisionReadLimit: 1,
 				indexBitnessVersion: EventStore.Core.Index.PTableVersions.IndexV1);
-			await _node.Start();
-		}
 
-		public override async Task TestFixtureTearDown() {
-			await _node.Shutdown();
-			await base.TestFixtureTearDown();
-		}
-
-		[Fact]
-		public async Task should_throw_wrong_expected_version() {
 			const string stream1 = "account--696193173";
 			const string stream2 = "LPN-FC002_LPK51001";
-			using (var store = BuildConnection(_node)) {
-                await store.ConnectAsync();
+			using (var store = BuildConnection(node)) {
+				await store.ConnectAsync();
 				//Write event to stream 1
-				Assert.Equal(0,  (await store.AppendToStreamAsync(stream1, ExpectedVersion.NoStream,
-						new EventData(Guid.NewGuid(), "TestEvent", true, null, null))).NextExpectedVersion);
+				Assert.Equal(0, (await store.AppendToStreamAsync(stream1, ExpectedVersion.NoStream,
+					new EventData(Guid.NewGuid(), "TestEvent", true, null, null))).NextExpectedVersion);
 				//Write 100 events to stream 2 which will have the same hash as stream 1.
 				for (int i = 0; i < 100; i++) {
 					Assert.Equal(i, (await store.AppendToStreamAsync(stream2, ExpectedVersion.Any,
@@ -46,24 +37,24 @@ namespace EventStore.Core.Tests.Services.Storage.HashCollisions {
 				}
 			}
 
-			var tcpPort = _node.TcpEndPoint.Port;
-			var tcpSecPort = _node.TcpSecEndPoint.Port;
-			var httpPort = _node.ExtHttpEndPoint.Port;
-			await _node.Shutdown(keepDb: true);
+			var tcpPort = node.TcpEndPoint.Port;
+			var tcpSecPort = node.TcpSecEndPoint.Port;
+			var httpPort = node.ExtHttpEndPoint.Port;
+			await node.Shutdown(keepDb: true);
 
 			//Restart the node to ensure the read index stream info cache is empty
-			_node = new MiniNode(PathName,
+			node = new MiniNode(fixture.PathName,
 				tcpPort, tcpSecPort, httpPort, inMemDb: false,
 				memTableSize: 20,
 				hashCollisionReadLimit: 1,
 				indexBitnessVersion: EventStore.Core.Index.PTableVersions.IndexV1);
-			await _node.Start();
-			using (var store = BuildConnection(_node)) {
-                await store.ConnectAsync();
+			await node.Start();
+			using (var store = BuildConnection(node)) {
+				await store.ConnectAsync();
 
-                await Assert.ThrowsAsync<WrongExpectedVersionException>(
-	                () => store.AppendToStreamAsync(stream1, ExpectedVersion.Any,
-		                new EventData(Guid.NewGuid(), "TestEvent", true, null, null)));
+				await Assert.ThrowsAsync<WrongExpectedVersionException>(
+					() => store.AppendToStreamAsync(stream1, ExpectedVersion.Any,
+						new EventData(Guid.NewGuid(), "TestEvent", true, null, null)));
 			}
 		}
 	}

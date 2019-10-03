@@ -68,7 +68,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			_connection.HandleReadStreamEventsForwardAsync((stream, start, max) => {
 				Assert.Equal(stream, StreamId);
 				Assert.Equal(0, start);
-				Assert.Equal(max, 1);
+				Assert.Equal(1, max);
 				throw expectedException;
 			});
 
@@ -375,8 +375,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 			await _raisedEventEvent.Task.WithTimeout(TimeoutMs);
 
-			Assert.Equal(_raisedEvents[0].OriginalEventNumber, 0);
-			Assert.Equal(_raisedEvents[1].OriginalEventNumber, 1);
+			Assert.Equal(0, _raisedEvents[0].OriginalEventNumber);
+			Assert.Equal(expected: _raisedEvents[1].OriginalEventNumber, 1);
 
 			await reconnectTask.WithTimeout(TimeoutMs);
 		}

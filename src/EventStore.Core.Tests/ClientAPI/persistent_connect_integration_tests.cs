@@ -8,7 +8,7 @@ using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class happy_case_writing_and_subscribing_to_normal_events_manual_ack : SpecificationWithMiniNode {
+	public class happy_case_writing_and_subscribing_to_normal_events_manual_ack : IClassFixture<happy_case_writing_and_subscribing_to_normal_events_manual_ack.Fixture> { public class Fixture : SpecificationWithMiniNode {
 		private readonly string StreamName = Guid.NewGuid().ToString();
 		private readonly string GroupName = Guid.NewGuid().ToString();
 		private const int BufferCount = 10;
@@ -27,9 +27,9 @@ namespace EventStore.Core.Tests.ClientAPI {
 				.ResolveLinkTos()
 				.Build();
 
-            await _conn.CreatePersistentSubscriptionAsync(StreamName, GroupName, settings, DefaultData.AdminCredentials)
+            await Connection.CreatePersistentSubscriptionAsync(StreamName, GroupName, settings, DefaultData.AdminCredentials)
 ;
-			_conn.ConnectToPersistentSubscription(StreamName, GroupName,
+			Connection.ConnectToPersistentSubscription(StreamName, GroupName,
 				(subscription, resolvedEvent) => {
 					subscription.Acknowledge(resolvedEvent);
 
@@ -46,7 +46,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			for (var i = 0; i < EventWriteCount; i++) {
 				var eventData = new EventData(Guid.NewGuid(), "SomeEvent", false, new byte[0], new byte[0]);
 
-				await _conn.AppendToStreamAsync(StreamName, ExpectedVersion.Any, DefaultData.AdminCredentials, eventData);
+				await Connection.AppendToStreamAsync(StreamName, ExpectedVersion.Any, DefaultData.AdminCredentials, eventData);
 			}
 
 			if (!_eventsReceived.WaitOne(TimeSpan.FromSeconds(5))) {
@@ -57,7 +57,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 
 	[Trait("Category", "LongRunning")]
-	public class happy_case_writing_and_subscribing_to_normal_events_auto_ack : SpecificationWithMiniNode {
+	public class happy_case_writing_and_subscribing_to_normal_events_auto_ack : IClassFixture<happy_case_writing_and_subscribing_to_normal_events_auto_ack.Fixture> { public class Fixture : SpecificationWithMiniNode {
 		private readonly string StreamName = Guid.NewGuid().ToString();
 		private readonly string GroupName = Guid.NewGuid().ToString();
 		private const int BufferCount = 10;
@@ -75,9 +75,9 @@ namespace EventStore.Core.Tests.ClientAPI {
 				.StartFromCurrent()
 				.ResolveLinkTos()
 				.Build();
-            await _conn.CreatePersistentSubscriptionAsync(StreamName, GroupName, settings, DefaultData.AdminCredentials)
+            await Connection.CreatePersistentSubscriptionAsync(StreamName, GroupName, settings, DefaultData.AdminCredentials)
 ;
-			_conn.ConnectToPersistentSubscription(StreamName, GroupName,
+			Connection.ConnectToPersistentSubscription(StreamName, GroupName,
 				(subscription, resolvedEvent) => {
 					if (Interlocked.Increment(ref _eventReceivedCount) == EventWriteCount) {
 						_eventsReceived.Set();
@@ -92,7 +92,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			for (var i = 0; i < EventWriteCount; i++) {
 				var eventData = new EventData(Guid.NewGuid(), "SomeEvent", false, new byte[0], new byte[0]);
 
-				await _conn.AppendToStreamAsync(StreamName, ExpectedVersion.Any, DefaultData.AdminCredentials, eventData);
+				await Connection.AppendToStreamAsync(StreamName, ExpectedVersion.Any, DefaultData.AdminCredentials, eventData);
 			}
 
 			if (!_eventsReceived.WaitOne(TimeSpan.FromSeconds(5))) {
@@ -103,7 +103,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 
 	[Trait("Category", "LongRunning")]
-	public class happy_case_catching_up_to_normal_events_auto_ack : SpecificationWithMiniNode {
+	public class happy_case_catching_up_to_normal_events_auto_ack : IClassFixture<happy_case_catching_up_to_normal_events_auto_ack.Fixture> { public class Fixture : SpecificationWithMiniNode {
 		private readonly string StreamName = Guid.NewGuid().ToString();
 		private readonly string GroupName = Guid.NewGuid().ToString();
 		private const int BufferCount = 10;
@@ -124,11 +124,11 @@ namespace EventStore.Core.Tests.ClientAPI {
 			for (var i = 0; i < EventWriteCount; i++) {
 				var eventData = new EventData(Guid.NewGuid(), "SomeEvent", false, new byte[0], new byte[0]);
 
-                await _conn.AppendToStreamAsync(StreamName, ExpectedVersion.Any, DefaultData.AdminCredentials, eventData);
+                await Connection.AppendToStreamAsync(StreamName, ExpectedVersion.Any, DefaultData.AdminCredentials, eventData);
 			}
 
-            await _conn.CreatePersistentSubscriptionAsync(StreamName, GroupName, settings, DefaultData.AdminCredentials);
-			_conn.ConnectToPersistentSubscription(StreamName, GroupName,
+            await Connection.CreatePersistentSubscriptionAsync(StreamName, GroupName, settings, DefaultData.AdminCredentials);
+			Connection.ConnectToPersistentSubscription(StreamName, GroupName,
 				(subscription, resolvedEvent) => {
 					if (Interlocked.Increment(ref _eventReceivedCount) == EventWriteCount) {
 						_eventsReceived.Set();
@@ -151,7 +151,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 	
 
 	[Trait("Category", "LongRunning")]
-	public class happy_case_catching_up_to_normal_events_manual_ack : SpecificationWithMiniNode {
+	public class happy_case_catching_up_to_normal_events_manual_ack : IClassFixture<happy_case_catching_up_to_normal_events_manual_ack.Fixture> { public class Fixture : SpecificationWithMiniNode {
 		private readonly string StreamName = Guid.NewGuid().ToString();
 		private readonly string GroupName = Guid.NewGuid().ToString();
 		private const int BufferCount = 10;
@@ -172,12 +172,12 @@ namespace EventStore.Core.Tests.ClientAPI {
 			for (var i = 0; i < EventWriteCount; i++) {
 				var eventData = new EventData(Guid.NewGuid(), "SomeEvent", false, new byte[0], new byte[0]);
 
-                await _conn.AppendToStreamAsync(StreamName, ExpectedVersion.Any, DefaultData.AdminCredentials, eventData);
+                await Connection.AppendToStreamAsync(StreamName, ExpectedVersion.Any, DefaultData.AdminCredentials, eventData);
 			}
 
-            await _conn.CreatePersistentSubscriptionAsync(StreamName, GroupName, settings, DefaultData.AdminCredentials)
+            await Connection.CreatePersistentSubscriptionAsync(StreamName, GroupName, settings, DefaultData.AdminCredentials)
 ;
-			_conn.ConnectToPersistentSubscription(StreamName, GroupName,
+			Connection.ConnectToPersistentSubscription(StreamName, GroupName,
 				(subscription, resolvedEvent) => {
 					subscription.Acknowledge(resolvedEvent);
 					if (Interlocked.Increment(ref _eventReceivedCount) == EventWriteCount) {
@@ -199,7 +199,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 
 	[Trait("Category", "LongRunning")]
-	public class happy_case_catching_up_to_link_to_events_manual_ack : SpecificationWithMiniNode {
+	public class happy_case_catching_up_to_link_to_events_manual_ack : IClassFixture<happy_case_catching_up_to_link_to_events_manual_ack.Fixture> { public class Fixture : SpecificationWithMiniNode {
 		private readonly string StreamName = Guid.NewGuid().ToString();
 		private readonly string GroupName = Guid.NewGuid().ToString();
 		private const int BufferCount = 10;
@@ -219,12 +219,12 @@ namespace EventStore.Core.Tests.ClientAPI {
 				.Build();
 			for (var i = 0; i < EventWriteCount; i++) {
 				var eventData = new EventData(Guid.NewGuid(), "SomeEvent", false, new byte[0], new byte[0]);
-                await _conn.AppendToStreamAsync(StreamName + "original", ExpectedVersion.Any, DefaultData.AdminCredentials,
+                await Connection.AppendToStreamAsync(StreamName + "original", ExpectedVersion.Any, DefaultData.AdminCredentials,
 					eventData);
 			}
 
-            await _conn.CreatePersistentSubscriptionAsync(StreamName, GroupName, settings, DefaultData.AdminCredentials);
-			_conn.ConnectToPersistentSubscription(StreamName, GroupName,
+            await Connection.CreatePersistentSubscriptionAsync(StreamName, GroupName, settings, DefaultData.AdminCredentials);
+			Connection.ConnectToPersistentSubscription(StreamName, GroupName,
 				(subscription, resolvedEvent) => {
 					subscription.Acknowledge(resolvedEvent);
 					if (Interlocked.Increment(ref _eventReceivedCount) == EventWriteCount) {
@@ -240,7 +240,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			for (var i = 0; i < EventWriteCount; i++) {
 				var eventData = new EventData(Guid.NewGuid(), SystemEventTypes.LinkTo, false,
 					Encoding.UTF8.GetBytes(i + "@" + StreamName + "original"), null);
-                await _conn.AppendToStreamAsync(StreamName, ExpectedVersion.Any, DefaultData.AdminCredentials, eventData);
+                await Connection.AppendToStreamAsync(StreamName, ExpectedVersion.Any, DefaultData.AdminCredentials, eventData);
 			}
 
 			if (!_eventsReceived.WaitOne(TimeSpan.FromSeconds(5))) {
@@ -251,7 +251,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 
 	[Trait("Category", "LongRunning")]
-	public class happy_case_catching_up_to_link_to_events_auto_ack : SpecificationWithMiniNode {
+	public class happy_case_catching_up_to_link_to_events_auto_ack : IClassFixture<happy_case_catching_up_to_link_to_events_auto_ack.Fixture> { public class Fixture : SpecificationWithMiniNode {
 		private readonly string StreamName = Guid.NewGuid().ToString();
 		private readonly string GroupName = Guid.NewGuid().ToString();
 		private const int BufferCount = 10;
@@ -271,12 +271,12 @@ namespace EventStore.Core.Tests.ClientAPI {
 				.Build();
 			for (var i = 0; i < EventWriteCount; i++) {
 				var eventData = new EventData(Guid.NewGuid(), "SomeEvent", false, new byte[0], new byte[0]);
-                await _conn.AppendToStreamAsync(StreamName + "original", ExpectedVersion.Any, DefaultData.AdminCredentials,
+                await Connection.AppendToStreamAsync(StreamName + "original", ExpectedVersion.Any, DefaultData.AdminCredentials,
 					eventData);
 			}
 
-            await _conn.CreatePersistentSubscriptionAsync(StreamName, GroupName, settings, DefaultData.AdminCredentials);
-			_conn.ConnectToPersistentSubscription(StreamName, GroupName,
+            await Connection.CreatePersistentSubscriptionAsync(StreamName, GroupName, settings, DefaultData.AdminCredentials);
+			Connection.ConnectToPersistentSubscription(StreamName, GroupName,
 				(subscription, resolvedEvent) => {
 					if (Interlocked.Increment(ref _eventReceivedCount) == EventWriteCount) {
 						_eventsReceived.Set();
@@ -291,7 +291,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			for (var i = 0; i < EventWriteCount; i++) {
 				var eventData = new EventData(Guid.NewGuid(), SystemEventTypes.LinkTo, false,
 					Encoding.UTF8.GetBytes(i + "@" + StreamName + "original"), null);
-                await _conn.AppendToStreamAsync(StreamName, ExpectedVersion.Any, DefaultData.AdminCredentials, eventData);
+                await Connection.AppendToStreamAsync(StreamName, ExpectedVersion.Any, DefaultData.AdminCredentials, eventData);
 			}
 
 			if (!_eventsReceived.WaitOne(TimeSpan.FromSeconds(5))) {
@@ -301,7 +301,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 	}
 
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class when_writing_and_subscribing_to_normal_events_manual_nack : SpecificationWithMiniNode {
+	public class when_writing_and_subscribing_to_normal_events_manual_nack : IClassFixture<when_writing_and_subscribing_to_normal_events_manual_nack.Fixture> { public class Fixture : SpecificationWithMiniNode {
 		private readonly string StreamName = Guid.NewGuid().ToString();
 		private readonly string GroupName = Guid.NewGuid().ToString();
 		private const int BufferCount = 10;
@@ -320,9 +320,9 @@ namespace EventStore.Core.Tests.ClientAPI {
 				.ResolveLinkTos()
 				.Build();
 
-            await _conn.CreatePersistentSubscriptionAsync(StreamName, GroupName, settings, DefaultData.AdminCredentials)
+            await Connection.CreatePersistentSubscriptionAsync(StreamName, GroupName, settings, DefaultData.AdminCredentials)
 ;
-			_conn.ConnectToPersistentSubscription(StreamName, GroupName,
+			Connection.ConnectToPersistentSubscription(StreamName, GroupName,
 				(subscription, resolvedEvent) => {
 					subscription.Fail(resolvedEvent, PersistentSubscriptionNakEventAction.Park, "fail");
 
@@ -339,7 +339,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			for (var i = 0; i < EventWriteCount; i++) {
 				var eventData = new EventData(Guid.NewGuid(), "SomeEvent", false, new byte[0], new byte[0]);
 
-				await _conn.AppendToStreamAsync(StreamName, ExpectedVersion.Any, DefaultData.AdminCredentials, eventData);
+				await Connection.AppendToStreamAsync(StreamName, ExpectedVersion.Any, DefaultData.AdminCredentials, eventData);
 			}
 
 			if (!_eventsReceived.WaitOne(TimeSpan.FromSeconds(5))) {

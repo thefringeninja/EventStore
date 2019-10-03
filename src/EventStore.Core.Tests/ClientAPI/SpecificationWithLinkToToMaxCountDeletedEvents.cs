@@ -14,15 +14,15 @@ namespace EventStore.Core.Tests.ClientAPI {
 			var creds = DefaultData.AdminCredentials;
 			DeletedStreamName = Guid.NewGuid().ToString();
 			LinkedStreamName = Guid.NewGuid().ToString();
-			await _conn.AppendToStreamAsync(DeletedStreamName, ExpectedVersion.Any, creds,
+			await Connection.AppendToStreamAsync(DeletedStreamName, ExpectedVersion.Any, creds,
 				new EventData(Guid.NewGuid(), "testing1", true, Encoding.UTF8.GetBytes("{'foo' : 4}"), new byte[0]));
-			await _conn.SetStreamMetadataAsync(DeletedStreamName, ExpectedVersion.Any,
+			await Connection.SetStreamMetadataAsync(DeletedStreamName, ExpectedVersion.Any,
 				new StreamMetadata(2, null, null, null, null));
-			await _conn.AppendToStreamAsync(DeletedStreamName, ExpectedVersion.Any, creds,
+			await Connection.AppendToStreamAsync(DeletedStreamName, ExpectedVersion.Any, creds,
 				new EventData(Guid.NewGuid(), "testing2", true, Encoding.UTF8.GetBytes("{'foo' : 4}"), new byte[0]));
-			await _conn.AppendToStreamAsync(DeletedStreamName, ExpectedVersion.Any, creds,
+			await Connection.AppendToStreamAsync(DeletedStreamName, ExpectedVersion.Any, creds,
 				new EventData(Guid.NewGuid(), "testing3", true, Encoding.UTF8.GetBytes("{'foo' : 4}"), new byte[0]));
-			await _conn.AppendToStreamAsync(LinkedStreamName, ExpectedVersion.Any, creds,
+			await Connection.AppendToStreamAsync(LinkedStreamName, ExpectedVersion.Any, creds,
 				new EventData(Guid.NewGuid(), SystemEventTypes.LinkTo, false,
 					Encoding.UTF8.GetBytes("0@" + DeletedStreamName), new byte[0]));
 		}

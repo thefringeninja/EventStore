@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class transaction : SpecificationWithDirectoryPerTestFixture {
+	public class transaction : IClassFixture<transaction.Fixture> { public class Fixture : SpecificationWithDirectoryPerTestFixture {
 		private MiniNode _node;
 
 		public override async Task TestFixtureSetUp() {

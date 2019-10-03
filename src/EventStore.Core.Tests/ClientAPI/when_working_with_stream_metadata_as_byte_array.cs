@@ -10,7 +10,7 @@ using ExpectedVersion = EventStore.ClientAPI.ExpectedVersion;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class when_working_with_stream_metadata_as_byte_array : SpecificationWithDirectoryPerTestFixture {
+	public class when_working_with_stream_metadata_as_byte_array : IClassFixture<when_working_with_stream_metadata_as_byte_array.Fixture> { public class Fixture : SpecificationWithDirectoryPerTestFixture {
 		private MiniNode _node;
 		private IEventStoreConnection _connection;
 

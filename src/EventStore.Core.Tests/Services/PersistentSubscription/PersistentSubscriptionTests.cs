@@ -1525,8 +1525,8 @@ namespace EventStore.Core.Tests.Services.PersistentSubscription {
 
 	public class DeadlockTest : SpecificationWithMiniNode {
 		protected override Task Given() {
-			_conn = BuildConnection(_node);
-            return _conn.ConnectAsync();
+			Connection = BuildConnection(_node);
+            return Connection.ConnectAsync();
 		}
 
 		protected override Task When() => Task.CompletedTask;
@@ -1535,16 +1535,16 @@ namespace EventStore.Core.Tests.Services.PersistentSubscription {
 		public async Task read_whilst_ack_doesnt_deadlock_with_request_response_dispatcher() {
 			var persistentSubscriptionSettings = PersistentSubscriptionSettings.Create().Build();
 			var userCredentials = DefaultData.AdminCredentials;
-            await _conn.CreatePersistentSubscriptionAsync("TestStream", "TestGroup", persistentSubscriptionSettings,
+            await Connection.CreatePersistentSubscriptionAsync("TestStream", "TestGroup", persistentSubscriptionSettings,
 				userCredentials);
 
 			const int count = 5000;
-            await _conn.AppendToStreamAsync("TestStream", ExpectedVersion.Any, CreateEvent().Take(count));
+            await Connection.AppendToStreamAsync("TestStream", ExpectedVersion.Any, CreateEvent().Take(count));
 
 
 			var received = 0;
 			var manualResetEventSlim = new ManualResetEventSlim();
-			var sub1 = _conn.ConnectToPersistentSubscription("TestStream", "TestGroup", (sub, ev) => {
+			var sub1 = Connection.ConnectToPersistentSubscription("TestStream", "TestGroup", (sub, ev) => {
 					received++;
 					if (received == count) {
 						manualResetEventSlim.Set();
@@ -1556,7 +1556,7 @@ namespace EventStore.Core.Tests.Services.PersistentSubscription {
 			Assert.True(manualResetEventSlim.Wait(TimeSpan.FromSeconds(30)),
 				"Failed to receive all events in 2 minutes. Assume event store is deadlocked.");
 			sub1.Stop(TimeSpan.FromSeconds(10));
-			_conn.Close();
+			Connection.Close();
 		}
 
 		private static IEnumerable<EventData> CreateEvent() {

@@ -24,6 +24,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="server.p12" />
+    <EmbeddedResource Remove="ClientAPI\Embedded\**" />
+    <EmbeddedResource Remove="ClientAPI\ExpectedVersion64Bit\**" />
+    <EmbeddedResource Remove="ClientAPI\Security\**" />
+    <EmbeddedResource Remove="ClientAPI\UserManagement\**" />
+    <EmbeddedResource Remove="Services\PersistentSubscription\**" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="TransactionLog\Manager\" />
@@ -32,10 +37,55 @@
     <None Include="TestConfigs\*.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Remove="ClientAPI\Embedded\**" />
+    <None Remove="ClientAPI\ExpectedVersion64Bit\**" />
+    <None Remove="ClientAPI\Security\**" />
+    <None Remove="ClientAPI\UserManagement\**" />
+    <None Remove="Services\PersistentSubscription\**" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\es-tile.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="ClientAPI\UserManagement\**" />
+    <Compile Remove="ClientAPI\Security\**" />
+    <Compile Remove="ClientAPI\Embedded\**" />
+    <Compile Remove="ClientAPI\create_persistent_subscription.cs" />
+    <Compile Remove="ClientAPI\deleting_persistent_subscription.cs" />
+    <Compile Remove="ClientAPI\deleting_stream.cs" />
+    <Compile Remove="ClientAPI\event_store_connection_should.cs" />
+    <Compile Remove="ClientAPI\isjson_flag_on_event.cs" />
+    <Compile Remove="ClientAPI\persistent_connect_integration_tests.cs" />
+    <Compile Remove="ClientAPI\read_all_events_backward_should.cs" />
+    <Compile Remove="ClientAPI\read_all_events_forward_should.cs" />
+    <Compile Remove="ClientAPI\read_all_events_forward_with_hard_deleted_stream_should.cs" />
+    <Compile Remove="ClientAPI\read_all_events_forward_with_linkto_passed_max_count.cs" />
+    <Compile Remove="ClientAPI\read_all_events_forward_with_linkto_to_deleted_event.cs" />
+    <Compile Remove="ClientAPI\read_all_events_forward_with_soft_deleted_stream_should.cs" />
+    <Compile Remove="ClientAPI\read_allevents_backward_with_linkto_deleted_event.cs" />
+    <Compile Remove="ClientAPI\read_event_should.cs" />
+    <Compile Remove="ClientAPI\read_event_stream_backward_should.cs" />
+    <Compile Remove="ClientAPI\read_event_stream_forward_should.cs" />
+    <Compile Remove="ClientAPI\read_event_with_hash_collision.cs" />
+    <Compile Remove="ClientAPI\read_stream_events_backward_with_hash_collision.cs" />
+    <Compile Remove="ClientAPI\read_stream_events_forward_with_hash_collision.cs" />
+    <Compile Remove="ClientAPI\read_stream_events_with_unresolved_linkto.cs" />
+    <Compile Remove="ClientAPI\soft_delete.cs" />
+    <Compile Remove="ClientAPI\subscribe_should.cs" />
+    <Compile Remove="ClientAPI\subscribe_to_all_catching_up_should.cs" />
+    <Compile Remove="ClientAPI\subscribe_to_all_should.cs" />
+    <Compile Remove="ClientAPI\subscribe_to_stream_catching_up_should.cs" />
+    <Compile Remove="ClientAPI\transaction.cs" />
+    <Compile Remove="ClientAPI\update_persistent_subscription.cs" />
+    <Compile Remove="ClientAPI\when_committing_empty_transaction.cs" />
+    <Compile Remove="ClientAPI\when_having_max_count_set_for_stream.cs" />
+    <Compile Remove="ClientAPI\when_having_truncatebefore_set_for_stream.cs" />
+    <Compile Remove="ClientAPI\when_working_with_metadata.cs" />
+    <Compile Remove="ClientAPI\when_working_with_stream_metadata_as_byte_array.cs" />
+    <Compile Remove="ClientAPI\when_working_with_stream_metadata_as_structured_info.cs" />
+    <Compile Remove="ClientAPI\connecting_to_a_persistent_subscription_async.cs" />
+    <Compile Remove="ClientAPI\connecting_with_connection_string.cs" />
   </ItemGroup>
 </Project>

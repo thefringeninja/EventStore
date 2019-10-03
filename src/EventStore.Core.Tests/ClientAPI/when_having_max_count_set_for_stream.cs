@@ -7,7 +7,7 @@ using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class when_having_max_count_set_for_stream : SpecificationWithDirectory {
+	public class when_having_max_count_set_for_stream : IClassFixture<when_having_max_count_set_for_stream.Fixture> { public class Fixture : SpecificationWithDirectory {
 		private const string Stream = "max-count-test-stream";
 
 		private MiniNode _node;

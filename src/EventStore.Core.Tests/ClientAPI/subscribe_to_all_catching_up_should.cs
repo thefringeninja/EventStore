@@ -14,7 +14,7 @@ using ILogger = EventStore.Common.Log.ILogger;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class subscribe_to_all_catching_up_should : SpecificationWithDirectory {
+	public class subscribe_to_all_catching_up_should : IClassFixture<subscribe_to_all_catching_up_should.Fixture> { public class Fixture : SpecificationWithDirectory {
 		private static readonly ILogger Log = LogManager.GetLoggerFor<subscribe_to_all_catching_up_should>();
 		private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(60);
 

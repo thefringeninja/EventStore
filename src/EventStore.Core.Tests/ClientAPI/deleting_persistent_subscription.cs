@@ -8,7 +8,7 @@ using Xunit;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class deleting_existing_persistent_subscription_group_with_permissions : SpecificationWithMiniNode {
+	public class deleting_existing_persistent_subscription_group_with_permissions : IClassFixture<deleting_existing_persistent_subscription_group_with_permissions.Fixture> { public class Fixture : SpecificationWithMiniNode {
 		private readonly PersistentSubscriptionSettings _settings = PersistentSubscriptionSettings.Create()
 			.DoNotResolveLinkTos()
 			.StartFromCurrent();
@@ -16,17 +16,17 @@ namespace EventStore.Core.Tests.ClientAPI {
 		private readonly string _stream = Guid.NewGuid().ToString();
 
 		protected override Task When() =>
-			_conn.CreatePersistentSubscriptionAsync(_stream, "groupname123", _settings,
+			Connection.CreatePersistentSubscriptionAsync(_stream, "groupname123", _settings,
 				DefaultData.AdminCredentials);
 
 		[Fact]
 		public async Task the_delete_of_group_succeeds() {
-			await _conn.DeletePersistentSubscriptionAsync(_stream, "groupname123", DefaultData.AdminCredentials);
+			await Connection.DeletePersistentSubscriptionAsync(_stream, "groupname123", DefaultData.AdminCredentials);
 		}
 	}
 
 	[Trait("Category", "LongRunning")]
-	public class deleting_existing_persistent_subscription_with_subscriber : SpecificationWithMiniNode {
+	public class deleting_existing_persistent_subscription_with_subscriber : IClassFixture<deleting_existing_persistent_subscription_with_subscriber.Fixture> { public class Fixture : SpecificationWithMiniNode {
 		private readonly PersistentSubscriptionSettings _settings = PersistentSubscriptionSettings.Create()
 			.DoNotResolveLinkTos()
 			.StartFromCurrent();
@@ -36,15 +36,15 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 		protected override async Task Given() {
 			await base.Given();
-            await _conn.CreatePersistentSubscriptionAsync(_stream, "groupname123", _settings,
+            await Connection.CreatePersistentSubscriptionAsync(_stream, "groupname123", _settings,
 				DefaultData.AdminCredentials);
-			_conn.ConnectToPersistentSubscription(_stream, "groupname123",
+			Connection.ConnectToPersistentSubscription(_stream, "groupname123",
 				(s, e) => Task.CompletedTask,
 				(s, r, e) => _called.Set());
 		}
 
 		protected override Task When() {
-			return _conn.DeletePersistentSubscriptionAsync(_stream, "groupname123", DefaultData.AdminCredentials);
+			return Connection.DeletePersistentSubscriptionAsync(_stream, "groupname123", DefaultData.AdminCredentials);
 		}
 
 		[Fact]
@@ -55,7 +55,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 
 	[Trait("Category", "LongRunning")]
-	public class deleting_persistent_subscription_group_that_doesnt_exist : SpecificationWithMiniNode {
+	public class deleting_persistent_subscription_group_that_doesnt_exist : IClassFixture<deleting_persistent_subscription_group_that_doesnt_exist.Fixture> { public class Fixture : SpecificationWithMiniNode {
 		private readonly string _stream = Guid.NewGuid().ToString();
 
 		protected override Task When() => Task.CompletedTask;
@@ -64,14 +64,14 @@ namespace EventStore.Core.Tests.ClientAPI {
 		public Task the_delete_fails_with_argument_exception() {
 			return Assert.ThrowsAsync<InvalidOperationException>(
 				() =>
-					_conn.DeletePersistentSubscriptionAsync(_stream, Guid.NewGuid().ToString(),
+					Connection.DeletePersistentSubscriptionAsync(_stream, Guid.NewGuid().ToString(),
 						DefaultData.AdminCredentials));
 		}
 	}
 
 
 	[Trait("Category", "LongRunning")]
-	public class deleting_persistent_subscription_group_without_permissions : SpecificationWithMiniNode {
+	public class deleting_persistent_subscription_group_without_permissions : IClassFixture<deleting_persistent_subscription_group_without_permissions.Fixture> { public class Fixture : SpecificationWithMiniNode {
 		private readonly string _stream = Guid.NewGuid().ToString();
 
 		protected override Task When() => Task.CompletedTask;
@@ -79,7 +79,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		[Fact]
 		public Task the_delete_fails_with_access_denied() {
 			return Assert.ThrowsAsync<AccessDeniedException>(
-				() => _conn.DeletePersistentSubscriptionAsync(_stream, Guid.NewGuid().ToString()));
+				() => Connection.DeletePersistentSubscriptionAsync(_stream, Guid.NewGuid().ToString()));
 		}
 	}
 

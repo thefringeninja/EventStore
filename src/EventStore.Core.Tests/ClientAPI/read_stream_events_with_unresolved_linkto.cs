@@ -13,34 +13,34 @@ using StreamMetadata = EventStore.ClientAPI.StreamMetadata;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class read_stream_events_with_unresolved_linkto : SpecificationWithMiniNode {
+	public class read_stream_events_with_unresolved_linkto : IClassFixture<read_stream_events_with_unresolved_linkto.Fixture> { public class Fixture : SpecificationWithMiniNode {
 		private EventData[] _testEvents;
 
 		protected override async Task When() {
-            await _conn.SetStreamMetadataAsync(
+            await Connection.SetStreamMetadataAsync(
 					"$all", -1, StreamMetadata.Build().SetReadRole(SystemRoles.All),
 					new UserCredentials(SystemUsers.Admin, SystemUsers.DefaultAdminPassword));
 
 			_testEvents = Enumerable.Range(0, 20).Select(x => TestEvent.NewTestEvent(x.ToString())).ToArray();
-            await _conn.AppendToStreamAsync("stream", ExpectedVersion.NoStream, _testEvents);
-            await _conn.AppendToStreamAsync(
+            await Connection.AppendToStreamAsync("stream", ExpectedVersion.NoStream, _testEvents);
+            await Connection.AppendToStreamAsync(
 					"links", ExpectedVersion.NoStream,
 					new EventData(
 						Guid.NewGuid(), EventStore.ClientAPI.Common.SystemEventTypes.LinkTo, false,
 						Encoding.UTF8.GetBytes("0@stream"), null));
-            await _conn.DeleteStreamAsync("stream", ExpectedVersion.Any);
+            await Connection.DeleteStreamAsync("stream", ExpectedVersion.Any);
 		}
 
 		[Fact, Trait("Category", "LongRunning")]
 		public async Task ensure_deleted_stream() {
-			var res = await _conn.ReadStreamEventsForwardAsync("stream", 0, 100, false);
+			var res = await Connection.ReadStreamEventsForwardAsync("stream", 0, 100, false);
 			Assert.Equal(SliceReadStatus.StreamNotFound, res.Status);
 			Assert.Equal(0, res.Events.Length);
 		}
 
 		[Fact, Trait("Category", "LongRunning")]
 		public async Task returns_unresolved_linkto() {
-			var read = await _conn.ReadStreamEventsForwardAsync("links", 0, 1, true);
+			var read = await Connection.ReadStreamEventsForwardAsync("links", 0, 1, true);
 			Assert.Equal(1, read.Events.Length);
 			Assert.Null(read.Events[0].Event);
 			Assert.NotNull(read.Events[0].Link);

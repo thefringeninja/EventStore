@@ -12,7 +12,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_streams_tracker.whe
 		private UserCredentials _credentials = new UserCredentials("admin", "changeit");
 
 		protected override async Task When() {
-			var sub = await _conn.SubscribeToStreamAsync(_projectionNamesBuilder.GetEmittedStreamsName(), true, (s, evnt) => {
+			var sub = await Connection.SubscribeToStreamAsync(_projectionNamesBuilder.GetEmittedStreamsName(), true, (s, evnt) => {
 				_eventAppeared.Signal();
 				return Task.CompletedTask;
 			}, userCredentials: _credentials);
@@ -29,7 +29,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_streams_tracker.whe
 
 		[Fact]
 		public async Task should_write_a_stream_tracked_event() {
-			var result = await _conn.ReadStreamEventsForwardAsync(_projectionNamesBuilder.GetEmittedStreamsName(), 0, 200,
+			var result = await Connection.ReadStreamEventsForwardAsync(_projectionNamesBuilder.GetEmittedStreamsName(), 0, 200,
 				false, _credentials);
 			Assert.Equal(1, result.Events.Length);
 			Assert.Equal("test_stream", Helper.UTF8NoBom.GetString(result.Events[0].Event.Data));

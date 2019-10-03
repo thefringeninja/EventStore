@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class when_working_with_metadata : SpecificationWithDirectoryPerTestFixture {
+	public class when_working_with_metadata : IClassFixture<when_working_with_metadata.Fixture> { public class Fixture : SpecificationWithDirectoryPerTestFixture {
 		private MiniNode _node;
 		private IEventStoreConnection _connection;
 

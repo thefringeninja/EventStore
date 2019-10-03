@@ -8,12 +8,21 @@ using EventStore.ClientAPI.Internal;
 using EventStore.Core.Tests.ClientAPI.Helpers;
 using EventStore.Core.Tests.Helpers;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace EventStore.Core.Tests.ClientAPI {
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
-	public class connect : SpecificationWithDirectoryPerTestFixture {
+	public class connect {
+		private readonly ITestOutputHelper _testOutputHelper;
 
-		public static IEnumerable<object[]> TestCases() => new [] {new object[]{TcpType.Normal}, new object[]{TcpType.Ssl}}; 
+		public connect(ITestOutputHelper testOutputHelper) {
+			_testOutputHelper = testOutputHelper;
+		}
+
+		public static IEnumerable<object[]> TestCases() => new[] {
+			new object[] {TcpType.Normal},
+			new object[] {TcpType.Ssl}
+		};
 
 		//TODO GFY THESE NEED TO BE LOOKED AT IN LINUX
 		[Theory, MemberData(nameof(TestCases)), Trait("Category", "Network")]
@@ -53,7 +62,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 					await connection.ConnectAsync();
 
-					await closed.Task.WithTimeout(TimeSpan.FromSeconds(120)); // TCP connection timeout might be even 60 seconds
+					await closed.Task.WithTimeout(
+						TimeSpan.FromSeconds(120)); // TCP connection timeout might be even 60 seconds
 
 					await Assert.ThrowsAsync<ObjectDisposedException>(() => connection.ConnectAsync().WithTimeout());
 				}
@@ -83,14 +93,16 @@ namespace EventStore.Core.Tests.ClientAPI {
 				using (var connection = EventStoreConnection.Create(settings, new IPEndPoint(ip, port).ToESTcpUri())) {
 					connection.Closed += (s, e) => closed.TrySetResult(true);
 					connection.Connected += (s, e) =>
-						Console.WriteLine("EventStoreConnection '{0}': connected to [{1}]...",
+						_testOutputHelper.WriteLine("EventStoreConnection '{0}': connected to [{1}]...",
 							e.Connection.ConnectionName, e.RemoteEndPoint);
 					connection.Reconnecting += (s, e) =>
-						Console.WriteLine("EventStoreConnection '{0}': reconnecting...", e.Connection.ConnectionName);
+						_testOutputHelper.WriteLine("EventStoreConnection '{0}': reconnecting...",
+							e.Connection.ConnectionName);
 					connection.Disconnected += (s, e) =>
-						Console.WriteLine("EventStoreConnection '{0}': disconnected from [{1}]...",
+						_testOutputHelper.WriteLine("EventStoreConnection '{0}': disconnected from [{1}]...",
 							e.Connection.ConnectionName, e.RemoteEndPoint);
-					connection.ErrorOccurred += (s, e) => Console.WriteLine("EventStoreConnection '{0}': error = {1}",
+					connection.ErrorOccurred += (s, e) => _testOutputHelper.WriteLine(
+						"EventStoreConnection '{0}': error = {1}",
 						e.Connection.ConnectionName, e.Exception);
 
 					await connection.ConnectAsync();
@@ -110,8 +122,13 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 	[Trait("Category", "ClientAPI"), Trait("Category", "LongRunning")]
 	public class not_connected_tests {
+		private readonly ITestOutputHelper _testOutputHelper;
 		private readonly TcpType _tcpType = TcpType.Normal;
-		
+
+		public not_connected_tests(ITestOutputHelper testOutputHelper) {
+			_testOutputHelper = testOutputHelper;
+		}
+
 		[Fact]
 		public async Task should_timeout_connection_after_configured_amount_time_on_conenct() {
 			var closed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -132,18 +149,21 @@ namespace EventStore.Core.Tests.ClientAPI {
 			const int port = 4567;
 			using (var connection = EventStoreConnection.Create(settings, new IPEndPoint(ip, port).ToESTcpUri())) {
 				connection.Closed += (s, e) => closed.TrySetResult(true);
-				connection.Connected += (s, e) => Console.WriteLine("EventStoreConnection '{0}': connected to [{1}]...",
+				connection.Connected += (s, e) => _testOutputHelper.WriteLine(
+					"EventStoreConnection '{0}': connected to [{1}]...",
 					e.Connection.ConnectionName, e.RemoteEndPoint);
 				connection.Reconnecting += (s, e) =>
-					Console.WriteLine("EventStoreConnection '{0}': reconnecting...", e.Connection.ConnectionName);
+					_testOutputHelper.WriteLine("EventStoreConnection '{0}': reconnecting...",
+						e.Connection.ConnectionName);
 				connection.Disconnected += (s, e) =>
-					Console.WriteLine("EventStoreConnection '{0}': disconnected from [{1}]...",
+					_testOutputHelper.WriteLine("EventStoreConnection '{0}': disconnected from [{1}]...",
 						e.Connection.ConnectionName, e.RemoteEndPoint);
-				connection.ErrorOccurred += (s, e) => Console.WriteLine("EventStoreConnection '{0}': error = {1}",
+				connection.ErrorOccurred += (s, e) => _testOutputHelper.WriteLine(
+					"EventStoreConnection '{0}': error = {1}",
 					e.Connection.ConnectionName, e.Exception);
-                await connection.ConnectAsync();
+				await connection.ConnectAsync();
 
-                await closed.Task.WithTimeout(TimeSpan.FromSeconds(15));
+				await closed.Task.WithTimeout(TimeSpan.FromSeconds(15));
 			}
 		}
 	}

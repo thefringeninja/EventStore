@@ -14,7 +14,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream_manager.when
 		protected override TimeSpan Timeout { get; } = TimeSpan.FromSeconds(10);
 
 		protected override async Task When() {
-			var sub = await _conn.SubscribeToStreamAsync(_projectionNamesBuilder.GetEmittedStreamsName(), true, (s, evnt) => {
+			var sub = await Connection.SubscribeToStreamAsync(_projectionNamesBuilder.GetEmittedStreamsName(), true, (s, evnt) => {
 				_eventAppeared.Signal();
 				return Task.CompletedTask;
 			}, userCredentials: _credentials);
@@ -34,7 +34,7 @@ namespace EventStore.Projections.Core.Tests.Services.emitted_stream_manager.when
 
 		[Fact]
 		public async Task should_at_best_attempt_to_track_a_unique_list_of_streams() {
-			var result = await _conn.ReadStreamEventsForwardAsync(_projectionNamesBuilder.GetEmittedStreamsName(), 0, 200,
+			var result = await Connection.ReadStreamEventsForwardAsync(_projectionNamesBuilder.GetEmittedStreamsName(), 0, 200,
 				false, _credentials);
 			Assert.Equal(1, result.Events.Length);
 			Assert.Equal("test_stream", Helper.UTF8NoBom.GetString(result.Events[0].Event.Data));
