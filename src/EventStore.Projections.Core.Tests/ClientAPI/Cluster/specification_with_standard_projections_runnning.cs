@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -36,6 +37,7 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.Cluster {
 			public readonly IPEndPoint ExternalTcp;
 			public readonly IPEndPoint ExternalTcpSec;
 			public readonly IPEndPoint ExternalHttp;
+			private readonly int[] _ports;
 
 			public Endpoints(
 				int internalTcp, int internalTcpSec, int internalHttp, int externalTcp,
@@ -49,7 +51,12 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.Cluster {
 				ExternalTcp = new IPEndPoint(address, externalTcp);
 				ExternalTcpSec = new IPEndPoint(address, externalTcpSec);
 				ExternalHttp = new IPEndPoint(address, externalHttp);
+
+				_ports = new[]
+					{internalHttp, internalTcp, internalTcpSec, externalHttp, externalTcp, externalTcpSec};
 			}
+
+			public IEnumerable<int> Ports => _ports;
 		}
 
 		[OneTimeSetUp]
@@ -72,15 +79,12 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.Cluster {
 				PortsHelper.GetAvailablePort(IPAddress.Loopback), PortsHelper.GetAvailablePort(IPAddress.Loopback),
 				PortsHelper.GetAvailablePort(IPAddress.Loopback), PortsHelper.GetAvailablePort(IPAddress.Loopback));
 
-			PortsHelper.GetAvailablePort(IPAddress.Loopback);
-
 			_nodes[0] = CreateNode(0,
-				_nodeEndpoints[0], new IPEndPoint[] {_nodeEndpoints[1].InternalHttp, _nodeEndpoints[2].InternalHttp});
+				_nodeEndpoints[0], new[] {_nodeEndpoints[1].InternalHttp, _nodeEndpoints[2].InternalHttp});
 			_nodes[1] = CreateNode(1,
-				_nodeEndpoints[1], new IPEndPoint[] {_nodeEndpoints[0].InternalHttp, _nodeEndpoints[2].InternalHttp});
-
+				_nodeEndpoints[1], new[] {_nodeEndpoints[0].InternalHttp, _nodeEndpoints[2].InternalHttp});
 			_nodes[2] = CreateNode(2,
-				_nodeEndpoints[2], new IPEndPoint[] {_nodeEndpoints[0].InternalHttp, _nodeEndpoints[1].InternalHttp});
+				_nodeEndpoints[2], new[] {_nodeEndpoints[0].InternalHttp, _nodeEndpoints[1].InternalHttp});
 
 
 			_nodes[0].Start();
@@ -182,6 +186,11 @@ namespace EventStore.Projections.Core.Tests.ClientAPI.Cluster {
 #if DEBUG
 			QueueStatsCollector.DisableIdleDetection();
 #endif
+			foreach (var endpoint in _nodeEndpoints) {
+				foreach (var port in endpoint.Ports) {
+					PortsHelper.ReturnPort(port);
+				}
+			}
 			await base.TestFixtureTearDown();
 		}
 

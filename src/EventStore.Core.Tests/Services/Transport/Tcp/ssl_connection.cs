@@ -24,6 +24,9 @@ namespace EventStore.Core.Tests.Services.Transport.Tcp {
 			_port = PortsHelper.GetAvailablePort(_ip);
 		}
 
+		[TearDown]
+		public void TearDown() => PortsHelper.ReturnPort(_port);
+
 		[Test]
 		public void should_connect_to_each_other_and_send_data() {
 			var serverEndPoint = new IPEndPoint(_ip, _port);

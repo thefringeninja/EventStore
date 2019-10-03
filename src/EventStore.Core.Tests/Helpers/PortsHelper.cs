@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
-using System.Threading.Tasks;
 using EventStore.Common.Log;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -13,15 +10,35 @@ namespace EventStore.Core.Tests.Helpers {
 	public static class PortsHelper {
 		private static readonly ILogger Log = LogManager.GetLogger("PortsHelper");
 
+		public const int PortStart = 45000;
+		public const int PortCount = 200;
+
+		private static readonly ConcurrentQueue<int> AvailablePorts =
+			new ConcurrentQueue<int>(Enumerable.Range(PortStart, PortCount));
+
+
 		public static int GetAvailablePort(IPAddress ip) {
-			using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-			socket.Bind(new IPEndPoint(ip, 0));
-			var availablePort = ((IPEndPoint)socket.LocalEndPoint).Port;
+			const int maxAttempts = 50;
+			var properties = IPGlobalProperties.GetIPGlobalProperties();
 
-			Log.Trace($"Find port {availablePort} for use.");
+			var inUse = new HashSet<int>(properties.GetActiveTcpConnections().Select(x => x.LocalEndPoint.Port)
+				.Concat(properties.GetActiveTcpListeners().Select(x => x.Port))
+				.Concat(properties.GetActiveUdpListeners().Select(x => x.Port)));
 
-			return availablePort;
+			var attempt = 0;
+
+			while (attempt++ < maxAttempts && AvailablePorts.TryDequeue(out var port)) {
+				if (!inUse.Contains(port)) {
+					return port;
+				}
+
+				AvailablePorts.Enqueue(port);
+			}
+
+			throw new Exception($"Could not find free port after {maxAttempts} attempts.");
 		}
+
+		public static void ReturnPort(int port) => AvailablePorts.Enqueue(port);
 /*
         private static int[] GetRandomPorts(int from, int portCount)
         {
