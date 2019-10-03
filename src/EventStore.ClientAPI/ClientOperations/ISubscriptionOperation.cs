@@ -4,9 +4,9 @@ using EventStore.ClientAPI.Transport.Tcp;
 
 namespace EventStore.ClientAPI.ClientOperations {
 	internal interface ISubscriptionOperation {
-		void DropSubscription(SubscriptionDropReason reason, Exception exc, TcpPackageConnection connection = null);
+		void DropSubscription(SubscriptionDropReason reason, Exception exc, ITcpConnection connection = null);
 		void ConnectionClosed();
 		InspectionResult InspectPackage(TcpPackage package);
-		bool Subscribe(Guid correlationId, TcpPackageConnection connection);
+		bool Subscribe(Guid correlationId, ITcpConnection connection);
 	}
 }

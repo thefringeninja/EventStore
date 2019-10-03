@@ -13,6 +13,7 @@ using EventStore.ClientAPI.Messages;
 namespace EventStore.ClientAPI.Internal {
 	internal class EventStoreConnectionLogicHandler : IEventStoreConnectionLogicHandler {
 		private static readonly TimerTickMessage TimerTickMessage = new TimerTickMessage();
+		private static readonly TcpClientConnector Connector = new TcpClientConnector();
 
 		public int TotalOperationCount {
 			get { return _operations.TotalOperationCount; }
@@ -40,7 +41,7 @@ namespace EventStore.ClientAPI.Internal {
 		private int _wasConnected;
 
 		private int _packageNumber;
-		private TcpPackageConnection _connection;
+		private ITcpConnection _connection;
 
 		public EventStoreConnectionLogicHandler(IEventStoreConnection esConnection, ConnectionSettings settings) {
 			Ensure.NotNull(esConnection, "esConnection");
@@ -151,22 +152,24 @@ namespace EventStore.ClientAPI.Internal {
 			}
 
 			_connectingPhase = ConnectingPhase.ConnectionEstablishing;
-			_connection = new TcpPackageConnection(
-				_settings.Log,
-				endPoint,
-				Guid.NewGuid(),
-				_settings.UseSslConnection,
-				_settings.TargetHost,
-				_settings.ValidateServer,
-				_settings.ClientConnectionTimeout,
-				(connection, package) => EnqueueMessage(new HandleTcpPackageMessage(connection, package)),
-				(connection, exc) => EnqueueMessage(new TcpConnectionErrorMessage(connection, exc)),
-				connection => EnqueueMessage(new TcpConnectionEstablishedMessage(connection)),
-				(connection, error) => EnqueueMessage(new TcpConnectionClosedMessage(connection, error)));
-			_connection.StartReceiving();
+			Task.Run(async () => {
+				_connection = await Connector.ConnectTo(
+					_settings.Log,
+					Guid.NewGuid(),
+					endPoint,
+					_settings.UseSslConnection,
+					_settings.TargetHost,
+					_settings.ValidateServer,
+					_settings.ClientConnectionTimeout,
+					(connection, package) => EnqueueMessage(new HandleTcpPackageMessage(connection, package)),
+					(connection, exc) => EnqueueMessage(new TcpConnectionErrorMessage(connection, exc)),
+					connection => EnqueueMessage(new TcpConnectionEstablishedMessage(connection)),
+					(connection, error) => EnqueueMessage(new TcpConnectionClosedMessage(connection, error)));
+				_connection.StartReceiving();
+			});
 		}
 
-		private void TcpConnectionError(TcpPackageConnection connection, Exception exception) {
+		private void TcpConnectionError(ITcpConnection connection, Exception exception) {
 			if (_connection != connection) return;
 			if (_state == ConnectionState.Closed) return;
 
@@ -210,7 +213,7 @@ namespace EventStore.ClientAPI.Internal {
 			_connection = null;
 		}
 
-		private void TcpConnectionClosed(TcpPackageConnection connection) {
+		private void TcpConnectionClosed(ITcpConnection connection) {
 			if (_state == ConnectionState.Init) throw new Exception();
 			if (_state == ConnectionState.Closed || _connection != connection) {
 				LogDebug(
@@ -235,7 +238,7 @@ namespace EventStore.ClientAPI.Internal {
 			}
 		}
 
-		private void TcpConnectionEstablished(TcpPackageConnection connection) {
+		private void TcpConnectionEstablished(ITcpConnection connection) {
 			if (_state != ConnectionState.Connecting || _connection != connection || connection.IsClosed) {
 				LogDebug(
 					"IGNORED (_state {0}, _conn.Id {1:B}, conn.Id {2:B}, conn.closed {3}): TCP connection to [{4}, L{5}] established.",
@@ -452,7 +455,7 @@ namespace EventStore.ClientAPI.Internal {
 			}
 		}
 
-		private void HandleTcpPackage(TcpPackageConnection connection, TcpPackage package) {
+		private void HandleTcpPackage(ITcpConnection connection, TcpPackage package) {
 			if (_connection != connection || _state == ConnectionState.Closed || _state == ConnectionState.Init) {
 				LogDebug("IGNORED: HandleTcpPackage connId {0}, package {1}, {2}.", connection.ConnectionId,
 					package.Command, package.CorrelationId);

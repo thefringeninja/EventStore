@@ -88,7 +88,7 @@ namespace EventStore.ClientAPI.Internal {
 			}
 		}
 
-		public void CheckTimeoutsAndRetry(TcpPackageConnection connection) {
+		public void CheckTimeoutsAndRetry(ITcpConnection connection) {
 			Ensure.NotNull(connection, "connection");
 
 			var retrySubscriptions = new List<SubscriptionItem>();
@@ -164,7 +164,7 @@ namespace EventStore.ClientAPI.Internal {
 			_waitingSubscriptions.Enqueue(subscriptionItem);
 		}
 
-		public void StartSubscription(SubscriptionItem subscription, TcpPackageConnection connection) {
+		public void StartSubscription(SubscriptionItem subscription, ITcpConnection connection) {
 			Ensure.NotNull(connection, "connection");
 
 			if (subscription.IsSubscribed) {

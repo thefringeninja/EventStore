@@ -3,7 +3,9 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using EventStore.ClientAPI.Common.Utils;
+using EventStore.ClientAPI.SystemData;
 
 namespace EventStore.ClientAPI.Transport.Tcp {
 	//TODO GFY THIS CODE NEEDS SOME LOVE ITS KIND OF CONVOLUTED HOW ITS WORKING WITH TCP CONNECTIONS
@@ -29,13 +31,15 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 			return socketArgs;
 		}
 
-		public ITcpConnection ConnectTo(ILogger log,
+		public Task<ITcpConnection> ConnectTo(ILogger log,
 			Guid connectionId,
 			IPEndPoint remoteEndPoint,
 			bool ssl,
 			string targetHost,
 			bool validateServer,
 			TimeSpan timeout,
+			Action<ITcpConnection, TcpPackage> handlePackage,
+			Action<ITcpConnection, Exception> onError,
 			Action<ITcpConnection> onConnectionEstablished = null,
 			Action<ITcpConnection, SocketError> onConnectionFailed = null,
 			Action<ITcpConnection, SocketError> onConnectionClosed = null) {
@@ -44,15 +48,16 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 				Ensure.NotNullOrEmpty(targetHost, "targetHost");
 				return TcpConnectionSsl.CreateConnectingConnection(
 					log, connectionId, remoteEndPoint, targetHost, validateServer,
-					this, timeout, onConnectionEstablished, onConnectionFailed, onConnectionClosed);
+					this, timeout, handlePackage, onError, onConnectionEstablished, onConnectionFailed,
+					onConnectionClosed);
 			}
 
 			return TcpConnection.CreateConnectingConnection(
 				log, connectionId, remoteEndPoint, this, timeout,
-				onConnectionEstablished, onConnectionFailed, onConnectionClosed);
+				handlePackage, onError, onConnectionEstablished, onConnectionFailed, onConnectionClosed);
 		}
 
-		internal void InitConnect(IPEndPoint serverEndPoint,
+		internal async Task InitConnect(IPEndPoint serverEndPoint,
 			Action<IPEndPoint, Socket> onConnectionEstablished,
 			Action<IPEndPoint, SocketError> onConnectionFailed,
 			ITcpConnection connection,
@@ -76,9 +81,8 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 			AddToConnecting(callbacks.PendingConnection);
 
 			try {
-				var firedAsync = connectingSocket.ConnectAsync(socketArgs);
-				if (!firedAsync)
-					ProcessConnect(socketArgs);
+				await connectingSocket.ConnectAsync(serverEndPoint);
+				OnSocketConnected(socketArgs);
 			} catch (ObjectDisposedException) {
 				HandleBadConnect(socketArgs);
 			} catch (Exception) {
@@ -105,6 +109,7 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 				var onConnectionFailed = callbacks.OnConnectionFailed;
 				var pendingConnection = callbacks.PendingConnection;
 
+				Helper.EatException(() => socketArgs.AcceptSocket.Shutdown(SocketShutdown.Both));
 				Helper.EatException(() => socketArgs.AcceptSocket.Close(TcpConfiguration.SocketCloseTimeoutMs));
 				socketArgs.AcceptSocket = null;
 				callbacks.Reset();
@@ -143,11 +148,9 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 			_pendingConections.TryAdd(pendingConnection.Connection.ConnectionId, pendingConnection);
 		}
 
-		private bool RemoveFromConnecting(PendingConnection pendingConnection) {
-			PendingConnection conn;
-			return _pendingConections.TryRemove(pendingConnection.Connection.ConnectionId, out conn)
-			       && Interlocked.CompareExchange(ref conn.Done, 1, 0) == 0;
-		}
+		private bool RemoveFromConnecting(PendingConnection pendingConnection) =>
+			_pendingConections.TryRemove(pendingConnection.Connection.ConnectionId, out var conn)
+			&& Interlocked.CompareExchange(ref conn.Done, 1, 0) == 0;
 
 		private class CallbacksStateToken {
 			public Action<IPEndPoint, Socket> OnConnectionEstablished;

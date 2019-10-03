@@ -31,7 +31,7 @@ namespace EventStore.ClientAPI.ClientOperations {
 		protected readonly Func<T, TE, Task> _eventAppeared;
 		private readonly Action<T, SubscriptionDropReason, Exception> _subscriptionDropped;
 		private readonly bool _verboseLogging;
-		protected readonly Func<TcpPackageConnection> _getConnection;
+		protected readonly Func<ITcpConnection> _getConnection;
 		private readonly int _maxQueueSize = 2000;
 		private readonly ConcurrentQueueWrapper<Func<Task>> _actionQueue = new ConcurrentQueueWrapper<Func<Task>>();
 		private int _actionExecuting;
@@ -47,7 +47,7 @@ namespace EventStore.ClientAPI.ClientOperations {
 			Func<T, TE, Task> eventAppeared,
 			Action<T, SubscriptionDropReason, Exception> subscriptionDropped,
 			bool verboseLogging,
-			Func<TcpPackageConnection> getConnection) {
+			Func<ITcpConnection> getConnection) {
 			Ensure.NotNull(log, "log");
 			Ensure.NotNull(source, "source");
 			Ensure.NotNull(eventAppeared, "eventAppeared");
@@ -68,7 +68,7 @@ namespace EventStore.ClientAPI.ClientOperations {
 			_getConnection().EnqueueSend(package);
 		}
 
-		public bool Subscribe(Guid correlationId, TcpPackageConnection connection) {
+		public bool Subscribe(Guid correlationId, ITcpConnection connection) {
 			Ensure.NotNull(connection, "connection");
 
 			if (_subscription != null || _unsubscribed != 0)
@@ -200,7 +200,7 @@ namespace EventStore.ClientAPI.ClientOperations {
 		}
 
 		public void DropSubscription(SubscriptionDropReason reason, Exception exc,
-			TcpPackageConnection connection = null) {
+			ITcpConnection connection = null) {
 			if (Interlocked.CompareExchange(ref _unsubscribed, 1, 0) == 0) {
 				if (_verboseLogging)
 					_log.Debug("Subscription {0:B} to {1}: closing subscription, reason: {2}, exception: {3}...",

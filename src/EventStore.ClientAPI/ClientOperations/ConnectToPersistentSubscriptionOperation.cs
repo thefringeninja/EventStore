@@ -20,7 +20,7 @@ namespace EventStore.ClientAPI.ClientOperations {
 			string streamId, UserCredentials userCredentials,
 			Func<PersistentEventStoreSubscription, PersistentSubscriptionResolvedEvent, Task> eventAppeared,
 			Action<PersistentEventStoreSubscription, SubscriptionDropReason, Exception> subscriptionDropped,
-			bool verboseLogging, Func<TcpPackageConnection> getConnection)
+			bool verboseLogging, Func<ITcpConnection> getConnection)
 			: base(log, source, streamId, false, userCredentials, eventAppeared, subscriptionDropped, verboseLogging,
 				getConnection) {
 			_groupName = groupName;

@@ -7,7 +7,9 @@ using System.Threading;
 using EventStore.ClientAPI.Common;
 using EventStore.ClientAPI.Common.Utils;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using EventStore.ClientAPI.Common.Utils.Threading;
+using EventStore.ClientAPI.SystemData;
 
 namespace EventStore.ClientAPI.Transport.Tcp {
 	internal class TcpConnection : TcpConnectionBase, ITcpConnection {
@@ -17,17 +19,20 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 			TcpConfiguration.SendReceivePoolSize,
 			() => new SocketAsyncEventArgs());
 
-		internal static ITcpConnection CreateConnectingConnection(ILogger log,
+		internal static async Task<ITcpConnection> CreateConnectingConnection(ILogger log,
 			Guid connectionId,
 			IPEndPoint remoteEndPoint,
 			TcpClientConnector connector,
 			TimeSpan connectionTimeout,
+			Action<ITcpConnection, TcpPackage> handlePackage,
+			Action<ITcpConnection, Exception> onError,
 			Action<ITcpConnection> onConnectionEstablished,
 			Action<ITcpConnection, SocketError> onConnectionFailed,
 			Action<ITcpConnection, SocketError> onConnectionClosed) {
-			var connection = new TcpConnection(log, connectionId, remoteEndPoint, onConnectionClosed);
+			var connection = new TcpConnection(
+				log, connectionId, remoteEndPoint, onConnectionClosed, handlePackage, onError);
 // ReSharper disable ImplicitlyCapturedClosure
-			connector.InitConnect(remoteEndPoint,
+			await connector.InitConnect(remoteEndPoint,
 				(_, socket) => {
 					connection.InitSocket(socket);
 					if (onConnectionEstablished != null)
@@ -41,11 +46,11 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 			return connection;
 		}
 
-		public Guid ConnectionId {
+		public override Guid ConnectionId {
 			get { return _connectionId; }
 		}
 
-		public int SendQueueSize {
+		public override int SendQueueSize {
 			get { return _sendQueue.Count; }
 		}
 
@@ -71,8 +76,9 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 		private readonly Action<ITcpConnection, SocketError> _onConnectionClosed;
 
 		private TcpConnection(ILogger log, Guid connectionId, IPEndPoint remoteEndPoint,
-			Action<ITcpConnection, SocketError> onConnectionClosed)
-			: base(remoteEndPoint) {
+			Action<ITcpConnection, SocketError> onConnectionClosed, Action<ITcpConnection, TcpPackage> handlePackage,
+			Action<ITcpConnection, Exception> onError)
+			: base(remoteEndPoint, handlePackage, onError, log) {
 			Ensure.NotNull(log, "log");
 			Ensure.NotEmptyGuid(connectionId, "connectionId");
 
@@ -109,7 +115,7 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 			TrySend();
 		}
 
-		public void EnqueueSend(IEnumerable<ArraySegment<byte>> data) {
+		protected override void EnqueueSend(IEnumerable<ArraySegment<byte>> data) {
 			lock (_sendLock) {
 				int bytes = 0;
 				foreach (var segment in data) {
@@ -175,7 +181,7 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 			}
 		}
 
-		public void ReceiveAsync(Action<ITcpConnection, IEnumerable<ArraySegment<byte>>> callback) {
+		public override void ReceiveAsync(Action<ITcpConnection, IEnumerable<ArraySegment<byte>>> callback) {
 			if (callback == null)
 				throw new ArgumentNullException("callback");
 
@@ -262,11 +268,7 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 			NotifyReceiveDispatched(bytes);
 		}
 
-		public void Close(string reason) {
-			CloseInternal(SocketError.Success, reason ?? "Normal socket close."); // normal socket closing
-		}
-
-		private void CloseInternal(SocketError socketError, string reason) {
+		protected override void CloseInternal(SocketError socketError, string reason) {
 #pragma warning disable 420
 			if (Interlocked.CompareExchange(ref _closed, 1, 0) != 0)
 				return;

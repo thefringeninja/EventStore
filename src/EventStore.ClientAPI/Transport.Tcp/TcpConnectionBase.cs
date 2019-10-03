@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using EventStore.ClientAPI.Common.Utils;
+using EventStore.ClientAPI.SystemData;
 
 namespace EventStore.ClientAPI.Transport.Tcp {
-	internal class TcpConnectionBase : IMonitoredTcpConnection {
+	internal abstract class TcpConnectionBase : IMonitoredTcpConnection, ITcpConnection {
+		public abstract Guid ConnectionId { get; }
 		public IPEndPoint RemoteEndPoint {
 			get { return _remoteEndPoint; }
 		}
@@ -13,6 +16,8 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 		public IPEndPoint LocalEndPoint {
 			get { return _localEndPoint; }
 		}
+
+		public abstract int SendQueueSize { get; }
 
 		public bool IsInitialized {
 			get { return _socket != null; }
@@ -115,6 +120,9 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 
 		private Socket _socket;
 		private readonly IPEndPoint _remoteEndPoint;
+		private readonly Action<ITcpConnection, TcpPackage> _handlePackage;
+		private readonly Action<ITcpConnection, Exception> _onError;
+		private readonly ILogger _log;
 		private IPEndPoint _localEndPoint;
 
 		private long _lastSendStarted = -1;
@@ -131,12 +139,61 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 		private int _sentAsyncCallbacks;
 		private int _recvAsyncs;
 		private int _recvAsyncCallbacks;
+		private readonly LengthPrefixMessageFramer _framer;
 
-		public TcpConnectionBase(IPEndPoint remoteEndPoint) {
+		public TcpConnectionBase(IPEndPoint remoteEndPoint,
+			Action<ITcpConnection, TcpPackage> handlePackage,
+			Action<ITcpConnection, Exception> onError, ILogger log) {
 			Ensure.NotNull(remoteEndPoint, "remoteEndPoint");
+			Ensure.NotNull(handlePackage, nameof(handlePackage));
+			Ensure.NotNull(onError, nameof(onError));
+			Ensure.NotNull(log, nameof(log));
 			_remoteEndPoint = remoteEndPoint;
+			_handlePackage = handlePackage;
+			_onError = onError;
+			_log = log;
+			_framer = new LengthPrefixMessageFramer();
+			_framer.RegisterMessageArrivedCallback(IncomingMessageArrived);
 
 			TcpConnectionMonitor.Default.Register(this);
+		}
+
+		public void StartReceiving() => ReceiveAsync(OnRawDataReceived);
+
+		private void IncomingMessageArrived(ArraySegment<byte> data) {
+			var package = new TcpPackage();
+			var valid = false;
+			try {
+				package = TcpPackage.FromArraySegment(data);
+				valid = true;
+				_handlePackage(this, package);
+			} catch (Exception e) {
+				this.Close(string.Format("Error when processing TcpPackage {0}: {1}",
+					valid ? package.Command.ToString() : "<invalid package>", e.Message));
+
+				var message = string.Format(
+					"TcpPackageConnection: [{0}, L{1}, {2}] ERROR for {3}. Connection will be closed.",
+					RemoteEndPoint, LocalEndPoint, ConnectionId,
+					valid ? package.Command.ToString() : "<invalid package>");
+				if (_onError != null)
+					_onError(this, e);
+				_log.Debug(e, message);
+			}
+		}
+
+
+		private void OnRawDataReceived(ITcpConnection connection, IEnumerable<ArraySegment<byte>> data) {
+			try {
+				_framer.UnFrameData(data);
+			} catch (PackageFramingException exc) {
+				_log.Error(exc, "TcpPackageConnection: [{0}, L{1}, {2:B}]. Invalid TCP frame received.", RemoteEndPoint,
+					LocalEndPoint, connection.ConnectionId);
+				Close("Invalid TCP frame received.");
+				return;
+			}
+
+			//NOTE: important to be the last statement in the callback
+			connection.ReceiveAsync(OnRawDataReceived);
 		}
 
 		protected void InitConnectionBase(Socket socket) {
@@ -186,5 +243,17 @@ namespace EventStore.ClientAPI.Transport.Tcp {
 			_isClosed = true;
 			TcpConnectionMonitor.Default.Unregister(this);
 		}
+		
+		public void Close(string reason) {
+			CloseInternal(SocketError.Success, reason ?? "Normal socket close."); // normal socket closing
+		}
+
+		protected abstract void CloseInternal(SocketError success, string normalSocketClose);
+
+		protected abstract void EnqueueSend(IEnumerable<ArraySegment<byte>> data); 
+
+		public void EnqueueSend(TcpPackage package) => EnqueueSend(_framer.FrameData(package.AsArraySegment()));
+
+		public abstract void ReceiveAsync(Action<ITcpConnection, IEnumerable<ArraySegment<byte>>> callback);
 	}
 }

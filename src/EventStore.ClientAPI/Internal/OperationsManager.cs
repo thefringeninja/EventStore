@@ -89,7 +89,7 @@ namespace EventStore.ClientAPI.Internal {
 			_totalOperationCount = 0;
 		}
 
-		public void CheckTimeoutsAndRetry(TcpPackageConnection connection) {
+		public void CheckTimeoutsAndRetry(ITcpConnection connection) {
 			var retryOperations = new List<OperationItem>();
 			var removeOperations = new List<OperationItem>();
 			foreach (var operation in _activeOperations.Values) {
@@ -161,7 +161,7 @@ namespace EventStore.ClientAPI.Internal {
 			return true;
 		}
 
-		public void TryScheduleWaitingOperations(TcpPackageConnection connection) {
+		public void TryScheduleWaitingOperations(ITcpConnection connection) {
 			Ensure.NotNull(connection, "connection");
 			lock (_lock) {
 				// We don't want to transmit or retain expired requests, so we trim any from before the cutoff implied by the current time
@@ -200,7 +200,7 @@ namespace EventStore.ClientAPI.Internal {
 			return true;
 		}
 
-		public void ExecuteOperation(OperationItem operation, TcpPackageConnection connection) {
+		public void ExecuteOperation(OperationItem operation, ITcpConnection connection) {
 			operation.ConnectionId = connection.ConnectionId;
 			operation.LastUpdated = DateTime.UtcNow;
 			_activeOperations.Add(operation.CorrelationId, operation);
@@ -215,7 +215,7 @@ namespace EventStore.ClientAPI.Internal {
 			_waitingOperations.Enqueue(operation);
 		}
 
-		public void ScheduleOperation(OperationItem operation, TcpPackageConnection connection) {
+		public void ScheduleOperation(OperationItem operation, ITcpConnection connection) {
 			Ensure.NotNull(connection, "connection");
 			_waitingOperations.Enqueue(operation);
 			TryScheduleWaitingOperations(connection);

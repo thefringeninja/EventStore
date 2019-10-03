@@ -11,7 +11,7 @@ namespace EventStore.ClientAPI.ClientOperations {
 			string streamId, bool resolveLinkTos, UserCredentials userCredentials,
 			Func<EventStoreSubscription, ResolvedEvent, Task> eventAppeared,
 			Action<EventStoreSubscription, SubscriptionDropReason, Exception> subscriptionDropped, bool verboseLogging,
-			Func<TcpPackageConnection> getConnection)
+			Func<ITcpConnection> getConnection)
 			: base(log, source, streamId, resolveLinkTos, userCredentials, eventAppeared, subscriptionDropped,
 				verboseLogging, getConnection) {
 		}

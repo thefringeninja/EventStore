@@ -45,19 +45,19 @@ namespace EventStore.ClientAPI.Internal {
 	}
 
 	internal class TcpConnectionEstablishedMessage : Message {
-		public readonly TcpPackageConnection Connection;
+		public readonly ITcpConnection Connection;
 
-		public TcpConnectionEstablishedMessage(TcpPackageConnection connection) {
+		public TcpConnectionEstablishedMessage(ITcpConnection connection) {
 			Ensure.NotNull(connection, "connection");
 			Connection = connection;
 		}
 	}
 
 	internal class TcpConnectionClosedMessage : Message {
-		public readonly TcpPackageConnection Connection;
+		public readonly ITcpConnection Connection;
 		public readonly SocketError Error;
 
-		public TcpConnectionClosedMessage(TcpPackageConnection connection, SocketError error) {
+		public TcpConnectionClosedMessage(ITcpConnection connection, SocketError error) {
 			Ensure.NotNull(connection, "connection");
 			Connection = connection;
 			Error = error;
@@ -147,20 +147,20 @@ namespace EventStore.ClientAPI.Internal {
 	}
 
 	internal class HandleTcpPackageMessage : Message {
-		public readonly TcpPackageConnection Connection;
+		public readonly ITcpConnection Connection;
 		public readonly TcpPackage Package;
 
-		public HandleTcpPackageMessage(TcpPackageConnection connection, TcpPackage package) {
+		public HandleTcpPackageMessage(ITcpConnection connection, TcpPackage package) {
 			Connection = connection;
 			Package = package;
 		}
 	}
 
 	internal class TcpConnectionErrorMessage : Message {
-		public readonly TcpPackageConnection Connection;
+		public readonly ITcpConnection Connection;
 		public readonly Exception Exception;
 
-		public TcpConnectionErrorMessage(TcpPackageConnection connection, Exception exception) {
+		public TcpConnectionErrorMessage(ITcpConnection connection, Exception exception) {
 			Connection = connection;
 			Exception = exception;
 		}
