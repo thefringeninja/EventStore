@@ -39,9 +39,9 @@ namespace EventStore.Core.Tests.ClientAPI.ExpectedVersion64Bit {
 		}
 
 		[Test]
-		public void should_throw_wrong_expected_version_when_version_incorrect() {
+		public async Task should_throw_wrong_expected_version_when_version_incorrect() {
 			var evnt = new EventData(Guid.NewGuid(), "EventType", false, new byte[10], new byte[15]);
-			Assert.ThrowsAsync<WrongExpectedVersionException>(
+			await AssertEx.ThrowsAsync<WrongExpectedVersionException>(
 				() => _store.AppendToStreamAsync(StreamName, intMaxValue + 15, evnt));
 		}
 	}

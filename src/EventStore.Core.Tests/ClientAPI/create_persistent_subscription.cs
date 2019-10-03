@@ -54,8 +54,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 		protected override Task When() => Task.CompletedTask;
 
 		[Test]
-		public void the_completion_fails_with_invalid_stream() {
-			Assert.ThrowsAsync<InvalidOperationException>(() =>
+		public async Task the_completion_fails_with_invalid_stream() {
+			await AssertEx.ThrowsAsync<InvalidOperationException>(() =>
 				_conn.CreatePersistentSubscriptionAsync("$all", "shitbird", _settings, DefaultData.AdminCredentials));
 		}
 	}
@@ -120,8 +120,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public void the_completion_fails_with_invalid_operation_exception() {
-			Assert.ThrowsAsync<InvalidOperationException>(
+		public async Task the_completion_fails_with_invalid_operation_exception() {
+			await AssertEx.ThrowsAsync<InvalidOperationException>(
 				() => _conn.CreatePersistentSubscriptionAsync(_stream, "group32", _settings,
 					DefaultData.AdminCredentials));
 		}
@@ -159,8 +159,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 		protected override Task When() => Task.CompletedTask;
 
 		[Test]
-		public void the_completion_succeeds() {
-			Assert.ThrowsAsync<AccessDeniedException>(() =>
+		public async Task the_completion_succeeds() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() =>
 				_conn.CreatePersistentSubscriptionAsync(_stream, "group57", _settings, null));
 		}
 	}

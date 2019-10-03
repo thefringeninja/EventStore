@@ -183,7 +183,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			var meta = await _conn.GetStreamMetadataAsync(stream);
 			Assert.AreEqual(true, meta.IsStreamDeleted);
 
-			Assert.ThrowsAsync<StreamDeletedException>(() =>
+			await AssertEx.ThrowsAsync<StreamDeletedException>(() =>
 				_conn.AppendToStreamAsync(stream, ExpectedVersion.Any, TestEvent.NewTestEvent()));
 		}
 
@@ -201,7 +201,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 				(await _conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, events)).NextExpectedVersion);
 			await Task.Delay(50); //TODO: This is a workaround until github issue #1744 is fixed
 
-			Assert.ThrowsAsync<WrongExpectedVersionException>(() =>
+			await AssertEx.ThrowsAsync<WrongExpectedVersionException>(() =>
 				_conn.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent()));
 
 			var res = await _conn.ReadStreamEventsForwardAsync(stream, 0, 100, false);

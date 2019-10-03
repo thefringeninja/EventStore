@@ -11,32 +11,32 @@ namespace EventStore.Core.Tests.ClientAPI.UserManagement {
 	[TestFixture, Category("ClientAPI"), Category("LongRunning")]
 	public class updating_a_user : TestWithNode {
 		[Test]
-		public void updating_a_user_with_null_username_throws() {
-			Assert.ThrowsAsync<ArgumentNullException>(() =>
+		public async Task updating_a_user_with_null_username_throws() {
+			await AssertEx.ThrowsAsync<ArgumentNullException>(() =>
 				_manager.UpdateUserAsync(null, "greg", new[] {"foo", "bar"}, new UserCredentials("admin", "changeit")));
 		}
 
 		[Test]
-		public void updating_a_user_with_empty_username_throws() {
-			Assert.ThrowsAsync<ArgumentNullException>(() =>
+		public async Task updating_a_user_with_empty_username_throws() {
+			await AssertEx.ThrowsAsync<ArgumentNullException>(() =>
 				_manager.UpdateUserAsync("", "greg", new[] {"foo", "bar"}, new UserCredentials("admin", "changeit")));
 		}
 
 		[Test]
-		public void updating_a_user_with_null_name_throws() {
-			Assert.ThrowsAsync<ArgumentNullException>(() =>
+		public async Task updating_a_user_with_null_name_throws() {
+			await AssertEx.ThrowsAsync<ArgumentNullException>(() =>
 				_manager.UpdateUserAsync("greg", null, new[] {"foo", "bar"}, new UserCredentials("admin", "changeit")));
 		}
 
 		[Test]
-		public void updating_a_user_with_empty_name_throws() {
-			Assert.ThrowsAsync<ArgumentNullException>(() =>
+		public async Task updating_a_user_with_empty_name_throws() {
+			await AssertEx.ThrowsAsync<ArgumentNullException>(() =>
 				_manager.UpdateUserAsync("greg", "", new[] {"foo", "bar"}, new UserCredentials("admin", "changeit")));
 		}
 
 		[Test]
-		public void updating_non_existing_user_throws() {
-			Assert.ThrowsAsync<UserCommandFailedException>(() => _manager.UpdateUserAsync(Guid.NewGuid().ToString(), "bar",
+		public async Task updating_non_existing_user_throws() {
+			await AssertEx.ThrowsAsync<UserCommandFailedException>(() => _manager.UpdateUserAsync(Guid.NewGuid().ToString(), "bar",
 				new[] {"foo"}, new UserCredentials("admin", "changeit")));
 		}
 

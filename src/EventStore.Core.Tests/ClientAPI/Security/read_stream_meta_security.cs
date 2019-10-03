@@ -6,18 +6,18 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 	[TestFixture, Category("ClientAPI"), Category("LongRunning"), Category("Network")]
 	public class read_stream_meta_security : AuthenticationTestBase {
 		[Test]
-		public void reading_stream_meta_with_not_existing_credentials_is_not_authenticated() {
-			Expect<NotAuthenticatedException>(() => ReadMeta("metaread-stream", "badlogin", "badpass"));
+		public async Task reading_stream_meta_with_not_existing_credentials_is_not_authenticated() {
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => ReadMeta("metaread-stream", "badlogin", "badpass"));
 		}
 
 		[Test]
-		public void reading_stream_meta_with_no_credentials_is_denied() {
-			Expect<AccessDeniedException>(() => ReadMeta("metaread-stream", null, null));
+		public async Task reading_stream_meta_with_no_credentials_is_denied() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadMeta("metaread-stream", null, null));
 		}
 
 		[Test]
-		public void reading_stream_meta_with_not_authorized_user_credentials_is_denied() {
-			Expect<AccessDeniedException>(() => ReadMeta("metaread-stream", "user2", "pa$$2"));
+		public async Task reading_stream_meta_with_not_authorized_user_credentials_is_denied() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadMeta("metaread-stream", "user2", "pa$$2"));
 		}
 
 		[Test]
@@ -37,8 +37,8 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void reading_no_acl_stream_meta_is_not_authenticated_when_not_existing_credentials_are_passed() {
-			Expect<NotAuthenticatedException>(() => ReadMeta("noacl-stream", "badlogin", "badpass"));
+		public async Task reading_no_acl_stream_meta_is_not_authenticated_when_not_existing_credentials_are_passed() {
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => ReadMeta("noacl-stream", "badlogin", "badpass"));
 		}
 
 		[Test]
@@ -59,9 +59,9 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void
+		public async Task
 			reading_all_access_normal_stream_meta_is_not_authenticated_when_not_existing_credentials_are_passed() {
-			Expect<NotAuthenticatedException>(() => ReadMeta("normal-all", "badlogin", "badpass"));
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => ReadMeta("normal-all", "badlogin", "badpass"));
 		}
 
 		[Test]

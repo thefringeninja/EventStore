@@ -7,18 +7,18 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 	[TestFixture, Category("ClientAPI"), Category("LongRunning"), Category("Network")]
 	public class write_stream_meta_security : AuthenticationTestBase {
 		[Test]
-		public void writing_meta_with_not_existing_credentials_is_not_authenticated() {
-			Expect<NotAuthenticatedException>(() => WriteMeta("metawrite-stream", "badlogin", "badpass", "user1"));
+		public async Task writing_meta_with_not_existing_credentials_is_not_authenticated() {
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => WriteMeta("metawrite-stream", "badlogin", "badpass", "user1"));
 		}
 
 		[Test]
-		public void writing_meta_to_stream_with_no_credentials_is_denied() {
-			Expect<AccessDeniedException>(() => WriteMeta("metawrite-stream", null, null, "user1"));
+		public async Task writing_meta_to_stream_with_no_credentials_is_denied() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteMeta("metawrite-stream", null, null, "user1"));
 		}
 
 		[Test]
-		public void writing_meta_to_stream_with_not_authorized_user_credentials_is_denied() {
-			Expect<AccessDeniedException>(() => WriteMeta("metawrite-stream", "user2", "pa$$2", "user1"));
+		public async Task writing_meta_to_stream_with_not_authorized_user_credentials_is_denied() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteMeta("metawrite-stream", "user2", "pa$$2", "user1"));
 		}
 
 		[Test]
@@ -38,8 +38,8 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void writing_meta_to_no_acl_stream_is_not_authenticated_when_not_existing_credentials_are_passed() {
-			Expect<NotAuthenticatedException>(() => WriteMeta("noacl-stream", "badlogin", "badpass", null));
+		public async Task writing_meta_to_no_acl_stream_is_not_authenticated_when_not_existing_credentials_are_passed() {
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => WriteMeta("noacl-stream", "badlogin", "badpass", null));
 		}
 
 		[Test]
@@ -60,9 +60,9 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void
+		public async Task
 			writing_meta_to_all_access_normal_stream_is_not_authenticated_when_not_existing_credentials_are_passed() {
-			Expect<NotAuthenticatedException>(() => WriteMeta("normal-all", "badlogin", "badpass", SystemRoles.All));
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => WriteMeta("normal-all", "badlogin", "badpass", SystemRoles.All));
 		}
 
 		[Test]

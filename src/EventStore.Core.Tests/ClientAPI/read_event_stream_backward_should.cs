@@ -34,7 +34,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			const string stream = "read_event_stream_backward_should_throw_if_count_le_zero";
 			using (var store = BuildConnection(_node)) {
 				await store.ConnectAsync();
-				Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+				await AssertEx.ThrowsAsync<ArgumentOutOfRangeException>(() =>
 					store.ReadStreamEventsBackwardAsync(stream, 0, 0, resolveLinkTos: false));
 			}
 		}
@@ -45,7 +45,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			const string stream = "read_event_stream_backward_should_throw_if_start_less_than_minus_one";
 			using (var store = BuildConnection(_node)) {
 				await store.ConnectAsync();
-				Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+				await AssertEx.ThrowsAsync<ArgumentOutOfRangeException>(() =>
 					store.ReadStreamEventsBackwardAsync(stream, -2, 100, resolveLinkTos: false));
 			}
 		}
@@ -205,7 +205,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
 
-				Assert.ThrowsAsync<ArgumentException>(() =>
+				await AssertEx.ThrowsAsync<ArgumentException>(() =>
 					store.ReadStreamEventsBackwardAsync("foo", StreamPosition.Start, int.MaxValue,
 						resolveLinkTos: false));
 			}

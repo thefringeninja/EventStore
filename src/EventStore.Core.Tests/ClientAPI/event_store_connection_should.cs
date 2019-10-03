@@ -53,7 +53,7 @@ namespace EventStore.Core.Tests.ClientAPI {
             var connection = TestConnection.To(_node, _tcpType);
             Assert.DoesNotThrow(() => connection.ConnectAsync().Wait());
 
-            Assert.ThrowsAsync<>(() => connection.ConnectAsync().Wait(),
+            await AssertEx.ThrowsAsync<>(() => connection.ConnectAsync().Wait(),
                         Throws.Exception.InstanceOf<AggregateException>().With.InnerException.InstanceOf<InvalidOperationException>());
         }
 
@@ -65,40 +65,40 @@ namespace EventStore.Core.Tests.ClientAPI {
             connection.ConnectAsync().Wait();
             connection.Close();
 
-            Assert.ThrowsAsync<>(() => connection.ConnectAsync().Wait(),
+            await AssertEx.ThrowsAsync<>(() => connection.ConnectAsync().Wait(),
                         Throws.Exception.InstanceOf<AggregateException>().With.InnerException.InstanceOf<InvalidOperationException>());
         }
 */
 		[Test]
 		[Category("Network")]
-		public void throw_invalid_operation_on_every_api_call_if_connect_was_not_called() {
+		public async Task throw_invalid_operation_on_every_api_call_if_connect_was_not_called() {
 			var connection = TestConnection.To(_node, _tcpType);
 
 			const string s = "stream";
 			var events = new[] {TestEvent.NewTestEvent()};
 
-			Assert.ThrowsAsync<InvalidOperationException>(() => connection.DeleteStreamAsync(s, 0));
+			await AssertEx.ThrowsAsync<InvalidOperationException>(() => connection.DeleteStreamAsync(s, 0));
 
-			Assert.ThrowsAsync<InvalidOperationException>(() => connection.AppendToStreamAsync(s, 0, events));
+			await AssertEx.ThrowsAsync<InvalidOperationException>(() => connection.AppendToStreamAsync(s, 0, events));
 
-			Assert.ThrowsAsync<InvalidOperationException>(
+			await AssertEx.ThrowsAsync<InvalidOperationException>(
 				() => connection.ReadStreamEventsForwardAsync(s, 0, 1, resolveLinkTos: false));
 
-			Assert.ThrowsAsync<InvalidOperationException>(
+			await AssertEx.ThrowsAsync<InvalidOperationException>(
 				() => connection.ReadStreamEventsBackwardAsync(s, 0, 1, resolveLinkTos: false));
 
-			Assert.ThrowsAsync<InvalidOperationException>(
+			await AssertEx.ThrowsAsync<InvalidOperationException>(
 				() => connection.ReadAllEventsForwardAsync(Position.Start, 1, false));
 
-			Assert.ThrowsAsync<InvalidOperationException>(() =>
+			await AssertEx.ThrowsAsync<InvalidOperationException>(() =>
 				connection.ReadAllEventsBackwardAsync(Position.End, 1, false));
 
-			Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartTransactionAsync(s, 0));
+			await AssertEx.ThrowsAsync<InvalidOperationException>(() => connection.StartTransactionAsync(s, 0));
 
-			Assert.ThrowsAsync<InvalidOperationException>(
+			await AssertEx.ThrowsAsync<InvalidOperationException>(
 				() => connection.SubscribeToStreamAsync(s, false, (_, __) => Task.CompletedTask, (_, __, ___) => { }));
 
-			Assert.ThrowsAsync<InvalidOperationException>(
+			await AssertEx.ThrowsAsync<InvalidOperationException>(
 				() => connection.SubscribeToAllAsync(false, (_, __) => Task.CompletedTask, (_, __, ___) => { }));
 		}
 	}

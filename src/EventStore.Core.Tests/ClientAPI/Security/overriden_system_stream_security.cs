@@ -42,47 +42,47 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		[Test]
 		public async Task operations_on_system_stream_fail_for_not_authorized_user() {
 			const string stream = "$sys-not-authorized-user";
-			Expect<AccessDeniedException>(() => ReadEvent(stream, "user2", "pa$$2"));
-			Expect<AccessDeniedException>(() => ReadStreamForward(stream, "user2", "pa$$2"));
-			Expect<AccessDeniedException>(() => ReadStreamBackward(stream, "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadEvent(stream, "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamForward(stream, "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamBackward(stream, "user2", "pa$$2"));
 
-			Expect<AccessDeniedException>(() => WriteStream(stream, "user2", "pa$$2"));
-			Expect<AccessDeniedException>(() => TransStart(stream, "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream(stream, "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => TransStart(stream, "user2", "pa$$2"));
 
 			var transId = (await TransStart(stream, "adm", "admpa$$")).TransactionId;
 			var trans = Connection.ContinueTransaction(transId, new UserCredentials("user2", "pa$$2"));
 			await trans.WriteAsync();
-			Expect<AccessDeniedException>(() => trans.CommitAsync());
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => trans.CommitAsync());
 
-			Expect<AccessDeniedException>(() => ReadMeta(stream, "user2", "pa$$2"));
-			Expect<AccessDeniedException>(() => WriteMeta(stream, "user2", "pa$$2", null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadMeta(stream, "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteMeta(stream, "user2", "pa$$2", null));
 
-			Expect<AccessDeniedException>(() => SubscribeToStream(stream, "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => SubscribeToStream(stream, "user2", "pa$$2"));
 
-			Expect<AccessDeniedException>(() => DeleteStream(stream, "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => DeleteStream(stream, "user2", "pa$$2"));
 		}
 
 		[Test]
 		public async Task operations_on_system_stream_fail_for_anonymous_user() {
 			const string stream = "$sys-anonymous-user";
-			Expect<AccessDeniedException>(() => ReadEvent(stream, null, null));
-			Expect<AccessDeniedException>(() => ReadStreamForward(stream, null, null));
-			Expect<AccessDeniedException>(() => ReadStreamBackward(stream, null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadEvent(stream, null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamForward(stream, null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamBackward(stream, null, null));
 
-			Expect<AccessDeniedException>(() => WriteStream(stream, null, null));
-			Expect<AccessDeniedException>(() => TransStart(stream, null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream(stream, null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => TransStart(stream, null, null));
 
 			var transId = (await TransStart(stream, "adm", "admpa$$")).TransactionId;
 			var trans = Connection.ContinueTransaction(transId);
 			await trans.WriteAsync();
-			Expect<AccessDeniedException>(() => trans.CommitAsync());
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => trans.CommitAsync());
 
-			Expect<AccessDeniedException>(() => ReadMeta(stream, null, null));
-			Expect<AccessDeniedException>(() => WriteMeta(stream, null, null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadMeta(stream, null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteMeta(stream, null, null, null));
 
-			Expect<AccessDeniedException>(() => SubscribeToStream(stream, null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => SubscribeToStream(stream, null, null));
 
-			Expect<AccessDeniedException>(() => DeleteStream(stream, null, null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => DeleteStream(stream, null, null));
 		}
 
 		[Test]

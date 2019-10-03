@@ -9,22 +9,22 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 	public class system_stream_security : AuthenticationTestBase {
 		[Test]
 		public async Task operations_on_system_stream_with_no_acl_set_fail_for_non_admin() {
-			Expect<AccessDeniedException>(() => ReadEvent("$system-no-acl", "user1", "pa$$1"));
-			Expect<AccessDeniedException>(() => ReadStreamForward("$system-no-acl", "user1", "pa$$1"));
-			Expect<AccessDeniedException>(() => ReadStreamBackward("$system-no-acl", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadEvent("$system-no-acl", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamForward("$system-no-acl", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamBackward("$system-no-acl", "user1", "pa$$1"));
 
-			Expect<AccessDeniedException>(() => WriteStream("$system-no-acl", "user1", "pa$$1"));
-			Expect<AccessDeniedException>(() => TransStart("$system-no-acl", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$system-no-acl", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => TransStart("$system-no-acl", "user1", "pa$$1"));
 
 			var transId = (await TransStart("$system-no-acl", "adm", "admpa$$")).TransactionId;
 			var trans = Connection.ContinueTransaction(transId, new UserCredentials("user1", "pa$$1"));
 			await trans.WriteAsync();
-			Expect<AccessDeniedException>(() => trans.CommitAsync());
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => trans.CommitAsync());
 
-			Expect<AccessDeniedException>(() => ReadMeta("$system-no-acl", "user1", "pa$$1"));
-			Expect<AccessDeniedException>(() => WriteMeta("$system-no-acl", "user1", "pa$$1", null));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadMeta("$system-no-acl", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteMeta("$system-no-acl", "user1", "pa$$1", null));
 
-			Expect<AccessDeniedException>(() => SubscribeToStream("$system-no-acl", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => SubscribeToStream("$system-no-acl", "user1", "pa$$1"));
 		}
 
 		[Test]
@@ -49,22 +49,22 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 
 		[Test]
 		public async Task operations_on_system_stream_with_acl_set_to_usual_user_fail_for_not_authorized_user() {
-			Expect<AccessDeniedException>(() => ReadEvent("$system-acl", "user2", "pa$$2"));
-			Expect<AccessDeniedException>(() => ReadStreamForward("$system-acl", "user2", "pa$$2"));
-			Expect<AccessDeniedException>(() => ReadStreamBackward("$system-acl", "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadEvent("$system-acl", "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamForward("$system-acl", "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamBackward("$system-acl", "user2", "pa$$2"));
 
-			Expect<AccessDeniedException>(() => WriteStream("$system-acl", "user2", "pa$$2"));
-			Expect<AccessDeniedException>(() => TransStart("$system-acl", "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$system-acl", "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => TransStart("$system-acl", "user2", "pa$$2"));
 
 			var transId = (await TransStart("$system-acl", "user1", "pa$$1")).TransactionId;
 			var trans = Connection.ContinueTransaction(transId, new UserCredentials("user2", "pa$$2"));
 			await trans.WriteAsync();
-			Expect<AccessDeniedException>(() => trans.CommitAsync());
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => trans.CommitAsync());
 
-			Expect<AccessDeniedException>(() => ReadMeta("$system-acl", "user2", "pa$$2"));
-			Expect<AccessDeniedException>(() => WriteMeta("$system-acl", "user2", "pa$$2", "user1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadMeta("$system-acl", "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteMeta("$system-acl", "user2", "pa$$2", "user1"));
 
-			Expect<AccessDeniedException>(() => SubscribeToStream("$system-acl", "user2", "pa$$2"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => SubscribeToStream("$system-acl", "user2", "pa$$2"));
 		}
 
 		[Test]
@@ -110,22 +110,22 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 
 		[Test]
 		public async Task operations_on_system_stream_with_acl_set_to_admins_fail_for_usual_user() {
-			Expect<AccessDeniedException>(() => ReadEvent("$system-adm", "user1", "pa$$1"));
-			Expect<AccessDeniedException>(() => ReadStreamForward("$system-adm", "user1", "pa$$1"));
-			Expect<AccessDeniedException>(() => ReadStreamBackward("$system-adm", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadEvent("$system-adm", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamForward("$system-adm", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadStreamBackward("$system-adm", "user1", "pa$$1"));
 
-			Expect<AccessDeniedException>(() => WriteStream("$system-adm", "user1", "pa$$1"));
-			Expect<AccessDeniedException>(() => TransStart("$system-adm", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteStream("$system-adm", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => TransStart("$system-adm", "user1", "pa$$1"));
 
 			var transId = (await TransStart("$system-adm", "adm", "admpa$$")).TransactionId;
 			var trans = Connection.ContinueTransaction(transId, new UserCredentials("user1", "pa$$1"));
 			await trans.WriteAsync();
-			Expect<AccessDeniedException>(() => trans.CommitAsync());
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => trans.CommitAsync());
 
-			Expect<AccessDeniedException>(() => ReadMeta("$system-adm", "user1", "pa$$1"));
-			Expect<AccessDeniedException>(() => WriteMeta("$system-adm", "user1", "pa$$1", SystemRoles.Admins));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => ReadMeta("$system-adm", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => WriteMeta("$system-adm", "user1", "pa$$1", SystemRoles.Admins));
 
-			Expect<AccessDeniedException>(() => SubscribeToStream("$system-adm", "user1", "pa$$1"));
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => SubscribeToStream("$system-adm", "user1", "pa$$1"));
 		}
 
 		[Test]

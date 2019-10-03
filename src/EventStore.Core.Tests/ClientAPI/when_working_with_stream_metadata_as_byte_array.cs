@@ -70,9 +70,9 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public void trying_to_set_metadata_with_wrong_expected_version_fails() {
+		public async Task trying_to_set_metadata_with_wrong_expected_version_fails() {
 			const string stream = "trying_to_set_metadata_with_wrong_expected_version_fails";
-			Assert.ThrowsAsync<WrongExpectedVersionException>(() => _connection.SetStreamMetadataAsync(stream, 5, new byte[100]));
+			await AssertEx.ThrowsAsync<WrongExpectedVersionException>(() => _connection.SetStreamMetadataAsync(stream, 5, new byte[100]));
 		}
 
 		[Test]
@@ -133,7 +133,7 @@ namespace EventStore.Core.Tests.ClientAPI {
             await _connection.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: true);
 
 			var metadataBytes = Guid.NewGuid().ToByteArray();
-			Assert.ThrowsAsync<StreamDeletedException>(
+			await AssertEx.ThrowsAsync<StreamDeletedException>(
 				() => _connection.SetStreamMetadataAsync(stream, ExpectedVersion.NoStream, metadataBytes));
 		}
 

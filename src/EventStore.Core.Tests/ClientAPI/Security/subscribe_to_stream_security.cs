@@ -6,18 +6,18 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 	[TestFixture, Category("ClientAPI"), Category("LongRunning"), Category("Network")]
 	public class subscribe_to_stream_security : AuthenticationTestBase {
 		[Test]
-		public void subscribing_to_stream_with_not_existing_credentials_is_not_authenticated() {
-			Expect<NotAuthenticatedException>(() => SubscribeToStream("read-stream", "badlogin", "badpass"));
+		public async Task subscribing_to_stream_with_not_existing_credentials_is_not_authenticated() {
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => SubscribeToStream("read-stream", "badlogin", "badpass"));
 		}
 
 		[Test]
-		public void subscribing_to_stream_with_no_credentials_is_denied() {
-			Expect<AccessDeniedException>(() => SubscribeToStream("read-stream", null, null));
+		public async Task subscribing_to_stream_with_no_credentials_is_denied() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => SubscribeToStream("read-stream", null, null));
 		}
 
 		[Test]
-		public void subscribing_to_stream_with_not_authorized_user_credentials_is_denied() {
-			Expect<AccessDeniedException>(() => SubscribeToStream("read-stream", "user2", "pa$$2"));
+		public async Task subscribing_to_stream_with_not_authorized_user_credentials_is_denied() {
+			await AssertEx.ThrowsAsync<AccessDeniedException>(() => SubscribeToStream("read-stream", "user2", "pa$$2"));
 		}
 
 		[Test]
@@ -37,8 +37,8 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void subscribing_to_no_acl_stream_is_not_authenticated_when_not_existing_credentials_are_passed() {
-			Expect<NotAuthenticatedException>(() => SubscribeToStream("noacl-stream", "badlogin", "badpass"));
+		public async Task subscribing_to_no_acl_stream_is_not_authenticated_when_not_existing_credentials_are_passed() {
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => SubscribeToStream("noacl-stream", "badlogin", "badpass"));
 		}
 
 		[Test]
@@ -59,9 +59,9 @@ namespace EventStore.Core.Tests.ClientAPI.Security {
 		}
 
 		[Test]
-		public void
+		public async Task
 			subscribing_to_all_access_normal_stream_is_not_authenticated_when_not_existing_credentials_are_passed() {
-			Expect<NotAuthenticatedException>(() => SubscribeToStream("normal-all", "badlogin", "badpass"));
+			await AssertEx.ThrowsAsync<NotAuthenticatedException>(() => SubscribeToStream("normal-all", "badlogin", "badpass"));
 		}
 
 		[Test]

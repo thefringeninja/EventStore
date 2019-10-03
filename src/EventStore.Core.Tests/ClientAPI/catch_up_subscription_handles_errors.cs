@@ -62,7 +62,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public void read_events_til_stops_subscription_when_throws_immediately() {
+		public async Task read_events_til_stops_subscription_when_throws_immediately() {
 			var expectedException = new ApplicationException("Test");
 
 			_connection.HandleReadStreamEventsForwardAsync((stream, start, max) => {
@@ -72,11 +72,11 @@ namespace EventStore.Core.Tests.ClientAPI {
 				throw expectedException;
 			});
 
-			AssertStartFailsAndDropsSubscriptionWithException(expectedException);
+			await AssertStartFailsAndDropsSubscriptionWithException(expectedException);
 		}
 
-		private void AssertStartFailsAndDropsSubscriptionWithException(ApplicationException expectedException) {
-			Assert.ThrowsAsync<ApplicationException>(() => _subscription.StartAsync());
+		private async Task AssertStartFailsAndDropsSubscriptionWithException(ApplicationException expectedException) {
+			await AssertEx.ThrowsAsync<ApplicationException>(() => _subscription.StartAsync());
 			Assert.That(_isDropped);
 			Assert.That(_dropReason, Is.EqualTo(SubscriptionDropReason.CatchUpError));
 			Assert.That(_dropException, Is.SameAs(expectedException));
@@ -84,7 +84,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public void read_events_til_stops_subscription_when_throws_asynchronously() {
+		public async Task read_events_til_stops_subscription_when_throws_asynchronously() {
 			var expectedException = new ApplicationException("Test");
 			_connection.HandleReadStreamEventsForwardAsync((stream, start, max) => {
 				var taskCompletionSource =
@@ -96,11 +96,11 @@ namespace EventStore.Core.Tests.ClientAPI {
 				return taskCompletionSource.Task;
 			});
 
-			AssertStartFailsAndDropsSubscriptionWithException(expectedException);
+			await AssertStartFailsAndDropsSubscriptionWithException(expectedException);
 		}
 
 		[Test]
-		public void read_events_til_stops_subscription_when_second_read_throws_immediately() {
+		public async Task read_events_til_stops_subscription_when_second_read_throws_immediately() {
 			var expectedException = new ApplicationException("Test");
 
 			int callCount = 0;
@@ -121,12 +121,12 @@ namespace EventStore.Core.Tests.ClientAPI {
 				}
 			});
 
-			AssertStartFailsAndDropsSubscriptionWithException(expectedException);
+			await AssertStartFailsAndDropsSubscriptionWithException(expectedException);
 			Assert.That(_raisedEvents.Count, Is.EqualTo(1));
 		}
 
 		[Test]
-		public void read_events_til_stops_subscription_when_second_read_throws_asynchronously() {
+		public async Task read_events_til_stops_subscription_when_second_read_throws_asynchronously() {
 			var expectedException = new ApplicationException("Test");
 
 			int callCount = 0;
@@ -150,12 +150,12 @@ namespace EventStore.Core.Tests.ClientAPI {
 				}
 			});
 
-			AssertStartFailsAndDropsSubscriptionWithException(expectedException);
+			await AssertStartFailsAndDropsSubscriptionWithException(expectedException);
 			Assert.That(_raisedEvents.Count, Is.EqualTo(1));
 		}
 
 		[Test]
-		public void start_stops_subscription_if_subscribe_fails_immediately() {
+		public async Task start_stops_subscription_if_subscribe_fails_immediately() {
 			var expectedException = new ApplicationException("Test");
 
 			_connection.HandleReadStreamEventsForwardAsync((stream, start, max) => {
@@ -170,12 +170,12 @@ namespace EventStore.Core.Tests.ClientAPI {
 				throw expectedException;
 			});
 
-			AssertStartFailsAndDropsSubscriptionWithException(expectedException);
+			await AssertStartFailsAndDropsSubscriptionWithException(expectedException);
 			Assert.That(_raisedEvents.Count, Is.EqualTo(1));
 		}
 
 		[Test]
-		public void start_stops_subscription_if_subscribe_fails_async() {
+		public async Task start_stops_subscription_if_subscribe_fails_async() {
 			var expectedException = new ApplicationException("Test");
 
 			_connection.HandleReadStreamEventsForwardAsync((stream, start, max) => {
@@ -193,12 +193,12 @@ namespace EventStore.Core.Tests.ClientAPI {
 				return taskCompletionSource.Task;
 			});
 
-			AssertStartFailsAndDropsSubscriptionWithException(expectedException);
+			await AssertStartFailsAndDropsSubscriptionWithException(expectedException);
 			Assert.That(_raisedEvents.Count, Is.EqualTo(1));
 		}
 
 		[Test]
-		public void start_stops_subscription_if_historical_missed_events_load_fails_immediate() {
+		public async Task start_stops_subscription_if_historical_missed_events_load_fails_immediate() {
 			var expectedException = new ApplicationException("Test");
 
 			int callCount = 0;
@@ -222,13 +222,13 @@ namespace EventStore.Core.Tests.ClientAPI {
 				return taskCompletionSource.Task;
 			});
 
-			AssertStartFailsAndDropsSubscriptionWithException(expectedException);
+			await AssertStartFailsAndDropsSubscriptionWithException(expectedException);
 			Assert.That(_raisedEvents.Count, Is.EqualTo(1));
 		}
 
 
 		[Test]
-		public void start_stops_subscription_if_historical_missed_events_load_fails_async() {
+		public async Task start_stops_subscription_if_historical_missed_events_load_fails_async() {
 			var expectedException = new ApplicationException("Test");
 
 			int callCount = 0;
@@ -255,7 +255,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 				return taskCompletionSource.Task;
 			});
 
-			AssertStartFailsAndDropsSubscriptionWithException(expectedException);
+			await AssertStartFailsAndDropsSubscriptionWithException(expectedException);
 			Assert.That(_raisedEvents.Count, Is.EqualTo(1));
 		}
 

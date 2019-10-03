@@ -67,7 +67,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 				await store.ConnectAsync();
 				using (var transaction = await store.StartTransactionAsync(stream, 1)) {
 					await transaction.WriteAsync(TestEvent.NewTestEvent());
-					Assert.ThrowsAsync<WrongExpectedVersionException>(() => transaction.CommitAsync());
+					await AssertEx.ThrowsAsync<WrongExpectedVersionException>(() => transaction.CommitAsync());
 				}
 			}
 		}
@@ -110,7 +110,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 				await store.ConnectAsync();
 				using (var transaction = await store.StartTransactionAsync(stream, 100500)) {
 					await transaction.WriteAsync(TestEvent.NewTestEvent());
-					Assert.ThrowsAsync<WrongExpectedVersionException>(() => transaction.CommitAsync());
+					await AssertEx.ThrowsAsync<WrongExpectedVersionException>(() => transaction.CommitAsync());
 				}
 			}
 		}
@@ -178,7 +178,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 					await store.AppendToStreamAsync(stream, ExpectedVersion.NoStream, TestEvent.NewTestEvent())
 						;
 					await transaction.WriteAsync(TestEvent.NewTestEvent());
-					Assert.ThrowsAsync<WrongExpectedVersionException>(() => transaction.CommitAsync());
+					await AssertEx.ThrowsAsync<WrongExpectedVersionException>(() => transaction.CommitAsync());
 				}
 			}
 		}
@@ -207,7 +207,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 				using (var transaction = await store.StartTransactionAsync(stream, ExpectedVersion.NoStream)) {
 					await transaction.WriteAsync(TestEvent.NewTestEvent());
 					await store.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: true);
-					Assert.ThrowsAsync<StreamDeletedException>(() => transaction.CommitAsync());
+					await AssertEx.ThrowsAsync<StreamDeletedException>(() => transaction.CommitAsync());
 				}
 			}
 		}

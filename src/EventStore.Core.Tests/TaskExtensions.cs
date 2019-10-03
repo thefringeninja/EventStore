@@ -11,7 +11,8 @@ namespace EventStore.Core.Tests {
 			if (Debugger.IsAttached) {
 				timeoutMs = -1;
 			}
-			if(await Task.WhenAny(task, Task.Delay(timeoutMs)) != task)
+
+			if (await Task.WhenAny(task, Task.Delay(timeoutMs)) != task)
 				throw new TimeoutException("Timed out waiting for task");
 			await task;
 		}
@@ -23,6 +24,7 @@ namespace EventStore.Core.Tests {
 			if (Debugger.IsAttached) {
 				timeoutMs = -1;
 			}
+
 			if (await Task.WhenAny(task, Task.Delay(timeoutMs)) == task)
 				return await task;
 			throw new TimeoutException("Timed out waiting for task");

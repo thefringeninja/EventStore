@@ -90,8 +90,8 @@ namespace EventStore.Core.Tests.ClientAPI {
 		}
 
 		[Test]
-		public void trying_to_append_new_events_with_expected_version_no_stream_fails() {
-			Assert.ThrowsAsync<WrongExpectedVersionException>(() =>
+		public async Task trying_to_append_new_events_with_expected_version_no_stream_fails() {
+			await AssertEx.ThrowsAsync<WrongExpectedVersionException>(() =>
 				_connection.AppendToStreamAsync("test-stream", ExpectedVersion.NoStream, TestEvent.NewTestEvent()));
 		}
 	}

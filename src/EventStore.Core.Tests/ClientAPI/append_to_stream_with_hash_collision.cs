@@ -64,7 +64,7 @@ namespace EventStore.Core.Tests.Services.Storage.HashCollisions {
 			using (var store = BuildConnection(_node)) {
                 await store.ConnectAsync();
 
-                Assert.ThrowsAsync<WrongExpectedVersionException>(
+                await AssertEx.ThrowsAsync<WrongExpectedVersionException>(
 	                () => store.AppendToStreamAsync(stream1, ExpectedVersion.Any,
 		                new EventData(Guid.NewGuid(), "TestEvent", true, null, null)));
 			}

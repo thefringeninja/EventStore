@@ -55,7 +55,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 			using (var connection = BuildConnection(_node)) {
                 await connection.ConnectAsync();
 
-                Assert.ThrowsAsync<WrongExpectedVersionException>(() =>
+                await AssertEx.ThrowsAsync<WrongExpectedVersionException>(() =>
 	                connection.DeleteStreamAsync(stream, 1, hardDelete: true));
 			}
 		}
@@ -83,7 +83,7 @@ namespace EventStore.Core.Tests.ClientAPI {
 
 				await connection.DeleteStreamAsync(stream, ExpectedVersion.NoStream, hardDelete: true);
 
-				Assert.ThrowsAsync<StreamDeletedException>(
+				await AssertEx.ThrowsAsync<StreamDeletedException>(
 					() => connection.DeleteStreamAsync(stream, ExpectedVersion.Any, hardDelete: true));
 			}
 		}
