@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
  using System.Linq;
- using EventStore.ClientAPI;
+using System.Threading.Tasks;
+using EventStore.ClientAPI;
  using EventStore.Core.Services;
  using EventStore.Core.Tests.ClientAPI.Helpers;
  using NUnit.Framework;
@@ -17,11 +18,10 @@
 
   		private List<EventData> _testEventsC;
 
-  		protected override void When() {
- 			_conn.SetStreamMetadataAsync("$all", -1,
+  		protected override async Task When() {
+ 			await _conn.SetStreamMetadataAsync("$all", -1,
  					StreamMetadata.Build().SetReadRole(SystemRoles.All),
- 					DefaultData.AdminCredentials)
- 				.Wait();
+ 					DefaultData.AdminCredentials);
 
   			_testEventsA = Enumerable
  				.Range(0, 10)
