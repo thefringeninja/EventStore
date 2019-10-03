@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -45,9 +46,7 @@ namespace EventStore.Core.Tests.Helpers {
 		public readonly TFChunkDb Db;
 		public readonly string DbPath;
 
-		public bool UseKestrel => bool.TryParse(
-			                          Environment.GetEnvironmentVariable("UseKestrel"), out var useKestrel) &&
-		                          useKestrel;
+		private readonly List<int> _usedPorts = new List<int>();
 
 		public MiniNode(string pathname,
 			int? tcpPort = null, int? tcpSecPort = null, int? httpPort = null,
@@ -66,12 +65,18 @@ namespace EventStore.Core.Tests.Helpers {
 
 			IPAddress ip = IPAddress.Loopback; //GetLocalIp();
 
-			int extTcpPort = tcpPort ?? PortsHelper.GetAvailablePort(ip);
-			int extSecTcpPort = tcpSecPort ?? PortsHelper.GetAvailablePort(ip);
-			int extHttpPort = httpPort ?? PortsHelper.GetAvailablePort(ip);
-			int intTcpPort = PortsHelper.GetAvailablePort(ip);
-			int intSecTcpPort = PortsHelper.GetAvailablePort(ip);
-			int intHttpPort = PortsHelper.GetAvailablePort(ip);
+			int GetAvailablePort(IPAddress ipAddress) {
+				var port = PortsHelper.GetAvailablePort(ipAddress);
+				_usedPorts.Add(port);
+				return port;
+			}
+
+			int extTcpPort = tcpPort ?? GetAvailablePort(ip);
+			int extSecTcpPort = tcpSecPort ?? GetAvailablePort(ip);
+			int extHttpPort = httpPort ?? GetAvailablePort(ip);
+			int intTcpPort = GetAvailablePort(ip);
+			int intSecTcpPort = GetAvailablePort(ip);
+			int intHttpPort = GetAvailablePort(ip);
 
 			if (String.IsNullOrEmpty(dbPath)) {
 				DbPath = Path.Combine(pathname,
@@ -215,15 +220,21 @@ namespace EventStore.Core.Tests.Helpers {
 		}
 
 		public async Task Shutdown(bool keepDb = false) {
-			StoppingTime.Start();
+			try {
+				StoppingTime.Start();
 
-			await Node.Stop().WithTimeout(TimeSpan.FromSeconds(20));
+				await Node.Stop().WithTimeout(TimeSpan.FromSeconds(20));
 
-			if (!keepDb)
-				TryDeleteDirectory(DbPath);
+				if (!keepDb)
+					TryDeleteDirectory(DbPath);
 
-			StoppingTime.Stop();
-			RunningTime.Stop();
+				StoppingTime.Stop();
+				RunningTime.Stop();
+			} finally {
+				foreach (var port in _usedPorts) {
+					PortsHelper.ReturnPort(port);
+				}
+			}
 		}
 
 		private void TryDeleteDirectory(string directory) {

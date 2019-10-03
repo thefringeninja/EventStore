@@ -134,6 +134,9 @@ namespace EventStore.Core.Tests.Integration {
 #if DEBUG
 			QueueStatsCollector.DisableIdleDetection();
 #endif
+			foreach (var port in _portsUsed) {
+				PortsHelper.ReturnPort(port);
+			}
 			await base.TestFixtureTearDown();
 		}
 
