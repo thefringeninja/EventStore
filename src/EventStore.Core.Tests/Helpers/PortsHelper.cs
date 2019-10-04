@@ -5,6 +5,7 @@ using EventStore.Common.Log;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 
 namespace EventStore.Core.Tests.Helpers {
 	public static class PortsHelper {
@@ -21,9 +22,15 @@ namespace EventStore.Core.Tests.Helpers {
 			const int maxAttempts = 50;
 			var properties = IPGlobalProperties.GetIPGlobalProperties();
 
-			var inUse = new HashSet<int>(properties.GetActiveTcpConnections().Select(x => x.LocalEndPoint.Port)
-				.Concat(properties.GetActiveTcpListeners().Select(x => x.Port))
-				.Concat(properties.GetActiveUdpListeners().Select(x => x.Port)));
+			var ipEndPoints = properties.GetActiveTcpConnections().Select(x => x.LocalEndPoint)
+				.Concat(properties.GetActiveTcpListeners())
+				.Concat(properties.GetActiveUdpListeners())
+				.Where(x => x.AddressFamily == AddressFamily.InterNetwork &&
+				            x.Address.Equals(ip) &&
+				            x.Port >= PortStart)
+				.ToArray();
+			var inUse = new HashSet<int>(ipEndPoints.Select(x => x.Port));
+
 
 			var attempt = 0;
 
