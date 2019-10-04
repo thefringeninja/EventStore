@@ -126,7 +126,7 @@ namespace EventStore.Transport.Tcp {
 
 				_sslStream = new SslStream(new NetworkStream(socket, true), false);
 				try {
-					var enabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11 | SslProtocols.Default;
+					var enabledSslProtocols = SslProtocols.Tls13;
 					_sslStream.BeginAuthenticateAsServer(certificate, false, enabledSslProtocols, true,
 						OnEndAuthenticateAsServer, _sslStream);
 				} catch (AuthenticationException exc) {
@@ -190,7 +190,8 @@ namespace EventStore.Transport.Tcp {
 
 				_sslStream = new SslStream(new NetworkStream(socket, true), false, ValidateServerCertificate, null);
 				try {
-					_sslStream.BeginAuthenticateAsClient(targetHost, OnEndAuthenticateAsClient, _sslStream);
+					_sslStream.BeginAuthenticateAsClient(targetHost, null, SslProtocols.Tls13, false,
+						OnEndAuthenticateAsClient, _sslStream);
 				} catch (AuthenticationException exc) {
 					Log.InfoException(exc,
 						"[S{remoteEndPoint}, L{localEndPoint}]: Authentication exception on BeginAuthenticateAsClient.",
