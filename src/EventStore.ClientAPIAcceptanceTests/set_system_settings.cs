@@ -68,7 +68,8 @@ namespace EventStore.ClientAPI.Tests {
 
 			await connection.ConnectAsync().WithTimeout();
 
-			await connection.SetSystemSettingsAsync(new SystemSettings(null, null), DefaultUserCredentials.Admin);
+			await connection.SetSystemSettingsAsync(new SystemSettings(null, null), DefaultUserCredentials.Admin)
+				.WithTimeout();
 		}
 	}
 }

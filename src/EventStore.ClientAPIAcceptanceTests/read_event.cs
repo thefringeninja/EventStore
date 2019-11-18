@@ -86,7 +86,8 @@ namespace EventStore.ClientAPI.Tests {
 
 			await connection.ConnectAsync().WithTimeout();
 
-			await connection.AppendToStreamAsync(streamName, ExpectedVersion.NoStream, _fixture.CreateTestEvents(2));
+			await connection.AppendToStreamAsync(streamName, ExpectedVersion.NoStream, _fixture.CreateTestEvents(2))
+				.WithTimeout();
 
 			var result = await connection.ReadEventAsync(streamName, 5, false).WithTimeout();
 
