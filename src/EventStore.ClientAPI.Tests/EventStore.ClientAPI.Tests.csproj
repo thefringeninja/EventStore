@@ -3,7 +3,12 @@
 		<TargetFramework>netcoreapp3.1</TargetFramework>
 		<RootNamespace>EventStore.ClientAPI.Tests</RootNamespace>
 	</PropertyGroup>
+	<PropertyGroup>
+		<IsMac Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'false' ">false</IsMac>
+		<IsMac Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true' ">true</IsMac>
+	</PropertyGroup>
 	<ItemGroup>
+		<PackageReference Include="Docker.DotNet" Version="3.125.2" />
 		<PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.1.0-preview3.19555.2" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
 		<PackageReference Include="xunit" Version="2.4.1" />
@@ -20,5 +25,7 @@
 	<ItemGroup>
 		<Compile Include="..\EventStore.ClientAPIAcceptanceTests\**\*.cs" />
 		<EmbeddedResource Include="..\EventStore.ClientAPIAcceptanceTests\server.p12" />
+		<Compile Remove="..\EventStore.ClientAPIAcceptanceTests\EventStoreClientAPIFixture.macOS.cs" Condition="'$(IsMac)' == 'false'" />
+		<Compile Remove="..\EventStore.ClientAPIAcceptanceTests\EventStoreClientAPIFixture.cs" Condition="'$(IsMac)' == 'true'" />
 	</ItemGroup>
 </Project>
