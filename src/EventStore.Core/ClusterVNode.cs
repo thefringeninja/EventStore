@@ -36,6 +36,7 @@ using EventStore.Core.Services.PersistentSubscription;
 using EventStore.Core.Services.Histograms;
 using EventStore.Core.Services.PersistentSubscription.ConsumerStrategy;
 using System.Threading.Tasks;
+using EventStore.Core.Services.Monitoring.Utils;
 using EventStore.Core.Services.Transport.Grpc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -175,6 +176,8 @@ namespace EventStore.Core {
 #if DEBUG
 			AddTask(_taskAddedTrigger.Task);
 #endif
+
+			EventStoreEventSource.Initialize(db.Config.Path, vNodeSettings.StatsPeriod);
 
 			var isSingleNode = vNodeSettings.ClusterNodeCount == 1;
 			_nodeInfo = vNodeSettings.NodeInfo;

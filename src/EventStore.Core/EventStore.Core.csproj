@@ -15,9 +15,12 @@
 		</PackageReference>
 		<PackageReference Include="HdrHistogram" Version="2.5.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
+		<PackageReference Include="Microsoft.Diagnostics.Tools.RuntimeClient" Version="3.1.57502" />
+		<PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="2.0.48" />
 		<PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
 		<PackageReference Include="protobuf-net" Version="2.4.0" />
 		<PackageReference Include="SimpleSyndicate.UriTemplate" Version="1.0.3" />
+			<PackageReference Include="System.Diagnostics.Tracing" Version="4.3.0" />
 		<PackageReference Include="System.Diagnostics.PerformanceCounter" Version="4.5.0" />
 		<PackageReference Include="System.Linq.Async" Version="4.0.0" />
 	</ItemGroup>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using EventStore.Common.Log;
@@ -18,7 +19,7 @@ namespace EventStore.Core.Services.Monitoring {
 		private readonly ILogger _log;
 		private readonly ICheckpoint _writerCheckpoint;
 		private readonly string _dbPath;
-		private PerfCounterHelper _perfCounter;
+		private ICounters _perfCounter;
 		private bool _giveup;
 
 		public SystemStatsHelper(ILogger log, ICheckpoint writerCheckpoint, string dbPath) {
@@ -27,7 +28,7 @@ namespace EventStore.Core.Services.Monitoring {
 
 			_log = log;
 			_writerCheckpoint = writerCheckpoint;
-			_perfCounter = new PerfCounterHelper(_log);
+			_perfCounter = new EventCounterHelper();
 			_dbPath = dbPath;
 		}
 
@@ -135,7 +136,7 @@ namespace EventStore.Core.Services.Monitoring {
 				stats["proc-gc-totalBytesInHeaps"] = gcStats.TotalBytesInHeaps;
 			} catch (InvalidOperationException) {
 				_log.Info("Received error reading counters. Attempting to rebuild.");
-				_perfCounter = new PerfCounterHelper(_log);
+				//_perfCounter = new PerfCounterHelper(_log);
 				_giveup = count > 10;
 				if (_giveup)
 					_log.Error("Maximum rebuild attempts reached. Giving up on rebuilds.");
