@@ -18,6 +18,7 @@
 		<RootNamespace>EventStore.Client</RootNamespace>
 	</PropertyGroup>
 	<ItemGroup>
+		<PackageReference Include="CompareNETObjects" Version="4.65.0" />
 		<PackageReference Include="ConfigureAwaitChecker.Analyzer" Version="4.0.0">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

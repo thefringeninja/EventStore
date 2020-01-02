@@ -5,17 +5,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using EventStore.Core.Services;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace EventStore.Client.Streams {
 	[Trait("Category", "LongRunning")]
-	public class all_stream_catch_up_subscription : IAsyncLifetime {
+	public class subscribe_to_all : IAsyncLifetime, IDisposable {
 		private readonly Fixture _fixture;
+		private readonly IDisposable _loggingContext;
 
 		/// <summary>
 		/// This class does not implement IClassFixture because it checks $all, and we want a fresh Node for each test.
 		/// </summary>
-		public all_stream_catch_up_subscription() {
+		public subscribe_to_all(ITestOutputHelper outputHelper) {
 			_fixture = new Fixture();
+			_loggingContext = LoggingHelper.Capture(outputHelper);
 		}
 
 		[Fact]
@@ -24,7 +27,9 @@ namespace EventStore.Client.Streams {
 
 			using var subscription = _fixture.Client.SubscribeToAll(EventAppeared, false, SubscriptionDropped);
 
-			Assert.False(dropped.Task.IsCompleted);
+			if (dropped.Task.IsCompleted) {
+				Assert.False(dropped.Task.IsCompleted, dropped.Task.Result.ToString());
+			}
 
 			subscription.Dispose();
 
@@ -71,7 +76,10 @@ namespace EventStore.Client.Streams {
 			await Task.Delay(200);
 
 			Assert.False(appeared.Task.IsCompleted);
-			Assert.False(dropped.Task.IsCompleted);
+
+			if (dropped.Task.IsCompleted) {
+				Assert.False(dropped.Task.IsCompleted, dropped.Task.Result.ToString());
+			}
 
 			subscription.Dispose();
 
@@ -81,7 +89,7 @@ namespace EventStore.Client.Streams {
 			Assert.Null(ex);
 
 			Task EventAppeared(StreamSubscription s, ResolvedEvent e, CancellationToken ct) {
-				if (!SystemStreams.IsSystemStream(e.OriginalStreamId)) {
+				if (!Core.Services.SystemStreams.IsSystemStream(e.OriginalStreamId)) {
 					appeared.TrySetResult(true);
 				}
 
@@ -114,9 +122,11 @@ namespace EventStore.Client.Streams {
 
 			await appeared.Task.WithTimeout();
 
-			Assert.True(EventDataComparer.Equal(beforeEvents.Concat(afterEvents).ToArray(), appearedEvents.ToArray()));
+			AssertEx.EventsEqual(beforeEvents.Concat(afterEvents).ToArray(), appearedEvents.ToArray());
 
-			Assert.False(dropped.Task.IsCompleted);
+			if (dropped.Task.IsCompleted) {
+				Assert.False(dropped.Task.IsCompleted, dropped.Task.Result.ToString());
+			}
 
 			subscription.Dispose();
 
@@ -126,7 +136,7 @@ namespace EventStore.Client.Streams {
 			Assert.Null(ex);
 
 			Task EventAppeared(StreamSubscription s, ResolvedEvent e, CancellationToken ct) {
-				if (!SystemStreams.IsSystemStream(e.OriginalStreamId)) {
+				if (!Core.Services.SystemStreams.IsSystemStream(e.OriginalStreamId)) {
 					appearedEvents.Add(e.Event);
 
 					if (appearedEvents.Count >= beforeEvents.Length + afterEvents.Length) {
@@ -151,5 +161,6 @@ namespace EventStore.Client.Streams {
 
 		public Task InitializeAsync() => _fixture.InitializeAsync();
 		public Task DisposeAsync() => _fixture.DisposeAsync();
+		public void Dispose() => _loggingContext.Dispose();
 	}
 }

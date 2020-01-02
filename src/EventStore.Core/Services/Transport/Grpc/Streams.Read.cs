@@ -111,7 +111,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 					FilterOptionOneofCase.NoFilter) => new Enumerators.StreamSubscription(
 						_queue,
 						request.Options.Stream.StreamName,
-						request.Options.Stream.ToStreamRevision(),
+						request.Options.Stream.ToSubscriptionStreamRevision(),
 						request.Options.ResolveLinks,
 						user,
 						_readIndex,
@@ -121,7 +121,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 					ReadDirection.Forwards,
 					FilterOptionOneofCase.NoFilter) => new Enumerators.AllSubscription(
 						_queue,
-						request.Options.All.ToPosition(),
+						request.Options.All.ToSubscriptionPosition(),
 						request.Options.ResolveLinks,
 						user,
 						_readIndex,
@@ -131,7 +131,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 					ReadDirection.Forwards,
 					FilterOptionOneofCase.Filter) => new Enumerators.AllSubscriptionFiltered(
 						_queue,
-						request.Options.All.ToPosition(),
+						request.Options.All.ToSubscriptionPosition(),
 						request.Options.ResolveLinks,
 						ConvertToEventFilter(request.Options.Filter),
 						user,
@@ -139,6 +139,8 @@ namespace EventStore.Core.Services.Transport.Grpc {
 						context.CancellationToken),
 					_ => throw new InvalidOperationException()
 				};
+
+			context.CancellationToken.Register(() => enumerator.DisposeAsync());
 
 			while (await enumerator.MoveNextAsync().ConfigureAwait(false)) {
 				await responseStream.WriteAsync(new ReadResp {
