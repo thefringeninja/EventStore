@@ -6,13 +6,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using EventStore.Core.Services;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace EventStore.Client.Streams {
-	public class subscribe_to_all_from_filtered : IClassFixture<subscribe_to_all_from_filtered.Fixture> {
+	public class subscribe_to_all_filtered_live : IAsyncLifetime, IDisposable {
 		private readonly Fixture _fixture;
+		private readonly IDisposable _loggingContext;
 
-		public subscribe_to_all_from_filtered(Fixture fixture) {
-			_fixture = fixture;
+		public subscribe_to_all_filtered_live(ITestOutputHelper outputHelper) {
+			_fixture = new Fixture();
+			_loggingContext = LoggingHelper.Capture(outputHelper);
 		}
 
 		[Fact]
@@ -22,8 +25,10 @@ namespace EventStore.Client.Streams {
 			var result = new List<ResolvedEvent>();
 			var source = new TaskCompletionSource<bool>();
 
-			_fixture.Client.SubscribeToAll(EventAppeared,
-				false, filter: new StreamFilter(new RegularFilterExpression(new Regex($"^{streamPrefix}"))));
+			_fixture.Client.SubscribeToAll(Position.End, EventAppeared, false,
+				filter: new StreamFilter(new RegularFilterExpression(new Regex($"^{streamPrefix}"))));
+
+			await Task.Delay(100);
 
 			foreach (var e in events) {
 				await _fixture.Client.AppendToStreamAsync($"{streamPrefix}_{Guid.NewGuid():n}",
@@ -51,8 +56,10 @@ namespace EventStore.Client.Streams {
 			var result = new List<ResolvedEvent>();
 			var source = new TaskCompletionSource<bool>();
 
-			_fixture.Client.SubscribeToAll(EventAppeared,
-				false, filter: new StreamFilter(new PrefixFilterExpression(streamPrefix)));
+			_fixture.Client.SubscribeToAll(Position.End, EventAppeared, false,
+				filter: new StreamFilter(new PrefixFilterExpression(streamPrefix)));
+
+			await Task.Delay(100);
 
 			foreach (var e in events) {
 				await _fixture.Client.AppendToStreamAsync($"{streamPrefix}_{Guid.NewGuid():n}",
@@ -84,8 +91,10 @@ namespace EventStore.Client.Streams {
 			var result = new List<ResolvedEvent>();
 			var source = new TaskCompletionSource<bool>();
 
-			_fixture.Client.SubscribeToAll(EventAppeared,
-				false, filter: new EventTypeFilter(new RegularFilterExpression(new Regex($"^{eventTypePrefix}"))));
+			_fixture.Client.SubscribeToAll(Position.End, EventAppeared, false,
+				filter: new EventTypeFilter(new RegularFilterExpression(new Regex($"^{eventTypePrefix}"))));
+
+			await Task.Delay(100);
 
 			foreach (var e in events) {
 				await _fixture.Client.AppendToStreamAsync($"{streamPrefix}_{Guid.NewGuid():n}",
@@ -117,8 +126,10 @@ namespace EventStore.Client.Streams {
 			var result = new List<ResolvedEvent>();
 			var source = new TaskCompletionSource<bool>();
 
-			_fixture.Client.SubscribeToAll(EventAppeared,
-				false, filter: new EventTypeFilter(new PrefixFilterExpression(eventTypePrefix)));
+			_fixture.Client.SubscribeToAll(Position.End, EventAppeared, false,
+				filter: new EventTypeFilter(new PrefixFilterExpression(eventTypePrefix)));
+
+			await Task.Delay(100);
 
 			foreach (var e in events) {
 				await _fixture.Client.AppendToStreamAsync($"{streamPrefix}_{Guid.NewGuid():n}",
@@ -148,5 +159,10 @@ namespace EventStore.Client.Streams {
 			protected override Task When() =>
 				Client.AppendToStreamAsync(FilteredOutStream, AnyStreamRevision.NoStream, CreateTestEvents(10));
 		}
+
+		public Task InitializeAsync() => _fixture.InitializeAsync();
+
+		public Task DisposeAsync() => _fixture.DisposeAsync();
+		public void Dispose() => _loggingContext.Dispose();
 	}
 }
