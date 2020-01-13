@@ -5,7 +5,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using EventStore.Client.Streams;
-using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 
 namespace EventStore.Client {
