@@ -94,8 +94,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 				if (!_catchUpRestarted) {
 					await _inner.DisposeAsync().ConfigureAwait(false);
 
-					_inner = new LiveStreamSubscription(_subscriptionId, _bus, OnLiveSubscriptionDropped, _streamName,
-						CurrentRevision, _resolveLinks, _user, _cancellationToken);
+					_inner = new LiveStreamSubscription(_subscriptionId, _bus, OnLiveSubscriptionDropped, _streamName, _resolveLinks, _user, _cancellationToken);
 				} else {
 					_catchUpRestarted = true;
 				}
@@ -263,7 +262,6 @@ namespace EventStore.Core.Services.Transport.Grpc {
 				private readonly Guid _subscriptionId;
 				private readonly IPublisher _bus;
 				private readonly string _streamName;
-				private readonly StreamRevision _caughtUpRevision;
 				private readonly IPrincipal _user;
 				private readonly Func<StreamRevision, ValueTask> _onDropped;
 				private readonly TaskCompletionSource<StreamRevision> _subscriptionConfirmed;
@@ -279,7 +277,6 @@ namespace EventStore.Core.Services.Transport.Grpc {
 					IPublisher bus,
 					Func<StreamRevision, ValueTask> onDropped,
 					string streamName,
-					StreamRevision caughtUpRevision,
 					bool resolveLinks,
 					IPrincipal user,
 					CancellationToken cancellationToken) {
@@ -301,7 +298,6 @@ namespace EventStore.Core.Services.Transport.Grpc {
 					_bus = bus;
 					_onDropped = onDropped;
 					_streamName = streamName;
-					_caughtUpRevision = caughtUpRevision;
 					_user = user;
 					_subscriptionConfirmed = new TaskCompletionSource<StreamRevision>();
 					_readHistoricalEventsCompleted = new TaskCompletionSource<bool>();
@@ -323,11 +319,13 @@ namespace EventStore.Core.Services.Transport.Grpc {
 
 						switch (message) {
 							case ClientMessage.SubscriptionConfirmation confirmed:
+								var fromRevision = StreamRevision.FromInt64(confirmed.LastEventNumber.Value);
 								Log.Trace(
 									"Live subscription {subscriptionId} to {streamName} confirmed at {fromRevision}.",
 									_subscriptionId, _streamName,
-									StreamRevision.FromInt64(confirmed.LastEventNumber.Value));
-
+									fromRevision);
+								_subscriptionConfirmed.TrySetResult(fromRevision);
+								ReadHistoricalEvents(fromRevision);
 								return;
 							case ClientMessage.SubscriptionDropped dropped:
 								switch (dropped.Reason) {
@@ -342,12 +340,6 @@ namespace EventStore.Core.Services.Transport.Grpc {
 										return;
 								}
 							case ClientMessage.StreamEventAppeared appeared:
-								if (!_subscriptionConfirmed.Task.IsCompleted) {
-									var fromRevision = StreamRevision.FromInt64(appeared.Event.OriginalEventNumber);
-									_subscriptionConfirmed.TrySetResult(fromRevision);
-									ReadHistoricalEvents(fromRevision);
-								}
-
 								_liveEventBuffer.Enqueue((appeared.Event, null));
 								return;
 							default:
@@ -385,10 +377,10 @@ namespace EventStore.Core.Services.Transport.Grpc {
 
 								foreach (var @event in completed.Events) {
 									var streamRevision = StreamRevision.FromInt64(@event.OriginalEvent.EventNumber);
-									if (streamRevision <= _caughtUpRevision) {
+									if (streamRevision < _subscriptionConfirmed.Task.Result) {
 										Log.Trace(
-											"Live subscription {subscriptionId} to {streamName} caught up.",
-											_subscriptionId, streamName);
+											"Live subscription {subscriptionId} to {streamName} caught up at {eventNumber}.",
+											_subscriptionId, streamName, _subscriptionConfirmed.Task.Result);
 										_readHistoricalEventsCompleted.TrySetResult(true);
 										return;
 									}
@@ -417,7 +409,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 
 					void ReadHistoricalEvents(StreamRevision fromStreamRevision) {
 						Log.Trace(
-							"Live subscription {subscriptionId} to {streamName} loading any missed events starting at {fromStreamRevision}",
+							"Live subscription {subscriptionId} to {streamName} loading any missed events starting at {eventNumber}",
 							subscriptionId,
 							streamName,
 							fromStreamRevision);
@@ -453,8 +445,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 							_liveEventBuffer.Clear();
 							_historicalEventBuffer.Clear();
 
-							await _onDropped(streamRevision)
-								.ConfigureAwait(false);
+							await _onDropped(streamRevision).ConfigureAwait(false);
 							return false;
 						}
 
@@ -470,8 +461,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 					var delay = 1;
 
 					while (!_liveEventBuffer.TryDequeue(out _)) {
-						await Task.Delay(Math.Max(delay *= 2, 50), _disposedTokenSource.Token)
-							.ConfigureAwait(false);
+						await Task.Delay(Math.Max(delay *= 2, 50), _disposedTokenSource.Token).ConfigureAwait(false);
 					}
 
 					var (resolvedEvent, exception) = _;

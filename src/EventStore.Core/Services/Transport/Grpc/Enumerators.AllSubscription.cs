@@ -87,8 +87,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 				if (!_catchUpRestarted) {
 					await _inner.DisposeAsync().ConfigureAwait(false);
 
-					_inner = new LiveStreamSubscription(_subscriptionId, _bus, OnLiveSubscriptionDropped,
-						CurrentPosition, _resolveLinks, _user, _cancellationToken);
+					_inner = new LiveStreamSubscription(_subscriptionId, _bus, OnLiveSubscriptionDropped, _resolveLinks, _user, _cancellationToken);
 				} else {
 					_catchUpRestarted = true;
 				}
@@ -242,7 +241,6 @@ namespace EventStore.Core.Services.Transport.Grpc {
 				private readonly Guid _subscriptionId;
 				private readonly IPublisher _bus;
 				private readonly Func<Position, ValueTask> _onDropped;
-				private readonly Position _caughtUpPosition;
 				private readonly IPrincipal _user;
 				private readonly TaskCompletionSource<Position> _subscriptionConfirmed;
 				private readonly TaskCompletionSource<bool> _readHistoricalEventsCompleted;
@@ -256,7 +254,6 @@ namespace EventStore.Core.Services.Transport.Grpc {
 				public LiveStreamSubscription(Guid subscriptionId,
 					IPublisher bus,
 					Func<Position, ValueTask> onDropped,
-					Position caughtUpPosition,
 					bool resolveLinks,
 					IPrincipal user,
 					CancellationToken cancellationToken) {
@@ -273,7 +270,6 @@ namespace EventStore.Core.Services.Transport.Grpc {
 					_subscriptionId = subscriptionId;
 					_bus = bus;
 					_onDropped = onDropped;
-					_caughtUpPosition = caughtUpPosition;
 					_user = user;
 					_subscriptionConfirmed = new TaskCompletionSource<Position>();
 					_readHistoricalEventsCompleted = new TaskCompletionSource<bool>();
@@ -294,10 +290,13 @@ namespace EventStore.Core.Services.Transport.Grpc {
 
 						switch (message) {
 							case ClientMessage.SubscriptionConfirmation confirmed:
+								var position = Position.FromInt64(confirmed.LastIndexedPosition,
+									confirmed.LastIndexedPosition);
 								Log.Trace(
 									"Live subscription {subscriptionId} to $all confirmed at {position}",
-									_subscriptionId, Position.FromInt64(confirmed.LastIndexedPosition,
-										confirmed.LastIndexedPosition));
+									_subscriptionId, position);
+								_subscriptionConfirmed.TrySetResult(position);
+								ReadHistoricalEvents(position);
 								return;
 							case ClientMessage.SubscriptionDropped dropped:
 								switch (dropped.Reason) {
@@ -309,14 +308,6 @@ namespace EventStore.Core.Services.Transport.Grpc {
 										return;
 								}
 							case ClientMessage.StreamEventAppeared appeared:
-								var fromPosition = Position.FromInt64(appeared.Event.OriginalPosition.Value.CommitPosition,
-									appeared.Event.OriginalPosition.Value.PreparePosition);
-
-								if (!_subscriptionConfirmed.Task.IsCompleted) {
-									_subscriptionConfirmed.TrySetResult(fromPosition);
-									ReadHistoricalEvents(fromPosition);
-								}
-
 								_liveEventBuffer.Enqueue((appeared.Event, null));
 								return;
 							default:
@@ -354,9 +345,9 @@ namespace EventStore.Core.Services.Transport.Grpc {
 								foreach (var @event in completed.Events) {
 									var position = Position.FromInt64(@event.OriginalPosition.Value.CommitPosition,
 										@event.OriginalPosition.Value.PreparePosition);
-									if (position <= _caughtUpPosition) {
+									if (position < _subscriptionConfirmed.Task.Result) {
 										Log.Trace("Live subscription {subscriptionId} to $all caught up at {position}.",
-											_subscriptionId, position);
+											_subscriptionId, _subscriptionConfirmed.Task.Result);
 										_readHistoricalEventsCompleted.TrySetResult(true);
 										return;
 									}

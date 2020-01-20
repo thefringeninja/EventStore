@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
-using System.Reactive.Linq;
 using System.Threading;
 using EventStore.Client.Logging;
 using Microsoft.Extensions.DependencyInjection;
