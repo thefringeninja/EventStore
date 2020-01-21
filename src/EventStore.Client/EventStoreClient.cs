@@ -29,7 +29,8 @@ namespace EventStore.Client {
 				Port = 2113
 			}.Uri);
 			_channel = GrpcChannel.ForAddress(settings.Address, new GrpcChannelOptions {
-				HttpClient = settings.CreateHttpClient?.Invoke()
+				HttpClient = settings.CreateHttpClient?.Invoke(),
+				ThrowOperationCanceledOnCancellation = true
 			});
 			var connectionName = settings.ConnectionName ?? $"ES-{Guid.NewGuid()}";
 
