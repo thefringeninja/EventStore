@@ -33,7 +33,6 @@ namespace EventStore.Client {
 		}
 
 		private async Task Subscribe() {
-			subscribe:
 			try {
 				await foreach (var resolvedEvent in _events.ConfigureAwait(false)) {
 					try {
@@ -56,9 +55,6 @@ namespace EventStore.Client {
 						return;
 					}
 				}
-			} catch (StreamNotFoundException) {
-				await Task.Delay(100).ConfigureAwait(false);
-				goto subscribe;
 			} catch (Exception ex) {
 				try {
 					SubscriptionDropped(SubscriptionDroppedReason.ServerError, ex);

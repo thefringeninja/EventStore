@@ -188,17 +188,9 @@ namespace EventStore.Core.Services.Transport.Grpc {
 						return true;
 					}
 
-					var correlationId = Guid.NewGuid();
-
 					var readNextSource = new TaskCompletionSource<bool>();
 
-					Log.Trace(
-						"Catch-up subscription {_subscriptionId} to {_streamName} reading next page starting from {_nextRevision}",
-						_subscriptionId, _streamName, _nextRevision);
-
-					_bus.Publish(new ClientMessage.ReadStreamEventsForward(
-						correlationId, correlationId, new CallbackEnvelope(OnMessage), _streamName,
-						_nextRevision.ToInt64(), ReadBatchSize, _resolveLinks, false, default, _user));
+					ReadNextPage(Guid.NewGuid());
 
 					var isEnd = await readNextSource.Task.ConfigureAwait(false);
 
@@ -245,7 +237,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 								readNextSource.TrySetResult(completed.IsEndOfStream);
 								return;
 							case ReadStreamResult.NoStream:
-								readNextSource.TrySetException(RpcExceptions.StreamNotFound(_streamName));
+								ReadNextPage(Guid.NewGuid());
 								return;
 							case ReadStreamResult.StreamDeleted:
 								readNextSource.TrySetException(RpcExceptions.StreamDeleted(_streamName));
@@ -257,6 +249,16 @@ namespace EventStore.Core.Services.Transport.Grpc {
 								readNextSource.TrySetException(RpcExceptions.UnknownError(completed.Result));
 								return;
 						}
+					}
+
+					void ReadNextPage(Guid correlationId) {
+						Log.Trace(
+							"Catch-up subscription {_subscriptionId} to {_streamName} reading next page starting from {_nextRevision}",
+							_subscriptionId, _streamName, _nextRevision);
+
+						_bus.Publish(new ClientMessage.ReadStreamEventsForward(
+							correlationId, correlationId, new CallbackEnvelope(OnMessage), _streamName,
+							_nextRevision.ToInt64(), ReadBatchSize, _resolveLinks, false, default, _user));
 					}
 				}
 			}
@@ -405,8 +407,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 								ReadHistoricalEvents(StreamRevision.FromInt64(completed.NextEventNumber));
 								return;
 							case ReadStreamResult.NoStream:
-								_readHistoricalEventsCompleted.TrySetException(
-									RpcExceptions.StreamNotFound(streamName));
+								ReadHistoricalEvents(StreamRevision.Start);
 								return;
 							case ReadStreamResult.StreamDeleted:
 								_readHistoricalEventsCompleted.TrySetException(RpcExceptions.StreamDeleted(streamName));
@@ -459,8 +460,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 							_liveEventBuffer.Clear();
 							_historicalEventBuffer.Clear();
 
-							await _onDropped(streamRevision)
-								.ConfigureAwait(false);
+							await _onDropped(streamRevision).ConfigureAwait(false);
 							return false;
 						}
 
