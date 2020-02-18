@@ -127,6 +127,7 @@ namespace EventStore.Core {
 			_subsystems
 				.Aggregate(services
 						.AddRouting()
+						.AddResponseCompression()
 						.AddSingleton(_httpAuthenticationProviders)
 						.AddSingleton<AuthenticationMiddleware>()
 						.AddSingleton(_readIndex)

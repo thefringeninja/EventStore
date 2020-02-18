@@ -1,46 +1,30 @@
 using System;
+using System.IO;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using EventStore.Common.Utils;
 
 namespace EventStore.Transport.Http.Codecs {
 	public class CustomCodec : ICodec {
-		public ICodec BaseCodec {
-			get { return _codec; }
-		}
+		public ICodec BaseCodec { get; }
+		public string ContentType { get; }
+		public Encoding Encoding { get; }
+		public bool HasEventIds { get; }
+		public bool HasEventTypes { get; }
 
-		public string ContentType {
-			get { return _contentType; }
-		}
-
-		public Encoding Encoding {
-			get { return _encoding; }
-		}
-
-		public bool HasEventIds {
-			get { return _hasEventIds; }
-		}
-
-		public bool HasEventTypes {
-			get { return _hasEventTypes; }
-		}
-
-		private readonly ICodec _codec;
-		private readonly string _contentType;
 		private readonly string _type;
 		private readonly string _subtype;
-		private readonly Encoding _encoding;
-		private readonly bool _hasEventIds;
-		private readonly bool _hasEventTypes;
 
 		internal CustomCodec(ICodec codec, string contentType, Encoding encoding, bool hasEventIds,
 			bool hasEventTypes) {
 			Ensure.NotNull(codec, "codec");
 			Ensure.NotNull(contentType, "contentType");
-			_hasEventTypes = hasEventTypes;
-			_hasEventIds = hasEventIds;
-			_codec = codec;
-			_contentType = contentType;
-			_encoding = encoding;
+			HasEventTypes = hasEventTypes;
+			HasEventIds = hasEventIds;
+			BaseCodec = codec;
+			ContentType = contentType;
+			Encoding = encoding;
 			var parts = contentType.Split(new[] {'/'}, 2);
 			if (parts.Length != 2)
 				throw new ArgumentException("contentType");
@@ -48,23 +32,22 @@ namespace EventStore.Transport.Http.Codecs {
 			_subtype = parts[1];
 		}
 
-		public bool CanParse(MediaType format) {
-			return format != null && format.Matches(ContentType, Encoding);
-		}
+		public bool CanParse(MediaType format) => format != null && format.Matches(ContentType, Encoding);
 
-		public bool SuitableForResponse(MediaType component) {
-			return component.Type == "*"
-			       || (string.Equals(component.Type, _type, StringComparison.OrdinalIgnoreCase)
-			           && (component.Subtype == "*"
-			               || string.Equals(component.Subtype, _subtype, StringComparison.OrdinalIgnoreCase)));
-		}
+		public bool SuitableForResponse(MediaType component) =>
+			component.Type == "*"
+			|| string.Equals(component.Type, _type, StringComparison.OrdinalIgnoreCase)
+			&& (component.Subtype == "*"
+			    || string.Equals(component.Subtype, _subtype, StringComparison.OrdinalIgnoreCase));
 
-		public T From<T>(string text) {
-			return _codec.From<T>(text);
-		}
+		public T From<T>(string text) => BaseCodec.From<T>(text);
 
-		public string To<T>(T value) {
-			return _codec.To(value);
-		}
+		public string To<T>(T value) => BaseCodec.To(value);
+
+		public ValueTask<T> ReadAsync<T>(Stream stream, CancellationToken cancellationToken = default)
+			=> BaseCodec.ReadAsync<T>(stream, cancellationToken);
+
+		public ValueTask WriteAsync(object response, Stream stream, CancellationToken cancellationToken = default)
+			=> BaseCodec.WriteAsync(response, stream, cancellationToken);
 	}
 }

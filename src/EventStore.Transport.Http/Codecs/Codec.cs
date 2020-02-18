@@ -1,11 +1,24 @@
+using System;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using EventStore.Common.Utils;
 
 namespace EventStore.Transport.Http.Codecs {
 	public static class Codec {
-		public static readonly NoCodec NoCodec = new NoCodec();
-		public static readonly ICodec[] NoCodecs = new ICodec[0];
-		public static readonly ManualEncoding ManualEncoding = new ManualEncoding();
+		public static readonly ICodec[] NoCodecs = Array.Empty<ICodec>();
+
+		public static ICodec[] All => typeof(Codec)
+			.GetFields(BindingFlags.Public | BindingFlags.Static)
+			.Where(fi => typeof(ICodec).IsAssignableFrom(fi.FieldType))
+			.Select(fi => (ICodec)fi.GetValue(null))
+			.ToArray();
+
+		//public static readonly NoCodec NoCodec = new NoCodec();
+		//public static readonly ManualEncoding ManualEncoding = new ManualEncoding();
+
+		public static readonly TextCodec NoCodec = new TextCodec();
+		public static readonly TextCodec ManualEncoding = new TextCodec();
 
 		public static readonly JsonCodec Json = new JsonCodec();
 		public static readonly XmlCodec Xml = new XmlCodec();
