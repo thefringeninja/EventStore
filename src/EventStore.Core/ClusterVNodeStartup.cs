@@ -36,6 +36,7 @@ namespace EventStore.Core {
 		private readonly ISubsystem[] _subsystems;
 		private readonly IQueuedHandler _mainQueue;
 		private readonly IReadOnlyList<IHttpAuthenticationProvider> _httpAuthenticationProviders;
+		private readonly IQueuedHandler _monitoringQueue;
 		private readonly IReadIndex _readIndex;
 		private readonly ClusterVNodeSettings _vNodeSettings;
 		private readonly KestrelHttpService _externalHttpService;
@@ -48,6 +49,7 @@ namespace EventStore.Core {
 			ISubsystem[] subsystems,
 			IQueuedHandler mainQueue,
 			IReadOnlyList<IHttpAuthenticationProvider> httpAuthenticationProviders,
+			IQueuedHandler monitoringQueue,
 			IReadIndex readIndex,
 			ClusterVNodeSettings vNodeSettings,
 			KestrelHttpService externalHttpService,
@@ -63,7 +65,11 @@ namespace EventStore.Core {
 			if (httpAuthenticationProviders == null) {
 				throw new ArgumentNullException(nameof(httpAuthenticationProviders));
 			}
-			
+
+			if (monitoringQueue == null) {
+				throw new ArgumentNullException(nameof(monitoringQueue));
+			}
+
 			if (readIndex == null) {
 				throw new ArgumentNullException(nameof(readIndex));
 			}
@@ -75,10 +81,11 @@ namespace EventStore.Core {
 			if (externalHttpService == null) {
 				throw new ArgumentNullException(nameof(externalHttpService));
 			}
-			
+
 			_subsystems = subsystems;
 			_mainQueue = mainQueue;
 			_httpAuthenticationProviders = httpAuthenticationProviders;
+			_monitoringQueue = monitoringQueue;
 			_readIndex = readIndex;
 			_vNodeSettings = vNodeSettings;
 			_externalHttpService = externalHttpService;
@@ -101,11 +108,15 @@ namespace EventStore.Core {
 						.UseWhen(context => context.Request.Path.StartsWithSegments(StreamsSegment),
 							inner => inner.UseRouting().UseEndpoints(endpoint =>
 								endpoint.MapGrpcService<Streams>()))
-				.UseWhen(context => context.Request.Path.StartsWithSegments(OperationsSegment),  // TODO JPB figure out how to delete this sadness
-					inner => inner.UseRouting().UseEndpoints(endpoint =>
-						endpoint.MapGrpcService<Operations>())),
+						.UseWhen(
+							context =>
+								context.Request.Path
+									.StartsWithSegments(
+										OperationsSegment), // TODO JPB figure out how to delete this sadness
+							inner => inner.UseRouting().UseEndpoints(endpoint =>
+								endpoint.MapGrpcService<Operations>())),
 					(b, subsystem) => subsystem.Configure(b))
-				.UseLegacyHttp()
+				.UseLegacyHttp(_monitoringQueue)
 				.Use(_externalHttpService.MidFunc);
 
 			if (_internalHttpService != null) {

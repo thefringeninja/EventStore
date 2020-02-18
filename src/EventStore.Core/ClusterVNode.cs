@@ -699,8 +699,8 @@ namespace EventStore.Core {
 				_mainBus.Subscribe<ElectionMessage.ElectionsDone>(gossip);
 			}
 
-			_startup = new ClusterVNodeStartup(_subsystems, _mainQueue, httpAuthenticationProviders, _readIndex,
-				_vNodeSettings, _externalHttpService, _internalHttpService);
+			_startup = new ClusterVNodeStartup(_subsystems, _mainQueue, httpAuthenticationProviders, monitoringQueue,
+				_readIndex, _vNodeSettings, _externalHttpService, _internalHttpService);
 
 			_mainBus.Subscribe<SystemMessage.SystemReady>(_startup);
 			_mainBus.Subscribe<SystemMessage.BecomeShuttingDown>(_startup);

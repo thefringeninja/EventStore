@@ -13,9 +13,13 @@ namespace EventStore.Core.Services.Transport.Http {
 		private const string EventStoreRequestCodec = nameof(EventStoreRequestCodec);
 		private const string EventStoreResponseCodec = nameof(EventStoreResponseCodec);
 
-		public static IApplicationBuilder UseLegacyHttp(this IApplicationBuilder builder) {
+		public static IApplicationBuilder UseLegacyHttp(this IApplicationBuilder builder, IPublisher monitoringQueue) {
 			if (builder == null) {
 				throw new ArgumentNullException(nameof(builder));
+			}
+
+			if (monitoringQueue == null) {
+				throw new ArgumentNullException(nameof(monitoringQueue));
 			}
 
 			return builder
@@ -23,6 +27,7 @@ namespace EventStore.Core.Services.Transport.Http {
 					.UseResponseCompression()
 					.UseContentNegotiation()
 					.UseHistograms("/histogram")
+					.UseStats("/stats", monitoringQueue)
 				;
 		}
 
