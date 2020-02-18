@@ -105,6 +105,7 @@ namespace EventStore.Core {
 					inner => inner.UseRouting().UseEndpoints(endpoint =>
 						endpoint.MapGrpcService<Operations>())),
 					(b, subsystem) => subsystem.Configure(b))
+				.UseLegacyHttp()
 				.Use(_externalHttpService.MidFunc);
 
 			if (_internalHttpService != null) {

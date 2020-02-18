@@ -22,6 +22,7 @@ namespace EventStore.Core.Services.Transport.Http {
 					.UseRouting()
 					.UseResponseCompression()
 					.UseContentNegotiation()
+					.UseHistograms("/histogram")
 				;
 		}
 
