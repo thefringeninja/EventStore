@@ -97,7 +97,9 @@ namespace EventStore.Client {
 			UserCredentials userCredentials,
 			CancellationToken cancellationToken) {
 			using var call = _client.Append(RequestMetadata.Create(userCredentials),
-				deadline: DeadLine.After(operationOptions.TimeoutAfter), cancellationToken: cancellationToken);
+				DeadLine.After(operationOptions.TimeoutAfter), cancellationToken);
+
+			WriteResult writeResult;
 
 			try {
 				await call.RequestStream.WriteAsync(header).ConfigureAwait(false);
@@ -119,24 +121,20 @@ namespace EventStore.Client {
 				}
 
 				await call.RequestStream.CompleteAsync().ConfigureAwait(false);
-			} catch (InvalidOperationException exc) {
-				_log.LogTrace(exc, "Got InvalidOperationException when appending events to stream - {streamName}. This is perfectly normal if the connection was closed from the server-side.", header.Options.StreamName);
-			} catch (RpcException exc) {
-				_log.LogTrace(exc, "Got RpcException when appending events to stream - {streamName}. This is perfectly normal if the connection was closed from the server-side.", header.Options.StreamName);
+			} finally {
+				var response = await call.ResponseAsync.ConfigureAwait(false);
+
+				writeResult = new WriteResult(
+					response.CurrentRevisionOptionCase == AppendResp.CurrentRevisionOptionOneofCase.NoStream
+						? AnyStreamRevision.NoStream.ToInt64()
+						: new StreamRevision(response.CurrentRevision).ToInt64(),
+					response.PositionOptionCase == AppendResp.PositionOptionOneofCase.Position
+						? new Position(response.Position.CommitPosition, response.Position.PreparePosition)
+						: default);
+
+				_log.LogDebug("Append to stream succeeded - {streamName}@{logPosition}/{nextExpectedVersion}.",
+					header.Options.StreamName, writeResult.LogPosition, writeResult.NextExpectedVersion);
 			}
-
-			var response = await call.ResponseAsync.ConfigureAwait(false);
-
-			var writeResult = new WriteResult(
-				response.CurrentRevisionOptionCase == AppendResp.CurrentRevisionOptionOneofCase.NoStream
-					? AnyStreamRevision.NoStream.ToInt64()
-					: new StreamRevision(response.CurrentRevision).ToInt64(),
-				response.PositionOptionCase == AppendResp.PositionOptionOneofCase.Position
-					? new Position(response.Position.CommitPosition, response.Position.PreparePosition)
-					: default);
-
-			_log.LogDebug("Append to stream succeeded - {streamName}@{logPosition}/{nextExpectedVersion}.",
-				header.Options.StreamName, writeResult.LogPosition, writeResult.NextExpectedVersion);
 
 			return writeResult;
 		}
