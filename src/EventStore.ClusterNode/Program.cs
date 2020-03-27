@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using EventStore.Common.Utils;
@@ -9,24 +10,59 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 
 namespace EventStore.ClusterNode {
-	internal static class Program {
-		public static async Task<int> Main(string[] args) {
+	internal class Program {
+		private readonly string[] _args;
+		private readonly CancellationTokenSource _cts;
+		private readonly TaskCompletionSource<int> _exitCodeSource;
+		private readonly ClusterVNodeHostedService _hostedService;
+
+		public static Task<int> Main(string[] args) {
+			return new Program(args).Run();
+		}
+
+		private Program(string[] args) {
+			_args = args ?? Array.Empty<string>();
+			_cts = new CancellationTokenSource();
+			_exitCodeSource = new TaskCompletionSource<int>();
+			_hostedService = new ClusterVNodeHostedService(_args);
+
+			Console.CancelKeyPress += delegate {
+				Application.Exit(0, "Cancelled.");
+			};
+		}
+
+		public async Task<int> Run() {
 			try {
-				var cts = new CancellationTokenSource();
-				var hostedService = new ClusterVNodeHostedService(args);
+				using var host = new HostBuilder()
+					.ConfigureHostConfiguration(builder =>
+						builder.AddEnvironmentVariables("DOTNET_").AddCommandLine(_args))
+					.ConfigureAppConfiguration(builder =>
+						builder.AddEnvironmentVariables().AddCommandLine(_args))
+					.ConfigureServices(services => services
+						.AddSingleton<IHostedService>(_hostedService))
+					.ConfigureLogging(logging => logging.AddSerilog())
+					.ConfigureWebHostDefaults(builder =>
+						builder.UseKestrel(server => {
+								server.Listen(_hostedService.Options.IntIp, _hostedService.Options.IntHttpPort,
+									listenOptions => listenOptions.UseHttps(_hostedService.Node.Certificate));
+								server.Listen(_hostedService.Options.ExtIp, _hostedService.Options.ExtHttpPort,
+									listenOptions => listenOptions.UseHttps(_hostedService.Node.Certificate));
+							})
+							.ConfigureServices(services => _hostedService.Node.Startup.ConfigureServices(services))
+							.Configure(_hostedService.Node.Startup.Configure))
+					.Build();
 
-				var exitCodeSource = new TaskCompletionSource<int>();
-				Application.RegisterExitAction(code => {
-					cts.Cancel();
-					exitCodeSource.SetResult(code);
+				var applicationLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
+				await using var _ = applicationLifetime.ApplicationStarted.Register(() => {
+					Application.RegisterExitAction(code => {
+						_exitCodeSource.SetResult(code);
+						applicationLifetime.StopApplication();
+					});
 				});
-				Console.CancelKeyPress += delegate {
-					Application.Exit(0, "Cancelled.");
-				};
 
-				await CreateHostBuilder(hostedService, args)
-					.RunConsoleAsync(options => options.SuppressStatusMessages = true, cts.Token);
-				return await exitCodeSource.Task;
+				await host.RunAsync(_cts.Token);
+
+				return await _exitCodeSource.Task;
 			} catch (Exception ex) {
 				Log.Fatal(ex, "Host terminated unexpectedly.");
 				return 1;
@@ -34,23 +70,5 @@ namespace EventStore.ClusterNode {
 				Log.CloseAndFlush();
 			}
 		}
-
-		private static IHostBuilder CreateHostBuilder(ClusterVNodeHostedService hostedService, string[] args) =>
-			new HostBuilder()
-				.ConfigureHostConfiguration(builder =>
-					builder.AddEnvironmentVariables("DOTNET_").AddCommandLine(args ?? Array.Empty<string>()))
-				.ConfigureAppConfiguration(builder =>
-					builder.AddEnvironmentVariables().AddCommandLine(args ?? Array.Empty<string>()))
-				.ConfigureServices(services => services.AddSingleton<IHostedService>(hostedService))
-				.ConfigureLogging(logging => logging.AddSerilog())
-				.ConfigureWebHostDefaults(builder =>
-					builder.UseKestrel(server => {
-							server.Listen(hostedService.Options.IntIp, hostedService.Options.IntHttpPort,
-								listenOptions => listenOptions.UseHttps(hostedService.Node.Certificate));
-							server.Listen(hostedService.Options.ExtIp, hostedService.Options.ExtHttpPort,
-								listenOptions => listenOptions.UseHttps(hostedService.Node.Certificate));
-						})
-						.ConfigureServices(services => hostedService.Node.Startup.ConfigureServices(services))
-						.Configure(hostedService.Node.Startup.Configure));
 	}
 }

@@ -21,7 +21,6 @@ namespace EventStore.Core {
 		protected static readonly ILogger Log = Serilog.Log.ForContext<EventStoreHostedService<TOptions>>();
 		// ReSharper restore StaticFieldInGenericType
 
-		private readonly bool _skipRun;
 		public TOptions Options { get; }
 
 		protected EventStoreHostedService(string[] args) {
@@ -29,19 +28,9 @@ namespace EventStore.Core {
 				Options = EventStoreOptions.Parse<TOptions>(args, Opts.EnvPrefix,
 					Path.Combine(Locations.DefaultConfigurationDirectory, DefaultFiles.DefaultConfigFile),
 					MutateEffectiveOptions);
-				if (Options.Help) {
-					Console.WriteLine("Options:");
-					Console.WriteLine(EventStoreOptions.GetUsage<TOptions>());
-					_skipRun = true;
-				} else if (Options.Version) {
-					Console.WriteLine("EventStore version {0} ({1}/{2}, {3})",
-						VersionInfo.Version, VersionInfo.Branch, VersionInfo.Hashtag, VersionInfo.Timestamp);
-					_skipRun = true;
-				} else {
-					PreInit(Options);
-					Init(Options);
-					Create(Options);
-				}
+				PreInit(Options);
+				Init(Options);
+				Create(Options);
 			} catch (OptionException exc) {
 				Console.Error.WriteLine("Error while parsing options:");
 				Console.Error.WriteLine(FormatExceptionMessage(exc));
@@ -51,6 +40,8 @@ namespace EventStore.Core {
 				throw;
 			}
 		}
+
+		private bool SkipRun => Options.Help || Options.Version || Options.WhatIf;
 
 		protected abstract string GetLogsDirectory(TOptions options);
 		protected abstract string GetComponentName(TOptions options);
@@ -122,9 +113,19 @@ namespace EventStore.Core {
 			return name;
 		}
 
-		Task IHostedService.StartAsync(CancellationToken cancellationToken) =>
-			_skipRun ? Task.CompletedTask : StartInternalAsync(cancellationToken);
+		Task IHostedService.StartAsync(CancellationToken cancellationToken) {
+			if (Options.Help) {
+				Console.WriteLine("Options:");
+				Console.WriteLine(EventStoreOptions.GetUsage<TOptions>());
+			} else if (Options.Version) {
+				Console.WriteLine("EventStore version {0} ({1}/{2}, {3})",
+					VersionInfo.Version, VersionInfo.Branch, VersionInfo.Hashtag, VersionInfo.Timestamp);
+			}
 
-		Task IHostedService.StopAsync(CancellationToken cancellationToken) => StopInternalAsync(cancellationToken);
+			return SkipRun ? Task.CompletedTask : StartInternalAsync(cancellationToken);
+		}
+
+		Task IHostedService.StopAsync(CancellationToken cancellationToken) =>
+			SkipRun ? Task.CompletedTask : StopInternalAsync(cancellationToken);
 	}
 }

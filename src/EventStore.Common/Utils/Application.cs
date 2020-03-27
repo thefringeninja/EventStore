@@ -23,6 +23,7 @@ namespace EventStore.Common.Utils {
 		};
 
 		private static int _exited;
+		private static int _exitCode = -1;
 
 		private static readonly HashSet<string> _defines = new HashSet<string>();
 
@@ -30,6 +31,9 @@ namespace EventStore.Common.Utils {
 			Ensure.NotNull(exitAction, "exitAction");
 
 			_exit = exitAction;
+			if (_exitCode > -1) {
+				_exit(_exitCode);
+			}
 		}
 
 		public static void ExitSilent(int exitCode, string reason) => Exit(exitCode, reason, true);
@@ -37,11 +41,13 @@ namespace EventStore.Common.Utils {
 		public static void Exit(int exitCode, string reason) => Exit(exitCode, reason, false);
 
 		private static void Exit(int exitCode, string reason, bool silent) {
-			if (Interlocked.CompareExchange(ref _exited, 1, 0) != 0)
+			if (Interlocked.CompareExchange(ref _exited, 1, 0) != 0) {
 				return;
+			}
 
 			Ensure.NotNullOrEmpty(reason, "reason");
 
+			_exitCode = exitCode;
 			if (!silent) {
 				if (exitCode != 0)
 					Log.Error("Exiting with exit code: {exitCode}.\nExit reason: {e}", exitCode, reason);
