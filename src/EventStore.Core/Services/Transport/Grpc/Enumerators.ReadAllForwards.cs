@@ -10,25 +10,27 @@ using EventStore.Core.Data;
 using EventStore.Core.Messages;
 using EventStore.Core.Messaging;
 using EventStore.Client;
+using EventStore.Client.Streams;
 using Grpc.Core;
 
 namespace EventStore.Core.Services.Transport.Grpc {
 	internal static partial class Enumerators {
-		public class ReadAllForwards : IAsyncEnumerator<ResolvedEvent> {
+		public class ReadAllForwards : IAsyncEnumerator<ReadResp> {
 			private readonly IPublisher _bus;
 			private readonly ulong _maxCount;
 			private readonly bool _resolveLinks;
 			private readonly ClaimsPrincipal _user;
 			private readonly bool _requiresLeader;
 			private readonly DateTime _deadline;
+			private readonly ReadReq.Types.Options.Types.UUIDOption _uuidOption;
 			private readonly CancellationToken _cancellationToken;
 			private readonly SemaphoreSlim _semaphore;
-			private readonly Channel<ResolvedEvent> _channel;
+			private readonly Channel<ReadResp> _channel;
 
-			private ResolvedEvent _current;
+			private ReadResp _current;
 			private ulong _readCount;
 
-			public ResolvedEvent Current => _current;
+			public ReadResp Current => _current;
 
 			public ReadAllForwards(IPublisher bus,
 				Position position,
@@ -37,6 +39,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 				ClaimsPrincipal user,
 				bool requiresLeader,
 				DateTime deadline,
+				ReadReq.Types.Options.Types.UUIDOption uuidOption,
 				CancellationToken cancellationToken) {
 				if (bus == null) {
 					throw new ArgumentNullException(nameof(bus));
@@ -48,9 +51,10 @@ namespace EventStore.Core.Services.Transport.Grpc {
 				_user = user;
 				_requiresLeader = requiresLeader;
 				_deadline = deadline;
+				_uuidOption = uuidOption;
 				_cancellationToken = cancellationToken;
 				_semaphore = new SemaphoreSlim(1, 1);
-				_channel = Channel.CreateBounded<ResolvedEvent>(BoundedChannelOptions);
+				_channel = Channel.CreateBounded<ReadResp>(BoundedChannelOptions);
 
 				ReadPage(position);
 			}
@@ -100,7 +104,9 @@ namespace EventStore.Core.Services.Transport.Grpc {
 					switch (completed.Result) {
 						case ReadAllResult.Success:
 							foreach (var @event in completed.Events) {
-								await _channel.Writer.WriteAsync(@event, _cancellationToken).ConfigureAwait(false);
+								await _channel.Writer.WriteAsync(new ReadResp {
+									Event = ConvertToReadEvent(_uuidOption, @event)
+								}, _cancellationToken).ConfigureAwait(false);
 							}
 
 							if (completed.IsEndOfStream) {

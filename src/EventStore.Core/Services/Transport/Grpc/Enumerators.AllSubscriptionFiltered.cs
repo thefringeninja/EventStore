@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using EventStore.Client.Streams;
 using EventStore.Core.Bus;
 using EventStore.Core.Data;
 using EventStore.Core.Messages;
@@ -13,7 +15,7 @@ using IReadIndex = EventStore.Core.Services.Storage.ReaderIndex.IReadIndex;
 
 namespace EventStore.Core.Services.Transport.Grpc {
 	internal static partial class Enumerators {
-		public class AllSubscriptionFiltered : ISubscriptionEnumerator {
+		public class AllSubscriptionFiltered : IAsyncEnumerator<ReadResp> {
 			private static readonly ILogger Log = Serilog.Log.ForContext<AllSubscriptionFiltered>();
 
 			private readonly Guid _subscriptionId;
@@ -22,22 +24,22 @@ namespace EventStore.Core.Services.Transport.Grpc {
 			private readonly IEventFilter _eventFilter;
 			private readonly ClaimsPrincipal _user;
 			private readonly bool _requiresLeader;
+			private readonly ReadReq.Types.Options.Types.UUIDOption _uuidOption;
 			private readonly uint _maxSearchWindow;
-			private readonly Func<Position, Task> _checkpointReached;
-			private readonly TaskCompletionSource<bool> _subscriptionStarted;
 			private readonly CancellationToken _cancellationToken;
-			private readonly Channel<(ResolvedEvent?, Position?)> _channel;
+			private readonly Channel<ReadResp> _channel;
 			private readonly uint _checkpointInterval;
 			private readonly SemaphoreSlim _semaphore;
-			private readonly TFPos _startPositionExclusive;
+			private readonly Position _startPositionExclusive;
 
-			private ResolvedEvent? _current;
+			private ReadResp _current;
 			private bool _disposed;
 			private long _checkpointIntervalCounter;
+			private int _subscriptionStarted;
 			private Position _lastCheckpoint;
+			private Position _currentPosition;
 
-			public ResolvedEvent Current => _current.GetValueOrDefault();
-			public Task Started => _subscriptionStarted.Task;
+			public ReadResp Current => _current;
 			public string SubscriptionId { get; }
 
 			public AllSubscriptionFiltered(IPublisher bus,
@@ -49,7 +51,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 				IReadIndex readIndex,
 				uint? maxSearchWindow,
 				uint checkpointIntervalMultiplier,
-				Func<Position, Task> checkpointReached,
+				ReadReq.Types.Options.Types.UUIDOption uuidOption,
 				CancellationToken cancellationToken) {
 				if (bus == null) {
 					throw new ArgumentNullException(nameof(bus));
@@ -63,10 +65,6 @@ namespace EventStore.Core.Services.Transport.Grpc {
 					throw new ArgumentNullException(nameof(readIndex));
 				}
 
-				if (checkpointReached == null) {
-					throw new ArgumentNullException(nameof(checkpointReached));
-				}
-
 				if (checkpointIntervalMultiplier == 0) {
 					throw new ArgumentOutOfRangeException(nameof(checkpointIntervalMultiplier));
 				}
@@ -78,10 +76,10 @@ namespace EventStore.Core.Services.Transport.Grpc {
 				_user = user;
 				_requiresLeader = requiresLeader;
 				_maxSearchWindow = maxSearchWindow ?? ReadBatchSize;
-				_checkpointReached = checkpointReached;
+				_uuidOption = uuidOption;
 				_cancellationToken = cancellationToken;
-				_subscriptionStarted = new TaskCompletionSource<bool>();
-				_channel = Channel.CreateBounded<(ResolvedEvent?, Position?)>(BoundedChannelOptions);
+				_subscriptionStarted = 0;
+				_channel = Channel.CreateBounded<ReadResp>(BoundedChannelOptions);
 				_checkpointInterval = checkpointIntervalMultiplier * _maxSearchWindow;
 				_semaphore = new SemaphoreSlim(1, 1);
 				_lastCheckpoint = Position.Start;
@@ -93,8 +91,8 @@ namespace EventStore.Core.Services.Transport.Grpc {
 					? Position.FromInt64(lastIndexedPosition, lastIndexedPosition)
 					: startPosition ?? Position.Start;
 
-				_startPositionExclusive = new TFPos((long)startPositionExclusive.CommitPosition,
-					(long)startPositionExclusive.PreparePosition);
+				_currentPosition = _startPositionExclusive = new Position(startPositionExclusive.CommitPosition,
+					startPositionExclusive.PreparePosition);
 
 				Subscribe(startPositionExclusive, startPosition != Position.End);
 			}
@@ -120,30 +118,31 @@ namespace EventStore.Core.Services.Transport.Grpc {
 					return false;
 				}
 
-				var (@event, position) = await _channel.Reader.ReadAsync(_cancellationToken).ConfigureAwait(false);
-				if (@event.HasValue) {
-					if (@event.Value.OriginalPosition.Value <= _startPositionExclusive || _current.HasValue &&
-					    @event.Value.OriginalPosition.Value <= _current.Value.OriginalPosition.Value) {
+				var readResp = await _channel.Reader.ReadAsync(_cancellationToken).ConfigureAwait(false);
+
+				if (readResp.Event != null) {
+					var @event = readResp.Event;
+					var position = new Position(@event.OriginalEvent.CommitPosition,
+						@event.OriginalEvent.PreparePosition);
+					if (position <= _startPositionExclusive || _current.Event != null &&
+						position <= new Position(_current.Event.OriginalEvent.CommitPosition,
+							_current.Event.OriginalEvent.PreparePosition)) {
 						Log.Verbose(
 							"Subscription {subscriptionId} to $all:{eventFilter} skipping event {position}.",
-							_subscriptionId, _eventFilter, @event.Value.OriginalPosition.Value);
+							_subscriptionId, _eventFilter, position);
 						goto ReadLoop;
 					}
 
 					Log.Verbose(
 						"Subscription {subscriptionId} to $all:{eventFilter} seen event {position}.",
-						_subscriptionId, _eventFilter, @event.Value.OriginalPosition.Value);
+						_subscriptionId, _eventFilter, position);
 
-					_current = @event.Value;
-					return true;
+					_currentPosition = position;
 				}
 
-				if (position.HasValue && position.Value > _lastCheckpoint) {
-					await _checkpointReached(position.Value).ConfigureAwait(false);
-					_lastCheckpoint = position.Value;
-				}
+				_current = readResp;
 
-				goto ReadLoop;
+				return true;
 			}
 
 			private void Subscribe(Position startPosition, bool catchUp) {
@@ -176,7 +175,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 
 					switch (completed.Result) {
 						case FilteredReadAllResult.Success:
-							ConfirmSubscription();
+							await ConfirmSubscription().ConfigureAwait(false);
 
 							var position = Position.FromInt64(completed.CurrentPos.CommitPosition,
 								completed.CurrentPos.PreparePosition);
@@ -189,7 +188,9 @@ namespace EventStore.Core.Services.Transport.Grpc {
 									"Catch-up subscription {subscriptionId} to $all:{eventFilter} received event {position}.",
 									_subscriptionId, _eventFilter, position);
 
-								await _channel.Writer.WriteAsync((@event, new Position?()), ct).ConfigureAwait(false);
+								await _channel.Writer.WriteAsync(new ReadResp {
+									Event = ConvertToReadEvent(_uuidOption, @event)
+								}, ct).ConfigureAwait(false);
 							}
 
 							_checkpointIntervalCounter += completed.ConsideredEventsCount;
@@ -213,7 +214,12 @@ namespace EventStore.Core.Services.Transport.Grpc {
 									_subscriptionId, _eventFilter, nextPosition, _checkpointInterval,
 									_checkpointIntervalCounter);
 
-								await _channel.Writer.WriteAsync((new ResolvedEvent?(), position), ct)
+								await _channel.Writer.WriteAsync(new ReadResp {
+										Checkpoint = new ReadResp.Types.Checkpoint {
+											CommitPosition = position.CommitPosition,
+											PreparePosition = position.PreparePosition
+										}
+									}, ct)
 									.ConfigureAwait(false);
 							}
 
@@ -249,7 +255,9 @@ namespace EventStore.Core.Services.Transport.Grpc {
 					await caughtUpSource.Task.ConfigureAwait(false);
 					await foreach (var @event in liveEvents.Reader.ReadAllAsync(_cancellationToken)
 						.ConfigureAwait(false)) {
-						await _channel.Writer.WriteAsync((@event, new Position?()), _cancellationToken)
+						await _channel.Writer.WriteAsync(new ReadResp {
+								Event = ConvertToReadEvent(_uuidOption, @event)
+							}, _cancellationToken)
 							.ConfigureAwait(false);
 					}
 				}
@@ -263,7 +271,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 
 					switch (message) {
 						case ClientMessage.SubscriptionConfirmation confirmed:
-							ConfirmSubscription();
+							await ConfirmSubscription().ConfigureAwait(false);
 
 							var caughtUp = new TFPos(confirmed.LastIndexedPosition, confirmed.LastIndexedPosition);
 							Log.Verbose(
@@ -289,7 +297,8 @@ namespace EventStore.Core.Services.Transport.Grpc {
 								switch (completed.Result) {
 									case FilteredReadAllResult.Success:
 										if (completed.Events.Length == 0 && completed.IsEndOfStream) {
-											await NotifyCaughtUp(completed.CurrentPos).ConfigureAwait(false);
+											await NotifyCaughtUp(Position.FromInt64(completed.CurrentPos.CommitPosition,
+												completed.CurrentPos.PreparePosition)).ConfigureAwait(false);
 											return;
 										}
 
@@ -297,14 +306,17 @@ namespace EventStore.Core.Services.Transport.Grpc {
 											var position = @event.OriginalPosition.Value;
 
 											if (position > caughtUp) {
-												await NotifyCaughtUp(position).ConfigureAwait(false);
+												await NotifyCaughtUp(Position.FromInt64(position.CommitPosition,
+													position.PreparePosition)).ConfigureAwait(false);
 												return;
 											}
 
 											Log.Verbose(
 												"Live subscription {subscriptionId} to $all:{eventFilter} enqueuing historical message {position}.",
 												_subscriptionId, _eventFilter, position);
-											await _channel.Writer.WriteAsync((@event, new Position?()),
+											await _channel.Writer.WriteAsync(new ReadResp {
+													Event = ConvertToReadEvent(_uuidOption, @event)
+												},
 												_cancellationToken).ConfigureAwait(false);
 										}
 
@@ -313,15 +325,17 @@ namespace EventStore.Core.Services.Transport.Grpc {
 											completed.NextPos.PreparePosition));
 										return;
 
-										async Task NotifyCaughtUp(TFPos position) {
+										async Task NotifyCaughtUp(Position position) {
 											Log.Verbose(
 												"Live subscription {subscriptionId} to $all:{eventFilter} caught up at {position} because the end of stream was reached.",
 												_subscriptionId, _eventFilter, position);
-											await _channel.Writer.WriteAsync(
-												(new ResolvedEvent?(),
-													Position.FromInt64(position.CommitPosition,
-														position.PreparePosition)
-												), ct).ConfigureAwait(false);
+
+											await _channel.Writer.WriteAsync(new ReadResp {
+												Checkpoint = new ReadResp.Types.Checkpoint {
+													CommitPosition = position.CommitPosition,
+													PreparePosition = position.PreparePosition
+												}
+											}, ct).ConfigureAwait(false);
 											caughtUpSource.TrySetResult(caughtUp);
 										}
 									case FilteredReadAllResult.AccessDenied:
@@ -382,19 +396,20 @@ namespace EventStore.Core.Services.Transport.Grpc {
 
 								liveEvents.Writer.Complete();
 
-								var originalPosition = _current.GetValueOrDefault()
-									.OriginalPosition.GetValueOrDefault();
-								CatchUp(Position.FromInt64(
-									originalPosition.CommitPosition,
-									originalPosition.PreparePosition));
+								CatchUp(_currentPosition);
 							}
 
 							return;
 						}
 						case ClientMessage.CheckpointReached checkpointReached:
-							await _channel.Writer.WriteAsync((new ResolvedEvent?(), Position.FromInt64(
-								checkpointReached.Position.Value.CommitPosition,
-								checkpointReached.Position.Value.PreparePosition)), ct).ConfigureAwait(false);
+							var position = Position.FromInt64(checkpointReached.Position.Value.CommitPosition,
+								checkpointReached.Position.Value.PreparePosition);
+							await _channel.Writer.WriteAsync(new ReadResp {
+								Checkpoint = new ReadResp.Types.Checkpoint {
+									CommitPosition = position.CommitPosition,
+									PreparePosition = position.PreparePosition
+								}
+							}, ct).ConfigureAwait(false);
 							return;
 						default:
 							Fail(RpcExceptions.UnknownMessage<ClientMessage.SubscriptionConfirmation>(message));
@@ -408,14 +423,17 @@ namespace EventStore.Core.Services.Transport.Grpc {
 				}
 			}
 
-			private void ConfirmSubscription() {
-				if (_subscriptionStarted.Task.IsCompletedSuccessfully) return;
-				_subscriptionStarted.TrySetResult(true);
-			}
+			private ValueTask ConfirmSubscription() => Interlocked.CompareExchange(ref _subscriptionStarted, 1, 0) != 0
+				? new ValueTask(Task.CompletedTask)
+				: _channel.Writer.WriteAsync(new ReadResp {
+					Confirmation = new ReadResp.Types.SubscriptionConfirmation {
+						SubscriptionId = SubscriptionId
+					}
+				}, _cancellationToken);
 
 			private void Fail(Exception exception) {
+				Interlocked.Exchange(ref _subscriptionStarted, 1);
 				_channel.Writer.TryComplete(exception);
-				_subscriptionStarted.TrySetException(exception);
 			}
 
 			private void ReadPage(Position position, Func<Message, CancellationToken, Task> onMessage) {

@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using EventStore.Client.Streams;
 using EventStore.Core.Bus;
 using EventStore.Core.Data;
 using EventStore.Core.Messages;
@@ -13,7 +15,7 @@ using Serilog;
 
 namespace EventStore.Core.Services.Transport.Grpc {
 	partial class Enumerators {
-		public class AllSubscription : ISubscriptionEnumerator {
+		public class AllSubscription : IAsyncEnumerator<ReadResp> {
 			private static readonly ILogger Log = Serilog.Log.ForContext<AllSubscription>();
 
 			private readonly Guid _subscriptionId;
@@ -21,17 +23,18 @@ namespace EventStore.Core.Services.Transport.Grpc {
 			private readonly bool _resolveLinks;
 			private readonly ClaimsPrincipal _user;
 			private readonly bool _requiresLeader;
+			private readonly ReadReq.Types.Options.Types.UUIDOption _uuidOption;
 			private readonly CancellationToken _cancellationToken;
-			private readonly TaskCompletionSource<bool> _subscriptionStarted;
-			private readonly TFPos _startPositionExclusive;
-			private readonly Channel<ResolvedEvent> _channel;
+			private readonly Position _startPositionExclusive;
+			private readonly Channel<ReadResp> _channel;
 			private readonly SemaphoreSlim _semaphore;
 
-			private ResolvedEvent? _current;
+			private ReadResp _current;
 			private bool _disposed;
+			private int _subscriptionStarted;
+			private Position _currentPosition;
 
-			public ResolvedEvent Current => _current.GetValueOrDefault();
-			public Task Started => _subscriptionStarted.Task;
+			public ReadResp Current => _current;
 			public string SubscriptionId { get; }
 
 			public AllSubscription(IPublisher bus,
@@ -40,6 +43,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 				ClaimsPrincipal user,
 				bool requiresLeader,
 				IReadIndex readIndex,
+				ReadReq.Types.Options.Types.UUIDOption uuidOption,
 				CancellationToken cancellationToken) {
 				if (bus == null) {
 					throw new ArgumentNullException(nameof(bus));
@@ -54,10 +58,12 @@ namespace EventStore.Core.Services.Transport.Grpc {
 				_resolveLinks = resolveLinks;
 				_user = user;
 				_requiresLeader = requiresLeader;
+				_uuidOption = uuidOption;
 				_cancellationToken = cancellationToken;
-				_subscriptionStarted = new TaskCompletionSource<bool>();
-				_channel = Channel.CreateBounded<ResolvedEvent>(BoundedChannelOptions);
+				_channel = Channel.CreateBounded<ReadResp>(BoundedChannelOptions);
 				_semaphore = new SemaphoreSlim(1, 1);
+
+				_subscriptionStarted = 0;
 
 				SubscriptionId = _subscriptionId.ToString();
 
@@ -65,8 +71,8 @@ namespace EventStore.Core.Services.Transport.Grpc {
 					? Position.FromInt64(readIndex.LastIndexedPosition, readIndex.LastIndexedPosition)
 					: startPosition ?? Position.Start;
 
-				_startPositionExclusive = new TFPos((long)startPositionExclusive.CommitPosition,
-					(long)startPositionExclusive.PreparePosition);
+				_startPositionExclusive = _currentPosition = new Position(startPositionExclusive.CommitPosition,
+					startPositionExclusive.PreparePosition);
 
 				Subscribe(startPositionExclusive, startPosition != Position.End);
 			}
@@ -90,21 +96,27 @@ namespace EventStore.Core.Services.Transport.Grpc {
 					return false;
 				}
 
-				var @event = await _channel.Reader.ReadAsync(_cancellationToken).ConfigureAwait(false);
+				var readResp = await _channel.Reader.ReadAsync(_cancellationToken).ConfigureAwait(false);
 
-				if (@event.OriginalPosition.Value <= _startPositionExclusive || _current.HasValue &&
-					@event.OriginalPosition.Value <= _current.Value.OriginalPosition.Value) {
+				if (readResp.Event != null) {
+					var @event = readResp.Event;
+					var position = new Position(@event.OriginalEvent.CommitPosition,
+						@event.OriginalEvent.PreparePosition);
+					if (position <= _startPositionExclusive || _current.Event != null &&
+						position <= new Position(_current.Event.OriginalEvent.CommitPosition,
+							_current.Event.OriginalEvent.PreparePosition)) {
+						Log.Verbose("Subscription {subscriptionId} to $all skipping event {position}.", _subscriptionId,
+							position);
+						goto ReadLoop;
+					}
+
 					Log.Verbose(
-						"Subscription {subscriptionId} to $all skipping event {position}.",
-						_subscriptionId, @event.OriginalPosition.Value);
-					goto ReadLoop;
+						"Subscription {subscriptionId} to $all seen event {position}.", _subscriptionId, position);
+
+					_currentPosition = position;
 				}
 
-				Log.Verbose(
-					"Subscription {subscriptionId} to $all seen event {position}.",
-					_subscriptionId, @event.OriginalPosition.Value);
-
-				_current = @event;
+				_current = readResp;
 
 				return true;
 			}
@@ -139,7 +151,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 
 					switch (completed.Result) {
 						case ReadAllResult.Success:
-							ConfirmSubscription();
+							await ConfirmSubscription().ConfigureAwait(false);
 
 							foreach (var @event in completed.Events) {
 								var position = Position.FromInt64(
@@ -150,7 +162,9 @@ namespace EventStore.Core.Services.Transport.Grpc {
 									"Catch-up subscription {subscriptionId} to $all received event {position}.",
 									_subscriptionId, position);
 
-								await _channel.Writer.WriteAsync(@event, ct).ConfigureAwait(false);
+								await _channel.Writer.WriteAsync(new ReadResp {
+									Event = ConvertToReadEvent(_uuidOption, @event)
+								}, ct).ConfigureAwait(false);
 							}
 
 							if (completed.IsEndOfStream) {
@@ -193,7 +207,9 @@ namespace EventStore.Core.Services.Transport.Grpc {
 					await caughtUpSource.Task.ConfigureAwait(false);
 					await foreach (var @event in liveEvents.Reader.ReadAllAsync(_cancellationToken)
 						.ConfigureAwait(false)) {
-						await _channel.Writer.WriteAsync(@event, _cancellationToken).ConfigureAwait(false);
+						await _channel.Writer.WriteAsync(new ReadResp {
+							Event = ConvertToReadEvent(_uuidOption, @event)
+						}, _cancellationToken).ConfigureAwait(false);
 					}
 				}
 
@@ -206,7 +222,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 
 					switch (message) {
 						case ClientMessage.SubscriptionConfirmation confirmed:
-							ConfirmSubscription();
+							await ConfirmSubscription().ConfigureAwait(false);
 
 							var caughtUp = new TFPos(confirmed.LastIndexedPosition,
 								confirmed.LastIndexedPosition);
@@ -245,7 +261,9 @@ namespace EventStore.Core.Services.Transport.Grpc {
 												return;
 											}
 
-											await _channel.Writer.WriteAsync(@event, _cancellationToken)
+											await _channel.Writer.WriteAsync(new ReadResp {
+													Event = ConvertToReadEvent(_uuidOption, @event)
+												}, _cancellationToken)
 												.ConfigureAwait(false);
 										}
 
@@ -318,11 +336,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 
 								liveEvents.Writer.Complete();
 
-								var originalPosition =
-									_current.GetValueOrDefault().OriginalPosition.GetValueOrDefault();
-								CatchUp(Position.FromInt64(
-									originalPosition.CommitPosition,
-									originalPosition.PreparePosition));
+								CatchUp(_currentPosition);
 							}
 
 							return;
@@ -340,14 +354,17 @@ namespace EventStore.Core.Services.Transport.Grpc {
 				}
 			}
 
-			private void ConfirmSubscription() {
-				if (_subscriptionStarted.Task.IsCompletedSuccessfully) return;
-				_subscriptionStarted.TrySetResult(true);
-			}
+			private ValueTask ConfirmSubscription() => Interlocked.CompareExchange(ref _subscriptionStarted, 1, 0) != 0
+				? new ValueTask(Task.CompletedTask)
+				: _channel.Writer.WriteAsync(new ReadResp {
+					Confirmation = new ReadResp.Types.SubscriptionConfirmation {
+						SubscriptionId = SubscriptionId
+					}
+				}, _cancellationToken);
 
 			private void Fail(Exception exception) {
+				Interlocked.Exchange(ref _subscriptionStarted, 1);
 				_channel.Writer.TryComplete(exception);
-				_subscriptionStarted.TrySetException(exception);
 			}
 
 			private void ReadPage(Position position, Func<Message, CancellationToken, Task> onMessage) {

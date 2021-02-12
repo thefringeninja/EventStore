@@ -1,16 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using EventStore.Core.Data;
-using EventStore.Core.Util;
-using EventStore.Client;
-using EventStore.Client.Shared;
 using EventStore.Client.Streams;
-using EventStore.Core.Exceptions;
 using EventStore.Core.Services.Storage.ReaderIndex;
-using Google.Protobuf;
 using Grpc.Core;
 using CountOptionOneofCase = EventStore.Client.Streams.ReadReq.Types.Options.CountOptionOneofCase;
 using FilterOptionOneofCase = EventStore.Client.Streams.ReadReq.Types.Options.FilterOptionOneofCase;
@@ -50,7 +43,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 					(StreamOptionOneofCase.Stream,
 					CountOptionOneofCase.Count,
 					ReadDirection.Forwards,
-					FilterOptionOneofCase.NoFilter) => (IAsyncEnumerator<ResolvedEvent>)
+					FilterOptionOneofCase.NoFilter) => (IAsyncEnumerator<ReadResp>)
 					new Enumerators.ReadStreamForwards(
 						_publisher,
 						request.Options.Stream.StreamIdentifier,
@@ -60,7 +53,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 						user,
 						requiresLeader,
 						context.Deadline,
-						StreamNotFound,
+						options.UuidOption,
 						context.CancellationToken),
 					(StreamOptionOneofCase.Stream,
 					CountOptionOneofCase.Count,
@@ -74,7 +67,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 						user,
 						requiresLeader,
 						context.Deadline,
-						StreamNotFound,
+						options.UuidOption,
 						context.CancellationToken),
 					(StreamOptionOneofCase.All,
 					CountOptionOneofCase.Count,
@@ -87,6 +80,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 						user,
 						requiresLeader,
 						context.Deadline,
+						options.UuidOption,
 						context.CancellationToken),
 					(StreamOptionOneofCase.All,
 					CountOptionOneofCase.Count,
@@ -99,6 +93,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 						user,
 						requiresLeader,
 						context.Deadline,
+						options.UuidOption,
 						context.CancellationToken),
 					(StreamOptionOneofCase.Stream,
 					CountOptionOneofCase.Subscription,
@@ -111,6 +106,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 						user,
 						requiresLeader,
 						_readIndex,
+						options.UuidOption,
 						context.CancellationToken),
 					(StreamOptionOneofCase.All,
 					CountOptionOneofCase.Subscription,
@@ -122,6 +118,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 						user,
 						requiresLeader,
 						_readIndex,
+						options.UuidOption,
 						context.CancellationToken),
 					(StreamOptionOneofCase.All,
 					CountOptionOneofCase.Subscription,
@@ -140,92 +137,18 @@ namespace EventStore.Core.Services.Transport.Grpc {
 							_ => throw new InvalidOperationException()
 						},
 						request.Options.Filter.CheckpointIntervalMultiplier,
-						FilteredReadCheckpointReached,
+						options.UuidOption,
 						context.CancellationToken),
 					_ => throw new InvalidOperationException()
 				};
 
 			await using (context.CancellationToken.Register(() => enumerator.DisposeAsync())) {
-				if (enumerator is Enumerators.ISubscriptionEnumerator subscription) {
-					await subscription.Started.ConfigureAwait(false);
-					await responseStream.WriteAsync(new ReadResp {
-						Confirmation = new ReadResp.Types.SubscriptionConfirmation {
-							SubscriptionId = subscription.SubscriptionId
-						}
-					}).ConfigureAwait(false);
-				}
-
 				while (await enumerator.MoveNextAsync().ConfigureAwait(false)) {
-					await responseStream.WriteAsync(new ReadResp {
-						Event = ConvertToReadEvent(enumerator.Current)
-					}).ConfigureAwait(false);
+					await responseStream.WriteAsync(enumerator.Current).ConfigureAwait(false);
 				}
 			}
 
-			Task StreamNotFound(RpcException exception) =>
-				exception.StatusCode switch {
-					StatusCode.NotFound => responseStream.WriteAsync(new ReadResp {
-						StreamNotFound = new ReadResp.Types.StreamNotFound {
-							StreamIdentifier = exception.Trailers.First(x => x.Key == Constants.Exceptions.StreamName).Value
-						}
-					}),
-					_ => throw new InvalidOperationException(
-						$"Attempted to handle an unknown RPC Exception ({exception.StatusCode})")
-				};
-
-			Task FilteredReadCheckpointReached(Position checkpoint)
-				=> responseStream.WriteAsync(new ReadResp {
-					Checkpoint = new ReadResp.Types.Checkpoint {
-						CommitPosition = checkpoint.CommitPosition,
-						PreparePosition = checkpoint.PreparePosition
-					}
-				});
-
-			ReadResp.Types.ReadEvent.Types.RecordedEvent ConvertToRecordedEvent(EventRecord e, long? commitPosition,
-				long? preparePosition) {
-				if (e == null) return null;
-				var position = Position.FromInt64(commitPosition ?? -1, preparePosition ?? -1);
-				return new ReadResp.Types.ReadEvent.Types.RecordedEvent {
-					Id = uuidOptionsCase switch {
-						ReadReq.Types.Options.Types.UUIDOption.ContentOneofCase.String => new UUID {
-							String = e.EventId.ToString()
-						},
-						_ => Uuid.FromGuid(e.EventId).ToDto()
-					},
-					StreamIdentifier = e.EventStreamId,
-					StreamRevision = StreamRevision.FromInt64(e.EventNumber),
-					CommitPosition = position.CommitPosition,
-					PreparePosition = position.PreparePosition,
-					Metadata = {
-						[Constants.Metadata.Type] = e.EventType,
-						[Constants.Metadata.Created] = e.TimeStamp.ToTicksSinceEpoch().ToString(),
-						[Constants.Metadata.ContentType] = e.IsJson
-							? Constants.Metadata.ContentTypes.ApplicationJson
-							: Constants.Metadata.ContentTypes.ApplicationOctetStream
-					},
-					Data = ByteString.CopyFrom(e.Data.Span),
-					CustomMetadata = ByteString.CopyFrom(e.Metadata.Span)
-				};
-			}
-
-			ReadResp.Types.ReadEvent ConvertToReadEvent(ResolvedEvent e) {
-				var readEvent = new ReadResp.Types.ReadEvent {
-					Link = ConvertToRecordedEvent(e.Link, e.OriginalPosition?.CommitPosition, e.OriginalPosition?.PreparePosition),
-					Event = ConvertToRecordedEvent(e.Event, e.OriginalPosition?.CommitPosition, e.OriginalPosition?.PreparePosition)
-				};
-				if (e.OriginalPosition.HasValue) {
-					var position = Position.FromInt64(
-						e.OriginalPosition.Value.CommitPosition,
-						e.OriginalPosition.Value.PreparePosition);
-					readEvent.CommitPosition = position.CommitPosition;
-				} else {
-					readEvent.NoPosition = new Empty();
-				}
-
-				return readEvent;
-			}
-
-			IEventFilter ConvertToEventFilter(ReadReq.Types.Options.Types.FilterOptions filter) =>
+			static IEventFilter ConvertToEventFilter(ReadReq.Types.Options.Types.FilterOptions filter) =>
 				filter.FilterCase switch {
 					ReadReq.Types.Options.Types.FilterOptions.FilterOneofCase.EventType => (
 						string.IsNullOrEmpty(filter.EventType.Regex)
