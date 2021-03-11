@@ -6,7 +6,6 @@ using EventStore.Core.Messages;
 using EventStore.Core.Messaging;
 using EventStore.Client.Shared;
 using EventStore.Client.Streams;
-using Google.Protobuf;
 using Grpc.Core;
 
 namespace EventStore.Core.Services.Transport.Grpc {

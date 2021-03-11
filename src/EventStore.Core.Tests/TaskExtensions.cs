@@ -9,7 +9,7 @@ namespace EventStore.Core.Tests {
 
 		public static async Task WithTimeout(this Task task, int timeoutMs = 10000) {
 			if (Debugger.IsAttached) {
-				timeoutMs = -1;
+				//timeoutMs = -1;
 			}
 
 			if (await Task.WhenAny(task, Task.Delay(timeoutMs)) != task)

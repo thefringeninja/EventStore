@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using EventStore.Client.Streams;
 using EventStore.Core.Services.Storage.ReaderIndex;
 using Grpc.Core;
+using Microsoft.AspNetCore.Http;
 using CountOptionOneofCase = EventStore.Client.Streams.ReadReq.Types.Options.CountOptionOneofCase;
 using FilterOptionOneofCase = EventStore.Client.Streams.ReadReq.Types.Options.FilterOptionOneofCase;
 using ReadDirection = EventStore.Client.Streams.ReadReq.Types.Options.Types.ReadDirection;
@@ -139,7 +140,8 @@ namespace EventStore.Core.Services.Transport.Grpc {
 						request.Options.Filter.CheckpointIntervalMultiplier,
 						options.UuidOption,
 						context.CancellationToken),
-					_ => throw new InvalidOperationException()
+					_ => throw InvalidCombination((streamOptionsCase, countOptionsCase, readDirection,
+						filterOptionsCase))
 				};
 
 			await using (context.CancellationToken.Register(() => enumerator.DisposeAsync())) {
