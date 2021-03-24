@@ -6,9 +6,10 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using EventStore.Client.Streams;
 using EventStore.Core.Bus;
-using EventStore.Core.Data;
 using EventStore.Core.Messages;
 using EventStore.Core.Messaging;
+using EventStore.Core.Services.Storage.ReaderIndex;
+using ReadStreamResult = EventStore.Core.Data.ReadStreamResult;
 
 namespace EventStore.Core.Services.Transport.Grpc {
 	internal static partial class Enumerators {
@@ -107,7 +108,8 @@ namespace EventStore.Core.Services.Transport.Grpc {
 						case ReadStreamResult.Success:
 							foreach (var @event in completed.Events) {
 								await _channel.Writer.WriteAsync(new ReadResp {
-									Event = ConvertToReadEvent(_uuidOption, @event)
+									Event = ConvertToReadEvent(_uuidOption, @event, completed.LastEventNumber,
+										completed.TfLastCommitPosition),
 								}, ct).ConfigureAwait(false);
 							}
 

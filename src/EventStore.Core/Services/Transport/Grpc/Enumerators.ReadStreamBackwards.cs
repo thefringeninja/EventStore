@@ -108,7 +108,8 @@ namespace EventStore.Core.Services.Transport.Grpc {
 						case ReadStreamResult.Success:
 							foreach (var @event in completed.Events) {
 								await _channel.Writer.WriteAsync(new ReadResp {
-									Event = ConvertToReadEvent(_uuidOption, @event)
+									Event = ConvertToReadEvent(_uuidOption, @event, completed.LastEventNumber,
+										completed.TfLastCommitPosition)
 								}, ct).ConfigureAwait(false);
 							}
 

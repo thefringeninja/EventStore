@@ -189,7 +189,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 									_subscriptionId, _eventFilter, position);
 
 								await _channel.Writer.WriteAsync(new ReadResp {
-									Event = ConvertToReadEvent(_uuidOption, @event)
+									Event = ConvertToReadEvent(_uuidOption, @event, -1, completed.TfLastCommitPosition)
 								}, ct).ConfigureAwait(false);
 							}
 
@@ -256,7 +256,8 @@ namespace EventStore.Core.Services.Transport.Grpc {
 					await foreach (var @event in liveEvents.Reader.ReadAllAsync(_cancellationToken)
 						.ConfigureAwait(false)) {
 						await _channel.Writer.WriteAsync(new ReadResp {
-								Event = ConvertToReadEvent(_uuidOption, @event)
+								Event = ConvertToReadEvent(_uuidOption, @event, -1,
+									@event.OriginalEvent.LogPosition)
 							}, _cancellationToken)
 							.ConfigureAwait(false);
 					}
@@ -315,7 +316,8 @@ namespace EventStore.Core.Services.Transport.Grpc {
 												"Live subscription {subscriptionId} to $all:{eventFilter} enqueuing historical message {position}.",
 												_subscriptionId, _eventFilter, position);
 											await _channel.Writer.WriteAsync(new ReadResp {
-													Event = ConvertToReadEvent(_uuidOption, @event)
+													Event = ConvertToReadEvent(_uuidOption, @event, -1,
+														completed.TfLastCommitPosition)
 												},
 												_cancellationToken).ConfigureAwait(false);
 										}

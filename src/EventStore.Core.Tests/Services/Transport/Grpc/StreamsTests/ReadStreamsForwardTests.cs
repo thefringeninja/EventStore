@@ -57,6 +57,21 @@ namespace EventStore.Core.Tests.Services.Transport.Grpc.StreamsTests {
 				Assert.AreEqual(81, ReadResponses[0].Event.OriginalEvent.StreamRevision);
 				Assert.AreEqual(90, ReadResponses[^1].Event.OriginalEvent.StreamRevision);
 			}
+
+			[Test]
+			public void should_indicate_last_position_of_stream() {
+				CollectionAssert.AreEqual(Enumerable.Range(0, EventCount)
+					.Skip(81)
+					.Take(10)
+					.Select(streamPosition => new {
+						streamPosition = Convert.ToUInt64(streamPosition),
+						lastStreamPosition = EventCount - 1
+					}), ReadResponses.Where(x => x.ContentCase == ReadResp.ContentOneofCase.Event)
+					.Select(x => new {
+						streamPosition = x.Event.OriginalEvent.StreamRevision,
+						lastStreamPosition = EventCount - 1
+					}));
+			}
 		}
 
 		public class when_reading_forward_from_the_start_of_the_stream : GrpcSpecification.Read {
@@ -94,6 +109,21 @@ namespace EventStore.Core.Tests.Services.Transport.Grpc.StreamsTests {
 			public void should_read_the_correct_events() {
 				Assert.AreEqual(49, ReadResponses[^1].Event.OriginalEvent.StreamRevision);
 			}
+
+			[Test]
+			public void should_indicate_last_position_of_stream() {
+				CollectionAssert.AreEqual(Enumerable.Range(0, EventCount)
+					.Take(50)
+					.Select(streamPosition => new {
+						streamPosition = Convert.ToUInt64(streamPosition),
+						lastStreamPosition = EventCount - 1
+					}), ReadResponses.Where(x => x.ContentCase == ReadResp.ContentOneofCase.Event)
+					.Select(x => new {
+						streamPosition = x.Event.OriginalEvent.StreamRevision,
+						lastStreamPosition = EventCount - 1
+					}));
+			}
+
 		}
 
 		public class when_reading_forward_from_stream_with_no_events_after_position : GrpcSpecification.Read {

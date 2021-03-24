@@ -16,7 +16,7 @@ namespace EventStore.Core.Services.Transport.Grpc {
 				SingleWriter = true
 			};
 
-		static ReadResp.Types.ReadEvent.Types.RecordedEvent ConvertToRecordedEvent(
+		private static ReadResp.Types.ReadEvent.Types.RecordedEvent ConvertToRecordedEvent(
 			ReadReq.Types.Options.Types.UUIDOption uuidOption, EventRecord e, long? commitPosition,
 			long? preparePosition) {
 			if (e == null) return null;
@@ -44,13 +44,19 @@ namespace EventStore.Core.Services.Transport.Grpc {
 			};
 		}
 
-		static ReadResp.Types.ReadEvent ConvertToReadEvent(ReadReq.Types.Options.Types.UUIDOption uuidOption,
-			ResolvedEvent e) {
+		private static ReadResp.Types.ReadEvent ConvertToReadEvent(ReadReq.Types.Options.Types.UUIDOption uuidOption,
+			ResolvedEvent e, long lastEventNumber, long completedTfLastCommitPosition) {
+			var lastPosition = Position.FromInt64(completedTfLastCommitPosition, completedTfLastCommitPosition);
 			var readEvent = new ReadResp.Types.ReadEvent {
 				Link = ConvertToRecordedEvent(uuidOption, e.Link, e.OriginalPosition?.CommitPosition,
 					e.OriginalPosition?.PreparePosition),
 				Event = ConvertToRecordedEvent(uuidOption, e.Event, e.OriginalPosition?.CommitPosition,
-					e.OriginalPosition?.PreparePosition)
+					e.OriginalPosition?.PreparePosition),
+				ServerPosition = new ReadResp.Types.ReadEvent.Types.ServerPosition {
+					LastStreamPosition = StreamRevision.FromInt64(lastEventNumber),
+					LastCommitPosition = lastPosition.CommitPosition,
+					LastPreparePosition = lastPosition.PreparePosition
+				}
 			};
 			if (e.OriginalPosition.HasValue) {
 				var position = Position.FromInt64(

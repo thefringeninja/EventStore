@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using EventStore.Client.Shared;
 using EventStore.Client.Streams;
 using Google.Protobuf;
@@ -43,6 +44,21 @@ namespace EventStore.Core.Tests.Services.Transport.Grpc.StreamsTests {
 				Assert.AreEqual(29, ReadResponses[0].Event.Event.StreamRevision);
 				Assert.AreEqual(10, ReadResponses[^1].Event.Event.StreamRevision);
 			}
+
+			[Test]
+			public void should_indicate_last_position_of_stream() {
+				CollectionAssert.AreEqual(Enumerable.Range(0, EventCount)
+					.Reverse()
+					.Take(20)
+					.Select(streamPosition => new {
+						streamPosition = Convert.ToUInt64(streamPosition),
+						lastStreamPosition = EventCount - 1
+					}), ReadResponses.Where(x => x.ContentCase == ReadResp.ContentOneofCase.Event)
+					.Select(x => new {
+						streamPosition = x.Event.OriginalEvent.StreamRevision,
+						lastStreamPosition = EventCount - 1
+					}));
+			}
 		}
 
 		public class when_reading_backward_from_the_end_of_the_stream : GrpcSpecification.Read {
@@ -81,6 +97,21 @@ namespace EventStore.Core.Tests.Services.Transport.Grpc.StreamsTests {
 				Assert.AreEqual(29, ReadResponses[0].Event.Event.StreamRevision);
 				Assert.AreEqual(10, ReadResponses[^1].Event.Event.StreamRevision);
 			}
+
+			[Test]
+			public void should_indicate_last_position_of_stream() {
+				CollectionAssert.AreEqual(Enumerable.Range(0, EventCount)
+					.Reverse()
+					.Take(20)
+					.Select(streamPosition => new {
+						streamPosition = Convert.ToUInt64(streamPosition),
+						lastStreamPosition = EventCount - 1
+					}), ReadResponses.Where(x => x.ContentCase == ReadResp.ContentOneofCase.Event)
+					.Select(x => new {
+						streamPosition = x.Event.OriginalEvent.StreamRevision,
+						lastStreamPosition = EventCount - 1
+					}));
+			}
 		}
 
 		public class when_reading_backward_from_the_start_of_the_stream : GrpcSpecification.Read {
@@ -106,6 +137,11 @@ namespace EventStore.Core.Tests.Services.Transport.Grpc.StreamsTests {
 			public void should_receive_the_first_event() {
 				Assert.AreEqual(1, ReadResponses.Count);
 				Assert.AreEqual(0, ReadResponses[0].Event.OriginalEvent.StreamRevision);
+			}
+
+			[Test]
+			public void should_indicate_last_position_of_stream() {
+				Assert.AreEqual(EventCount - 1, ReadResponses[0].Event.ServerPosition.LastStreamPosition);
 			}
 		}
 	}

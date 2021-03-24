@@ -96,6 +96,7 @@ message ReadResp {
 			uint64 commit_position = 3;
 			event_store.client.shared.Empty no_position = 4;
 		}
+		ServerPosition server_position = 5;
 
 		message RecordedEvent {
 			event_store.client.shared.UUID id = 1;
@@ -106,6 +107,12 @@ message ReadResp {
 			map<string, string> metadata = 6;
 			bytes custom_metadata = 7;
 			bytes data = 8;
+		}
+
+		message ServerPosition {
+			uint64 last_prepare_position = 1;
+			uint64 last_commit_position = 2;
+			uint64 last_stream_position = 3;
 		}
 	}
 	message SubscriptionConfirmation {
